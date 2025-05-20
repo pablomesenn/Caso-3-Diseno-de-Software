@@ -29,3 +29,19 @@ This markdown file serves as a centralized record of questions directed to the P
 12. How would you measure the success of this platform? What indicators would be most important to you?
 
 13. Are there any specific features or functionality that you consider essential and should not be missing?
+    
+14. Should every user (individuals, companies, government agencies) verify their identity with official documents (e.g., ID, tax records) to register, or should some users have simpler access (e.g., anonymous public data browsing)?
+
+15. Should private companies be allowed to sell their data on the platform, or should it only host free/public-sector data? If paid, how should revenue be shared
+
+16. Should access to the platform be limited to users in Costa Rica, or should it be open globally?
+
+17. Will users need training to navigate the platform? Should there be in-app guides, a helpline, or dedicated support teams for government/business users?
+
+18. How long should the internal user validation process after registration take? Should it be instant (via AI) or include a period for manual review by an authorized team?
+
+19. Should the registration form change automatically based on the user type (e.g., showing different fields for individuals vs. companies), or should it stay simple and collect additional details later?
+
+20. Should the system apply different validation rules depending on the user type? For example, should companies provide tax documents while individuals only need an ID? Or should all users follow the same basic checks?"
+
+21. What information should the approval email include? For example: just a confirmation, login instructions, or a summary of the data submitted during registration?
