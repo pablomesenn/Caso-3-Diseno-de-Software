@@ -317,9 +317,73 @@ Quality Assurance:
 
 ## Protocols
 
-## Backend
+# FRONTEND
 
-## Datalake
+# BACKEND API
+
+## APPROACH
+Monotlithic
+Rest
+Internal Layers Handling Requests/Responses
+Object design patterns interact with requests or any other trigger
+
+Serverless, Cloud, On-Premise, or Hybrid?
+Hardware Demands and Cloud Machine Types
+Impacts frameworks, libraries, and programming languages
+
+Service vs Microservice - Planning of migrate to microservice
+API Gateway (Security & Scalability)?
+
+Definir arquitectura monolítica con migración a microservicios
+Implementar versionamiento de endpoints
+Crear módulos de autenticación y autorización
+Diseñar gestión de credenciales y cifrado
+Implementar auditoría y trazabilidad completa
+Crear endpoints para gestión de datasets
+
+## BACKOFFICE PORTAL WEB
+Diseñar interfaz de administración de usuarios
+Crear gestión de reglas de carga de datos
+Implementar administración de conectividad externa
+Diseñar sistema de auditoría y reportes
+Crear monitoreo operativo del sistema
+Implementar RBAC (Role-Based Access Control)
+
+
+## Data Layer Design
+
+Qué hacer:
+Diseñar arquitectura de almacenamiento masivo
+BatchLoad/stream(near real time, realtime)
+Implementar IA para normalización de datos
+Crear sistema de detección de duplicados
+Diseñar gestión de cargas delta
+Implementar cifrado en reposo y en tránsito
+Crear sistema de trazabilidad de datos
+Anotaciones del profesor:
+Batch o stream
+Evitar repetir datos con LLM? 
+Con contexto, se puede dar contexto para crear el modelo dinámico de datos. (Ver patrones de diseno de agentes para AI [Ejercicio 9])
+Alteracion de diseno de tablas inteligentemente.
+ETL = Extract-Transform-Design-Load
+Unificación de datos
+Merge de datos
+Actualización parcial y deltas
+Temas a investigar:
+Identidad Digital
+DID: Decentralized Identificaction
+Diseno de procesos
+Diseno de servicios
+Tipos de registro: 
+Diferente documentación
+Diferente proceso de registro
+Validaciones diferente: 
+Validacion por AI 
+Validacion de formatos de datos
+Scanners de documentos (Naciona, extrangeros, 3rd party services)
+Diseno de DB: Cada cloud tiene al menos una maquina de workflows
+
+### Datalake
 
 Buenas compañeros y 
 @vsurak
@@ -369,8 +433,7 @@ Cualquier cosa que se haga en snowflake se registra y permite encriptacion
 Restringir IP whitelist importante,
 hacer el acceso a datos por warehouses para accceder a datos en particular solo en esas tablas y ya.
 Limitacion o restricciones a nivel de rol. Por ultimo cifrado, encriptado, hashes, etc. https://docs.snowflake.com/en/sql-reference/functions/encrypt (edited) 
-4:25
-Cualquier corrección es bienvenida, gracias:saluting_face:
+
 
 
 Buenas noches compañeros y 
@@ -399,9 +462,90 @@ Es importante mencionar que hay diferentes ediciones que corresponden a diferent
 Toda la información viene de la guía oficial de SF sobre su pricing, a continuación el link:
 https://www.snowflake.com/wp-content/uploads/2023/12/The-Simple-Guide-to-Snowflake-Pricing.pdf
 
-YouTubeYouTube | Snowflake Developers
-Getting Started - Architecture & Key Concepts 
+
+## SECURITY
+### Prácticas de Codificación Segura
+Qué hacer:
+Implementar estándares OWASP
+Aplicar principios SOLID
+Seguir Clean Code practices
+Implementar Twelve-Factor App methodology
+
+### Seguridad de Datos
+Qué hacer:
+Diseñar cifrado de extremo a extremo (llaves de uso tiempo limitado)
+Implementar gestión segura de llaves
+Crear sistema de acceso por roles (RBAC)
+Diseñar Row-Level Security (RLS)
+
+Anotaciones del profesor:
+Hay que asociar llaves criptograficas para cada usuario
+Descifrado en memoria en el FE
+ETL
+Encontrar como hacer GeoAccess
+Tecnologia de data transfer
+IP whitelist
+Casarnos con un esquema de cifrado
+Sistema de logs y monitoreo de lo que esta pasando al procesar las fuentes de datos
+
+## INTEGRATIONS 
+### APIs y Servicios Externos
+Qué hacer:
+Definir integraciones con sistemas externos
+Implementar OAuth2 y JWT
+Crear esquemas de autenticación
+Diseñar manejo de errores y reintentos
+
+### Protocolos de Comunicación
+Qué hacer:
+Definir REST/GraphQL APIs
+Implementar WebSockets para tiempo real
+Crear sistemas de callbacks
+Diseñar message queues
+
+## QUALITY AND TESTING
+
+### Estrategia de Pruebas
+Qué hacer:
+Definir pruebas unitarias, integración y e2e
+Crear casos de prueba por componente
+Implementar pruebas de seguridad
+Diseñar pruebas de carga y performance
 
 
-YouTubeYouTube | Snowflake Developers
-Getting Started: Introduction To Snowflake Virtual Warehouses 
+## DEVOPS AND DEPLOYMENT
+### Gestión de Código
+### CI/CD Pipeline
+
+## MONITOREO Y OPERACIONES
+### Observabilidad
+Qué hacer:
+Implementar logging centralizado
+Crear métricas de aplicación
+Configurar alertas y notificaciones
+Diseñar dashboards operacionales
+
+### Alta Disponibilidad
+Qué hacer:
+Diseñar arquitectura resiliente
+Implementar load balancing
+Crear estrategias de backup
+Definir disaster recovery plans
+
+## EVALUACIÓN Y MEJORA
+### Architecture Compliance Matrix
+### Análisis de Ventajas/Desventajas
+Qué hacer:
+Identificar fortalezas del diseño
+Documentar limitaciones conocidas
+Proponer mejoras futuras
+Crear roadmap de evolución
+### Principios de Diseño
+Qué hacer:
+Documentar principios arquitectónicos aplicados
+Justificar decisiones técnicas
+Crear guías de diseño para el equipo
+Establecer estándares de calidad
+
+
+
