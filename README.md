@@ -5,7 +5,7 @@ Members: Pablo Mesén, Alonso Durán Muñoz, Ana Hernández Muñoz, Jesus Valver
 
 
 # INDEX
-- [Description](#DESCRIPTION)
+- [DESCRIPTION](#DESCRIPTION)
 - [STRATEGY AND PLANNING](#STRATEGY-AND-PLANNING)
 - [DEFINITION OF REQUIREMENTS](#DEFINITION-OF-REQUIREMENTS)
 - [SYSTEM ANALYSIS](#SYSTEM-ANALYSIS)
@@ -351,6 +351,26 @@ Implementar RBAC (Role-Based Access Control)
 
 
 ## Data Layer Design
+
+### Data Architecture & Storage
+
+#### a) Data Topology
+
+#### b) Big Data Repository - Data Lake
+
+#### c) Database Engine
+
+#### d) Tenancy and Data Security
+
+### Object-Oriented Design - Programming
+
+### Object-Oriented Design - Programming
+#### a) Transactionality
+#### b) Use of ORM
+#### c) Connection Pooling
+#### d) Use of Cache
+#### e) Drivers
+#### f) Data Design
 
 Qué hacer:
 Diseñar arquitectura de almacenamiento masivo
