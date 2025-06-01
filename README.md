@@ -1,10 +1,76 @@
 # Caso-3-Diseno-de-Software
 
-## Members
+Members: Pablo Mesén, Alonso Durán Muñoz, Ana Hernández Muñoz, Jesus Valverde
 
-## Description: Write a brief description of the system, highlighting its strengths
 
-## Stack:
+
+# INDEX
+- [Description](#DESCRIPTION)
+- [STRATEGY AND PLANNING](#STRATEGY-AND-PLANNING)
+- [DEFINITION OF REQUIREMENTS](#DEFINITION-OF-REQUIREMENTS)
+- [SYSTEM ANALYSIS](#SYSTEM-ANALYSIS)
+- [LEGAL AND REGULATORY FRAMEWORK](#LEGAL-AND-REGULATORY-FRAMEWORK)
+- [Stack](#STACK)
+
+
+# DESCRIPTION
+
+# STRATEGY AND PLANNING
+## Comprehensive Strategy
+## KPIs and Metrics
+## Risk assessment
+
+# DEFINITION OF REQUIREMENTS
+## Functional Requirements
+## Non-Funtional Requirements
+
+# SYSTEM ANALYSIS
+
+# LEGAL AND REGULATORY FRAMEWORK
+
+## Regulatory Compliance and Privacy Policies
+For years, Costa Rica has faced a significant structural limitation: the absence of a centralized data system that facilitates access, analysis, and utilization of information by diverse actors. Currently, there is no national ecosystem that allows individuals, public institutions, state branches, social organizations, and the private sector to share, reuse, and market information in a structured manner. This fragmentation has hindered evidence-based decision-making, slowed institutional processes, and limited the development of innovative solutions that could emerge from the strategic use of data.
+One of the main obstacles to overcoming this gap is not only technical but also political and institutional. Many state organizations do not feel comfortable sharing information with other government entities or private actors, whether due to mistrust, institutional jealousy, concerns about misuse, or a lack of regulatory clarity. This reluctance creates data silos that prevent the construction of an integrated view of the country and limits the potential for cross-sector solutions. Faced with this challenge, DataPuraVida proposes a flexible and controlled approach to overcome this political problem. Participating organizations would not be required to share all their data; instead, they would be allowed to choose which data to share, under what conditions, and with whom. This creates a transparent and regulated data market, where institutional autonomy is respected, but collaboration is encouraged through clear rules, incentives, and trust. By offering control, privacy, and traceability mechanisms, the system reduces political resistance and lays the groundwork for true data governance at the country level.
+
+## User-centric data governance and regulatory compliance
+Link to view Law 8968: http://www.pgrweb.go.cr/scij/Busqueda/Normativa/Normas/nrm_texto_completo.aspx?param1=NRTC&nValor1=1&nValor2=70975
+The system must be developed in compliance with the principles established in Law 8968. This includes:
+- Informed consent: All collection and processing of personal data must have the free, specific, and documented authorization of the data subject, with the possibility of easy revocation.
+- Clear purpose: Each use of data must be justified, informed, and limited to its original purpose.
+- Data subject rights: Interfaces will be enabled so users can securely review, correct, or request deletion of their data.
+- Quality and updating: The system will incorporate automatic validations and periodic reviews to keep the data accurate and relevant.
+- Protection of sensitive data: If information such as health or religious information is handled, enhanced security measures will be applied and explicit consent will be required.
+- Data processing responsibility: Each database must have a clearly identified and trained person responsible for ensuring legal and technical compliance.
+- Robust security: Encryption, access control, and monitoring protocols will be implemented to prevent security breaches.
+
+## Integration of international standards
+Link to view GDPR (Spanish): https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX%3A32016R0679
+In addition to national legislation, DataPuraVida aligns with the European Union's General Data Protection Regulation (GDPR), which establishes advanced standards for the ethical handling of information. Among its key contributions to the system:
+
+- Privacy by design and by default: The system will only collect the minimum data necessary, ensuring anonymization, access segmentation, and minimization through its architecture.
+- Data Impact Assessments (DPIA): A formal risk analysis will be conducted when the system processes personal data on a large scale or sensitive data.
+- Data Protection Officer (DPO): It is recommended to designate a person responsible for regulatory compliance, technical advice, and contact with users.
+- Portability: Users will be able to obtain and transfer their data in standard formats, fostering their autonomy.
+- Incident Management: Mechanisms will be implemented to detect and report security breaches within 72 hours, meeting transparency and immediate action requirements.
+- Accountability: The system will document all actions involving personal data, conducting audits and maintaining traceability to demonstrate compliance. Fines of up to €20 million or 4% of global annual turnover, whichever is greater. According to the following article: https://time.com/5290043/nazi-history-eu-data-privacy-gdpr/?.com
+
+## Security and interoperability as pillars
+The implementation of ISO/IEC 27001 will ensure a rigorous approach to information security. The following will be established:
+- Clearly defined roles and permissions.
+- Cryptographic controls and strong authentication.
+- Regular audits to verify data integrity, confidentiality, and availability.
+- Continuous improvement plans for security management.
+
+The OECD Guidelines on Data Governance provide a holistic view. For DataPuraVida, this means:
+- Data quality and interoperability: Establishing standards for metadata, formats, and version control.
+- Clear and accountable governance: Defining inclusive governance structures that promote the participation of public, private, and social sectors.
+- Data lineage documentation: Enabling the tracing of data origin, use, and transformations.
+- Transparency and public trust: Ensuring that all system processes are visible and auditable.
+
+DataPuraVida is not simply a technological infrastructure, but a platform for the political, institutional, and social transformation of the country. By enabling voluntary yet secure management of data exchange and complying with the most demanding national and international standards, the system can break decades of fragmentation and become the catalyst for an economy based on knowledge, innovation, and trust. Data governance is no longer an option, but a necessity for the sustainable, transparent, and equitable development of Costa Rica.
+
+
+# STACK
 
 - Amazon Web Service as the designated Cloud Service
 
