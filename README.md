@@ -319,7 +319,7 @@ Quality Assurance:
 
 # FRONTEND
 
-# BACKEND API
+# BACKEND
 
 ## APPROACH
 Monotlithic
