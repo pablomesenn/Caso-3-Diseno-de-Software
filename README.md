@@ -97,6 +97,130 @@ Members: Pablo Mesén, Alonso Durán Muñoz, Ana Hernández Muñoz, Jesus Valver
 
 ## Non-Funtional Requirements
 
+### Performance
+
+- The dashboard query engine must deliver results in under 200 milliseconds for 95% of requests under normal load.
+  
+- The platform shall support at least 200 concurrent users with no noticeable performance degradation. All of this the fifth year of operation.
+  
+- Data ingestion pipelines must process files up to 1GB in size within 2 minutes, including ETDL stages.
+
+### Scalability
+
+- The infrastructure must support automatic horizontal scaling in response to usage spikes.
+
+- The data lake architecture must accommodate growth of up to 10TB per year without manual intervention.
+
+- The system must allow onboarding of new data providers without modifying core services.
+
+### Reliability
+
+- The system must not exceed 43.2 minutes of downtime per month, aligning with a 99.9% SLA.
+
+- All transactions must be ACID-compliant, and service errors must trigger automated retries with rollback capabilities.
+
+- Full backups of all datasets and user metadata must be taken daily, with incremental backups every 4 hours.
+
+- In the event of a critical failure, full system recovery must be achieved within 2 hours, using predefined playbooks and automated infrastructure recovery.
+
+### Availability
+
+- The system must maintain 99.9% availability, with high availability configurations and load balancers.
+
+- The system infrastructure (including core services, APIs, and Snowflake-based data operations) must demonstrate a minimum mean time between failures of 30 days, ensuring fault tolerance at both the compute and storage layers.
+
+- In the event of any service interruption or system failure, the system must be recoverable and operational within a maximum mean time to repair of 2 hours, supported by automated diagnostics and recovery scripts.
+
+- Scheduled maintenance activities must:
+	- Be limited to predefined windows.
+	- Be communicated to stakeholders at least 72 hours in advance.
+	- Include health verification steps and after the execution to ensure service continuity.
+
+- The system must include Snowflake’s automatic multi-cluster architecture to ensure high availability and fault isolation for queries and pipelines and real time monitoring and alerting to trigger failover workflows.
+
+### Security 
+
+- All data in transit and at rest must be enceypted using AES-256. All APIs must enforce TLS 1.3 for secure communications.
+
+- PENDIENTE HABLAR SOBRE auth y verification
+
+### Usability
+
+- Screen reader support, keyboard navigation, and contrast options must be available to ensure compliance with inclusive design principles.
+
+- Some of the inclusive design principles to follow are: 
+	- Give control: Allow users to personalize their experience (font size, colors, contrast)
+	- Offer choices: Offer multiple choices to interact (voice, clicks, keyboard)
+	- Provide equivalent experiences: Ensure the same experience to all users in despite of their capabilities
+
+- Use of UX principles for a better user interaction with the UI.
+	- Consistency: Use familiar patterns, layouts, and terminology throughout the interface so users can predict interactions and learn quickly.
+	- Feedback: Provide immediate, clear responses to user actions (e.g., button clicks, form submissions, errors) so users understand what is happening.
+	- Simplicity: Eliminate unnecessary steps, clutter, or features. Focus on helping users complete tasks with minimal effort and cognitive load.
+	- Visibility of System Status: Keep users informed about what’s going on with timely and appropriate status indicators (e.g., loading spinners, progress bars, confirmation messages).
+
+### Maintainability
+
+- All system components must emit structured logs to a centralized logging system. Metrics must be exposed via Prometheus, with real time dashboards in Amazon Quicksight.
+
+- Source code must be managed using Github with GitFlow branching. All deployments are automated via CI/CD pipelines with infrastructure defined via Terraform.
+
+- All code must adhere to industry recognized standards and best practices:
+	- Follow the SOLID principles for maintainable software.
+	- Maintain at least 90% unit test coverage across all business logic and services.
+	- All pull requests must be peer-reviewed, and merged only after passing all automated tests.
+	- Commit messages must follow the Conventional Commits specification for traceability.
+
+### Interoperability
+
+- All data exchange and system interaction must comply with open standards to ensure broad interoperability across institutional and technological boundaries.
+
+- The system must support seamless integration with:
+	- External public data systems (government registries, public entities databases)
+	- Private sector API’s
+	- Both SQL and NoSQL connectors for ingesting structured and semi-structured data.
+
+- API’s must be:
+	- RESTful, stateless, and resource-oriented.
+	- Secured with rate limiting, IP whitelisting, token-based auth, and MFA.
+	- Equipped with detailed versioned documentation (e.g., Swagger UI).
+	- Designed to expose only the minimum viable data based on roles and permissions (RBAC/RLS).
+
+### Compliance
+
+- The system must fully comply with Law 8968 – Protection of the Person Regarding the Processing of Personal Data (Costa Rica), including provisions for:
+	- Informed consent and purpose limitation.
+	- Data subject rights such as access, rectification, and deletion.
+	- Registration of personal data databases with PRODHAB (Agencia de Protección de Datos de los Habitantes).
+
+- All personal and sensitive data handling must adhere to the General Data Protection Regulation (GDPR).
+
+- The platform must implement and maintain an Information Security Management System (ISMS) aligned with ISO/IEC 27001.
+
+- OECD Recommendation on Data Governance for the Public Sector. Data Pura Vida must reflect principles of:
+	- Openness and reusability of public data.
+	- Trust, transparency, and accountability in data use.
+	- Clear roles and responsibilities for data stewardship.
+
+- Related to security industry standards to follow:
+	- Use of TLS 1.3 for encrypted communications.
+	- End-to-end encryption of sensitive data using AES-256.
+	- Implementation of Role-Based Access Control (RBAC) and Row-Level Security (RLS).
+
+### Extensibility
+
+- The platform must allow modular addition of new AI models, data connectors, and dashboard templates without affecting existing operations. APIs and services must be designed to support future migration to microservices.
+
+### Documentation
+
+- End-user guides must be provided Spanish, accessible directly within the portal.
+
+- System administration manuals, backup and recovery guides, and access control procedures must be maintained in a secure internal wiki.
+
+- Full API documentation (Swagger), architecture diagrams, CI/CD guidelines, and code style references must be available in the repository.
+
+- Documentation must be version-controlled alongside the codebase and updated with each release as part of the definition of done in Scrum tasks.
+
 # SYSTEM ANALYSIS
 
 # LEGAL AND REGULATORY FRAMEWORK
