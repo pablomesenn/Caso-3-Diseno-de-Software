@@ -222,6 +222,8 @@ Members: Pablo Mesén, Alonso Durán Muñoz, Ana Hernández Muñoz, Jesus Valver
 - Documentation must be version-controlled alongside the codebase and updated with each release as part of the definition of done in Scrum tasks.
 
 # SYSTEM ANALYSIS
+## DETAILED DECOMPOSITION BY COMPONENTS
+
 
 # LEGAL AND REGULATORY FRAMEWORK
 
