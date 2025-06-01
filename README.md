@@ -22,6 +22,79 @@ Members: Pablo Mesén, Alonso Durán Muñoz, Ana Hernández Muñoz, Jesus Valver
 
 # DEFINITION OF REQUIREMENTS
 ## Functional Requirements
+
+### User Management and Registration
+
+- Allow registration of natural persons, legal entities, institutions, chambers, groups, and companies, and adapt the system (forms) based on the user type.
+
+- Digital identity, biometrics, liveness detection, and MFA (Multi-Factor Authentication).
+
+- Assign tripartite security keys to organizations for access delegation/revocation.
+
+- Capture IBAN and/or credit card data during registration.
+
+- Email notification system.
+
+- Generate symmetric and asymmetric keys with a tripartite system.
+
+### Data Management
+
+- Support for Excel, CSV, JSON APIs, SQL and NoSQL databases.
+
+- Define data as public/private, free/paid, temporary/permanent.
+
+- Access control by institution, individual, or specific group (granular control).
+
+- Allow selection of specific fields to encrypt.
+
+- Specify columns that relate datasets to each other.
+
+- Extraction, transformation, cleaning, context detection, modeling, and loading (ETDL).
+
+- Avoid duplication and optimize existing relationships.
+
+- Configuration of differential fields and update frequency.
+
+### Commercialization and Payments
+
+- Free data up to a certain size, with charges for additional space.
+
+- Platform fee/commission on paid data based on size and duration.
+
+- Multiple payment methods: credit cards, debit cards, and national mechanisms.
+
+- Automatic permission assignment upon payment confirmation.
+
+- Consumption control, real-time monitoring of paid data usage.
+
+### Visualization and Analysis
+
+- Custom dashboards, built manually or through AI prompts.
+
+- Multiple visualizations: tables, graphs, counts, trends, and predictions.
+
+- Share dashboards among users or allow internal public visibility.
+
+- The system must implement data delivery mechanisms that minimize the possibility of indirect extraction of information, especially for unauthorized uses such as AI model training. When necessary to deliver visual representations of data, formats like SVG or PDF may be considered, as long as they prevent automated reconstruction or reverse engineering of the underlying data.
+
+- Log all transactions and data usage in a user-accessible history for consultation and internal audit.
+
+### Backoffice
+
+- User management: maintenance of identities, memberships, and roles.
+
+- Configuration of rules, formats, validations, and structures by entity type.
+
+- Administration of API connectivity, databases, and external callbacks.
+
+- Key management: revocation and regeneration of security keys.
+
+- Full audit trail: details by user, action, date, and effect.
+
+- Usage reports, access logs, consumption data, metrics, data quality, and anomalies.
+
+- Operational monitoring: service status, tasks, transfers, and processes.
+
 ## Non-Funtional Requirements
 
 # SYSTEM ANALYSIS
