@@ -16,6 +16,36 @@ Members: Pablo Mesén, Alonso Durán Muñoz, Ana Hernández Muñoz, Jesus Valver
 # DESCRIPTION
 
 # STRATEGY AND PLANNING
+## Roadmaop
+![Agile Product Roadmap](https://github.com/user-attachments/assets/41e78649-b798-461c-a0dc-3f73e239cb19)
+## Milestones
+- M1: Validated architecture
+
+- M2: Core technical infrastructure deployed (data lake, backend, encryption)
+
+- M3: Secure user registration system with advanced validation and IP control
+
+- M4: First datasets published with granular control, metadata, and pricing
+
+- M5: AI-powered, non-downloadable data exploration dashboards operational
+
+- M6: Ecosystem validated through security audits and regulatory compliance
+
+- M7: 10+ integrated institutions, 100+ active datasets, first monetization revenue
+## Technical Team
+| **Role**                  | **Quantity** | **Responsibilities**                                                       |
+|---------------------------|--------------|-----------------------------------------------------------------------------|
+| Cloud Solutions Architect | 1            | Designs cloud infrastructure, security, scalability                        |
+| DevOps Engineers          | 2            | Deployment automation, CI/CD, versioning                                   |
+| Backend Developers        | 3            | API development, encryption, access control, authentication                |
+| Frontend Developers       | 2            | User portals (registration, dashboards, admin interface)                   |
+| Security Specialists      | 2            | Key management, MFA, audits, legal compliance                              |
+| AI & ETDL Specialists     | 2            | Document validation, data flow automation, AI dashboards                   |
+| Data Engineers            | 2            | Modeling, metadata, data quality                                           |
+| Product Manager           | 1            | Agile delivery coordination, documentation                                 |
+| UI/UX Designer            | 1            | Portal and backoffice interface design                                     |
+| Legal & Compliance Advisor| 1            | Legal analysis, data protection, IP/data ownership                         |
+
 ## Comprehensive Strategy
 ## KPIs and Metrics
 ## Risk assessment
