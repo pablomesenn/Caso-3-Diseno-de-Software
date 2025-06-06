@@ -352,12 +352,58 @@ Quality Assurance:
 # BACKEND
 
 ## APPROACH
-Monotlithic
-Rest
-Internal Layers Handling Requests/Responses
+
+### API Design and Architecture
+
+The chosen approach for the API architecture is a Monolithic architecture, with the consideration of a migration to a Microservices architecture in the near future. In a monolithic architecture, the entire application (UI, business logic, data access, integrations) is built, deployed and managed as a single, cohesive unit. Components within the monolith typically communicate directly through method calls or internal APIs.
+
+The API will follow the principles of Representational State Transfer (REST). Rest APIs use standard HTTP methods (like GET, POST, PUT, DELETE) to communicate with the servers, enabling clients to access and maniúlate data. Taking in consideration that “Data Pura Vida” is mainly a data consultation service the approach is ideal. For example: 
+- CRUD operations
+- File uploads like voice recordings, training data
+- Authentication and user management
+- Webhook (a way for one software system to automatically notify another system when a specific event happens) for external service integration
+
+```
+[Serverless or cloud?] Creo que es serverless ya que es monoolitico y utiliza fargate:
+If your monolith is running in containers on AWS Fargate: This moves closer to serverless for the container execution, as AWS manages the underlying EC2 instances for Fargate. However, the monolith itself still has traditional scaling and deployment characteristics that differ from pure FaaS (Function-as-a-Service).
+```
+
+#### Internal Layers Handling Requests/Responses
+
+#### 1. Handler Layer
+Entry point for all the HTTP requests (REST).
+Delegates business logic to the Service Layer
+Applies middleware for cross-cutting concerns
+Returns formatted HTTP responses
+
+#### 2. Middleware Layer
+Pre-/post-processing for handlers
+Authentication, logging, request parsing
+Could be optional or mandatory depending of context
+
+#### 3. Service Layer
+Contains core business logic 
+Coordinates between repositories and other services
+Validations and transformations
+
+#### 4. Repository Layer 
+Implements interfaces for different data sources
+Handles persistence logic
+
+#### 5. Security Layer
+
+#### 6. AI Layer
+
+   
 Object design patterns interact with requests or any other trigger
 
+1. Repository Pattern
+Abstracts data source operations behind interfaces. Allows handlers/services to work with data without knowing storage details. this separation is key for integrating GraphQL resolvers and REST endpoints without duplicating logic.
+`MainRepository` and corresponding implementations gets and creates.
+
+
 Serverless, Cloud, On-Premise, or Hybrid?
+
 Hardware Demands and Cloud Machine Types
 Impacts frameworks, libraries, and programming languages
 
