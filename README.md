@@ -45,6 +45,10 @@ Members: Pablo Mesén, Alonso Durán Muñoz, Ana Hernández Muñoz, Jesus Valver
 | Product Manager           | 1            | Agile delivery coordination, documentation                                 |
 | UI/UX Designer            | 1            | Portal and backoffice interface design                                     |
 | Legal & Compliance Advisor| 1            | Legal analysis, data protection, IP/data ownership                         |
+## UX Journeys
+![UX Journey 1](https://github.com/user-attachments/assets/51a549f9-286c-4e5f-b118-af91c3e0b110)
+![UX Journey 2](https://github.com/user-attachments/assets/09dd118f-dcd9-4822-b251-ae6915d54a82)
+![UX Journey 3](https://github.com/user-attachments/assets/b1a67421-d2fb-4313-828a-e91145229388)
 
 ## Comprehensive Strategy
 ## KPIs and Metrics
