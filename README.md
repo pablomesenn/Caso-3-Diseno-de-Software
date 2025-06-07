@@ -367,43 +367,9 @@ The API will follow the principles of Representational State Transfer (REST). Re
 [Serverless or cloud?] Creo que es serverless ya que es monoolitico y utiliza fargate:
 If your monolith is running in containers on AWS Fargate: This moves closer to serverless for the container execution, as AWS manages the underlying EC2 instances for Fargate. However, the monolith itself still has traditional scaling and deployment characteristics that differ from pure FaaS (Function-as-a-Service).
 ```
+### Serverless, Cloud, On-Premise, or Hybrid?
 
-#### Internal Layers Handling Requests/Responses
-
-#### 1. Handler Layer
-Entry point for all the HTTP requests (REST).
-Delegates business logic to the Service Layer
-Applies middleware for cross-cutting concerns
-Returns formatted HTTP responses
-
-#### 2. Middleware Layer
-Pre-/post-processing for handlers
-Authentication, logging, request parsing
-Could be optional or mandatory depending of context
-
-#### 3. Service Layer
-Contains core business logic 
-Coordinates between repositories and other services
-Validations and transformations
-
-#### 4. Repository Layer 
-Implements interfaces for different data sources
-Handles persistence logic
-
-#### 5. Security Layer
-
-#### 6. AI Layer
-
-   
-Object design patterns interact with requests or any other trigger
-
-1. Repository Pattern
-Abstracts data source operations behind interfaces. Allows handlers/services to work with data without knowing storage details. this separation is key for integrating GraphQL resolvers and REST endpoints without duplicating logic.
-`MainRepository` and corresponding implementations gets and creates.
-
-
-Serverless, Cloud, On-Premise, or Hybrid?
-
+```
 Hardware Demands and Cloud Machine Types
 Impacts frameworks, libraries, and programming languages
 
@@ -416,15 +382,59 @@ Crear módulos de autenticación y autorización
 Diseñar gestión de credenciales y cifrado
 Implementar auditoría y trazabilidad completa
 Crear endpoints para gestión de datasets
+```
+
+#### Internal Layers Handling Requests/Responses
+
+#### 1. Handler Layer
+Entry point for all the HTTP requests (REST).
+Delegates business logic to the Service Layer
+Applies middleware for cross-cutting concerns
+Returns formatted HTTP responses
+
+`Object design patterns interact with requests or any other trigger`
+
+#### 2. Middleware Layer
+Pre-/post-processing for handlers
+Authentication, logging, request parsing
+Could be optional or mandatory depending of context
+
+`Object design patterns interact with requests or any other trigger`
+
+#### 3. Service Layer
+Contains core business logic 
+Coordinates between repositories and other services
+Validations and transformations
+
+`Object design patterns interact with requests or any other trigger`
+
+#### 4. Repository Layer 
+Implements interfaces for different data sources
+Handles persistence logic
+
+`Object design patterns interact with requests or any other trigger`
+
+**Repository Pattern**
+Abstracts data source operations behind interfaces. Allows handlers/services to work with data without knowing storage details. this separation is key for integrating GraphQL resolvers and REST endpoints without duplicating logic.
+`MainRepository` and corresponding implementations gets and creates.
+
+#### 5. Security Layer
+
+`Object design patterns interact with requests or any other trigger`
+
+#### 6. AI Layer
+
+`Object design patterns interact with requests or any other trigger`
 
 ## BACKOFFICE PORTAL WEB
+```
 Diseñar interfaz de administración de usuarios
 Crear gestión de reglas de carga de datos
 Implementar administración de conectividad externa
 Diseñar sistema de auditoría y reportes
 Crear monitoreo operativo del sistema
 Implementar RBAC (Role-Based Access Control)
-
+```
 
 ## Data Layer Design
 
@@ -448,9 +458,10 @@ Implementar RBAC (Role-Based Access Control)
 #### e) Drivers
 #### f) Data Design
 
+```
 Qué hacer:
 Diseñar arquitectura de almacenamiento masivo
-BatchLoad/stream(near real time, realtime)
+BatchLoad
 Implementar IA para normalización de datos
 Crear sistema de detección de duplicados
 Diseñar gestión de cargas delta
@@ -478,9 +489,12 @@ Validacion por AI
 Validacion de formatos de datos
 Scanners de documentos (Naciona, extrangeros, 3rd party services)
 Diseno de DB: Cada cloud tiene al menos una maquina de workflows
+```
+
 
 ### Datalake
 
+```
 Ideas para el Data Lake, aqui hay un enlace para tener una definición concreta: https://www.geeksforgeeks.org/what-is-data-lake/
 
 A continuación hay varios de los puntos del apartado que investigue y trate de buscar soluciones:
@@ -591,10 +605,11 @@ Servicios en la nubes -> Snowflake coordina autenticación, seguridad y compilac
 Es importante mencionar que hay diferentes ediciones que corresponden a diferentes perfiles de clientes, los créditos en cada edición cambian en su precio por ejemplo.
 Toda la información viene de la guía oficial de SF sobre su pricing, a continuación el link:
 https://www.snowflake.com/wp-content/uploads/2023/12/The-Simple-Guide-to-Snowflake-Pricing.pdf
-
+```
 
 ## SECURITY
 ### Prácticas de Codificación Segura
+```
 Qué hacer:
 Implementar estándares OWASP
 Aplicar principios SOLID
@@ -617,9 +632,11 @@ Tecnologia de data transfer
 IP whitelist
 Casarnos con un esquema de cifrado
 Sistema de logs y monitoreo de lo que esta pasando al procesar las fuentes de datos
+```
 
 ## INTEGRATIONS 
 ### APIs y Servicios Externos
+```
 Qué hacer:
 Definir integraciones con sistemas externos
 Implementar OAuth2 y JWT
@@ -632,16 +649,18 @@ Definir REST/GraphQL APIs
 Implementar WebSockets para tiempo real
 Crear sistemas de callbacks
 Diseñar message queues
+```
 
 ## QUALITY AND TESTING
 
 ### Estrategia de Pruebas
+```
 Qué hacer:
 Definir pruebas unitarias, integración y e2e
 Crear casos de prueba por componente
 Implementar pruebas de seguridad
 Diseñar pruebas de carga y performance
-
+```
 
 ## DEVOPS AND DEPLOYMENT
 ### Gestión de Código
@@ -649,33 +668,40 @@ Diseñar pruebas de carga y performance
 
 ## MONITOREO Y OPERACIONES
 ### Observabilidad
+```
 Qué hacer:
 Implementar logging centralizado
 Crear métricas de aplicación
 Configurar alertas y notificaciones
 Diseñar dashboards operacionales
+```
 
 ### Alta Disponibilidad
+```
 Qué hacer:
 Diseñar arquitectura resiliente
 Implementar load balancing
 Crear estrategias de backup
 Definir disaster recovery plans
+```
 
 ## EVALUACIÓN Y MEJORA
 ### Architecture Compliance Matrix
 ### Análisis de Ventajas/Desventajas
+```
 Qué hacer:
 Identificar fortalezas del diseño
 Documentar limitaciones conocidas
 Proponer mejoras futuras
 Crear roadmap de evolución
+```
 ### Principios de Diseño
+```
 Qué hacer:
 Documentar principios arquitectónicos aplicados
 Justificar decisiones técnicas
 Crear guías de diseño para el equipo
 Establecer estándares de calidad
-
+```
 
 
