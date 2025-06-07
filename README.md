@@ -50,7 +50,7 @@ Members: Pablo Mesén, Alonso Durán Muñoz, Ana Hernández Muñoz, Jesus Valver
 ![UX Journey 2](https://github.com/user-attachments/assets/09dd118f-dcd9-4822-b251-ae6915d54a82)
 ![UX Journey 3](https://github.com/user-attachments/assets/b1a67421-d2fb-4313-828a-e91145229388)
 ##Risks
-| ID  | Risk Description                                                                 | Likelihood | Impact   | Risk Level | Control/Mitigation Measures                                                    | Owner                |
+| ID  | Risks Assesment                                                                | Likelihood | Impact   | Risk Level | Control/Mitigation Measures                                                    | Owner                |
 |-----|----------------------------------------------------------------------------------|------------|----------|------------|----------------------------------------------------------------------------------|----------------------|
 | R1  | Failure in biometric identity validation due to poor image/document quality     | Medium     | High     | **High**   | Implement quality filters, retry mechanism, and fallback to manual validation   | DevOps / Identity    |
 | R2  | Unauthorized access due to improper IP restriction configuration                | Low        | High     | **Medium** | Enforce IP whitelist checks, automate validation tests on deploy                | Security Team        |
@@ -72,9 +72,114 @@ Members: Pablo Mesén, Alonso Durán Muñoz, Ana Hernández Muñoz, Jesus Valver
 - **Medium**: Moderate disruption, user complaints, minor SLA breach  
 - **High**: Major disruption, sensitive data exposure, trust loss  
 - **Critical**: Legal implications, national-level breach, irreversible damage
+## Code, CI/CD, and Cloud Deployment Practices
+The team must use Git as the version control system, with repositories hosted on GitHub.
+The following branching model must be implemented based on Git Flow:
+### 1.1 Git Flow Branching Strategy
+
+| Branch        | Purpose                                 | Merges into           | Created from         |
+|---------------|------------------------------------------|------------------------|-----------------------|
+| `main`        | Stable code in production                | –                      | `release/*`, `hotfix/*` |
+| `develop`     | Development and integration branch       | `release/*`            | `feature/*`           |
+| `feature/*`   | New features or enhancements             | `develop`              | `develop`             |
+| `release/*`   | Prepares code for production release     | `main` and `develop`   | `develop`             |
+| `hotfix/*`    | Urgent fixes applied to production       | `main` and `develop`   | `main`      
+
+### 1.2 Commit Message Convention
+
+All commit messages must follow a standardized structure for clarity and traceability:
+
+<type>(component): short description in present tense
+
+# Examples:
+feat(api): add validation to donation endpoint
+fix(auth): resolve login timeout issue
+chore(ci): update deployment script for staging
+
+The development team must use the following commit types for consistency and clarity in version control:
+
+| Type      | Description                           |
+|-----------|---------------------------------------|
+| `feat`    | New feature                           |
+| `fix`     | Bug fix                               |
+| `docs`    | Documentation changes                 |
+| `style`   | Formatting only (no code logic change)|
+| `refactor`| Code restructuring (no behavior change)|
+| `test`    | Adding or updating tests              |
+| `chore`   | Maintenance tasks, tooling, CI/CD     |
+
+## 2. Coding Standards
+
+All code must follow predefined standards to ensure readability, consistency, and quality.
+
+### 2.1 Frontend (React)
+
+- Use Prettier for automatic formatting
+- Use React Testing Library for testing
+- Components: PascalCase
+- Variables/Functions: camelCase
+- Avoid inline styles; use TailwindCSS or component-scoped styles
+
+### 2.2 Backend (Python)
+
+- Use Black for formatting
+- Linting: Pylint 
+- Testing: pytest
+- Validate APIs using OpenAPI specifications
+
+### 2.3 Database
+
+### 2.3 Database (Snowflake and Amazon S3)
+
+- Snowflake models and tables must include data quality tests such as uniqueness, not_null constraints, and referential integrity validations, implemented via Snowflake tasks.
+- Use clear naming conventions and prefixes for Snowflake objects:
+  - `stg_` for staging tables (raw data imported from sources)
+  - `dim_` for dimension tables (reference data)
+  - `fct_` for fact tables (transactional or measurable data)
+- All Snowflake object names (tables, schemas, views, columns) must use snake_case naming conventions.
+- Data stored in Amazon S3 must follow a clear folder and file naming structure aligned with project requirements, including environment and date partitions (e.g., `s3://bucket-name/project/env/date=YYYY-MM-DD/`).
+- When ingesting data from S3 into Snowflake, ensure data formats are consistent, with schemas enforced via Snowflake external tables or COPY commands with file format definitions.
+
+## 3. Pull Requests and Code Review
+
+Every change must be reviewed through a pull request (PR):
+
+- All PRs must be based on a feature, hotfix, or release branch
+- At least one approval is required before merging
+- All checks must pass (CI, linting, tests)
+- PR descriptions must explain what was changed and why
+- Screenshots or test output must be included for UI or API changes
+- Large PRs must be split into smaller, manageable commits
+
+## 4. Continuous Integration (CI)
+
+GitHub Actions must be configured for CI on every pull request to `develop` or `main`.
+
+### CI Pipeline Steps
+
+- Checkout repository
+- Install dependencies
+- Run linters
+- Execute unit and integration tests
+
+## 5. Continuous Deployment (CD)
+
+Automatic deployments must be configured for both staging and production environments using GitHub Actions.
+
+| Environment | Branch  | Trigger                | Requires Approval |
+|-------------|---------|------------------------|-------------------|
+| staging     | develop | Push to develop        | No                |
+| production  | main    | Merge or manual trigger| Yes               |
+
+Deployment must include steps for:
+
+- Environment variable injection
+- Health checks post-deployment
+- Rollback mechanism in case of failure
+
+
 ## Comprehensive Strategy
 ## KPIs and Metrics
-## Risk assessment
 
 # DEFINITION OF REQUIREMENTS
 ## Functional Requirements
