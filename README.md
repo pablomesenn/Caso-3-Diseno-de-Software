@@ -16,8 +16,9 @@ Members: Pablo Mesén, Alonso Durán Muñoz, Ana Hernández Muñoz, Jesus Valver
 # DESCRIPTION
 
 # STRATEGY AND PLANNING
-## Roadmaop
-![Agile Product Roadmap](https://github.com/user-attachments/assets/41e78649-b798-461c-a0dc-3f73e239cb19)
+## Roadmap
+![Agile Product Roadmap](https://github.com/user-attachments/assets/290593af-6321-4e67-8d2a-53b4e363d946)
+
 ## Milestones
 - M1: Validated architecture
 
