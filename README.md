@@ -355,18 +355,14 @@ Quality Assurance:
 
 ### API Design and Architecture
 
-The chosen approach for the API architecture is a Monolithic architecture, with the consideration of a migration to a Microservices architecture in the near future. In a monolithic architecture, the entire application (UI, business logic, data access, integrations) is built, deployed and managed as a single, cohesive unit. Components within the monolith typically communicate directly through method calls or internal APIs.
+The chosen approach for the API architecture is a Monolithic architecture. Meaning, the entire application (UI, business logic, data access, integrations) is built, deployed and managed as a single, cohesive unit. Components within the monolith typically communicate directly through method calls or internal APIs.
+The monolith will run on AWS Fargate; this moves closer to serverless for the container execution, as AWS manages the underlying EC2 instances for Fargate. However, the system takes advantage of AWS services for specific functionalities like authentication, storage, ETL, monitoring and security; this enables modern scalability, resilience, security, and observability, common features in cloud-native and decoupled architectures.
+The API will follow the principles of Representational State Transfer (REST). Rest APIs use standard HTTP methods (like GET, POST, PUT, DELETE) to communicate with the servers, enabling clients to access and maniúlate data. Taking in consideration that “Data Pura Vida” is mainly a data consultation service the approach is ideal. For example:
 
-The API will follow the principles of Representational State Transfer (REST). Rest APIs use standard HTTP methods (like GET, POST, PUT, DELETE) to communicate with the servers, enabling clients to access and maniúlate data. Taking in consideration that “Data Pura Vida” is mainly a data consultation service the approach is ideal. For example: 
 - CRUD operations
-- File uploads like voice recordings, training data
+- File uploads 
 - Authentication and user management
-- Webhook (a way for one software system to automatically notify another system when a specific event happens) for external service integration
 
-```
-[Serverless or cloud?] Creo que es serverless ya que es monoolitico y utiliza fargate:
-If your monolith is running in containers on AWS Fargate: This moves closer to serverless for the container execution, as AWS manages the underlying EC2 instances for Fargate. However, the monolith itself still has traditional scaling and deployment characteristics that differ from pure FaaS (Function-as-a-Service).
-```
 ### Serverless, Cloud, On-Premise, or Hybrid?
 
 ```
@@ -387,36 +383,101 @@ Crear endpoints para gestión de datasets
 #### Internal Layers Handling Requests/Responses
 
 #### 1. Handler Layer
-Entry point for all the HTTP requests (REST).
-Delegates business logic to the Service Layer
-Applies middleware for cross-cutting concerns
-Returns formatted HTTP responses
+This is the entry point for all the HTTP requests (REST), exposes HTTP endpoints, orchestrates middleware execution, delegates business logic to the Service Layer, applies middleware for cross-cutting concerns, returns formatted HTTP responses.
+
+Design Patterns: Controller Pattern, Template Method Pattern (via BaseHandler).
+Principles Applied: Code structure follows the Single Responsibility Principle by strictly separating concerns (HTTP, auth, business logic), and encourages DRY via shared base classes and middleware use.
+, DRY (shared base logic), Open/Closed Principle (extensible handler logic).
+
+- `BaseHandler`: initializes a `middlewareChain` and a `logger`, exposes methods `executeMiddleware()`  to run pre- and post-processing hooks, `createSuccessResponse()` to build a standard OK response with payload, and `createErrorResponse()` to format errors into appropriate HTTP messages. Concrete handlers override the abstract `handle()` method to implement endpoint-specific behavior.
+
+- `AuthHandler` focuses on user authentication workflows. Its key methods—`login()`, `logout()`, `validateSession()`, and `refreshToken()`—delegate credential checks to `AuthService`, record actions in `AuditService`, and manage session state via `SessionService`. Errors like invalid credentials or expired tokens are captured and returned through the base error flow.
+
+- `DatasetSharingHandler` manages granting and revoking permissions on datasets. Methods such as `shareDataset()` and `revokeAccess()` call `AccessControlService` to update policies in Snowflake, while `setRowLevelCriteria()` and `validateRowAccess()` enforce fine-grained security via `RowLevelSecurityService`.
+
+- `DatasetHandler` orchestrates dataset lifecycle operations: initialization (`initUpload()`), chunked uploads (`uploadChunk()`, `finalizeUpload()`), status queries (`getUploadStatus()`), and cleanup (`cancelUpload()`, `deleteDataset()`). It uses `UploadSessionService` to track progress, `StorageService` for S3 interactions, `ValidationService` to verify data integrity, and `DataCipherService` for encryption.
+
+- Other Handlers such as `AIHandler`, `SubscriptionHandler`, `ViewHandler`, `LogHandler`, and `AccessHandler` follow a similar pattern: they delegate domain-specific operations to appropriate services (AIService for model training in AIHandler, PaymentService in SubscriptionHandler) and encapsulate all HTTP-specific logic (parsing inputs, handling exceptions, formatting outputs).
+
 
 `Object design patterns interact with requests or any other trigger`
 
 #### 2. Middleware Layer
-Pre-/post-processing for handlers
-Authentication, logging, request parsing
-Could be optional or mandatory depending of context
 
-`Object design patterns interact with requests or any other trigger`
+Pre-/post-processing for handlers, authentication, logging, request parsing, could be optional or mandatory depending on context. The Middleware layer implements cross-cutting concerns by chaining together small, focused components:
+Design Patterns: Chain of Responsibility Pattern, Strategy Pattern (different middleware types)
+Principles Applied: Separation of Concerns, DRY, Open/Closed Principle
+Each middleware acts as an independent processing step, allowing flexible reuse across different request types. The Chain of Responsibility pattern allows requests to pass through a dynamically composed stack of middleware functions.
+Each middleware implements a common interface with `before()` and `after()` hooks, making it easy to plug new logic without modifying existing handlers.
+The use of specialized components (AuthenticationMiddleware, LoggingMiddleware, etc.) cleanly separates concerns, adheres to the Open/Closed Principle by allowing extension without modifying the core framework, and promotes DRY by avoiding repeated inline validations.
+
+- `MiddlewareChain` holds an ordered list of `Middleware` objects. When a request arrives, `BaseHandler.executeMiddleware()` invokes each middleware’s `before(request)` hook; after the handler runs, any defined `after(response)` hooks execute in reverse order.
+- `AuthenticationMiddleware` checks incoming JWTs or session tokens, aborting unauthorized requests early.
+- `ValidationMiddleware` uses predefined JSON schemas or parameter definitions to validate request payloads, returning detailed Bad Request errors if validation fails.
+- `SecurityMiddleware` enforces payload encryption, CSRF (a malicious exploit) protection, or signature verification as needed.
+- `LoggingMiddleware` logs request metadata, user IDs, and trace IDs at the start and end of each request. It writes to the centralized logger, ensuring all events are captured.
+- `RateLimitMiddleware` enforces per‑user or per‑IP call quotas, returning “Too Many Requests” when thresholds are exceeded.
+- `ErrorHandlingMiddleware` wraps the entire chain, catching unhandled exceptions, logging stack traces, and converting them into standardized error responses via `BaseHandler.createErrorResponse()`.
 
 #### 3. Service Layer
-Contains core business logic 
-Coordinates between repositories and other services
-Validations and transformations
+Contains core business logic, coordinates between repositories and other services, validations and transformations, abstracts away direct interactions with data stores and third‑party APIs.
+Design Patterns: Service Layer Pattern
+Principles Applied: Single Responsability Principle, DRY, Dependency Inversion Principle (via repository abstractions), Encapsulation
+The service layer abstracts and centralizes domain-specific operations, removing complexity from handlers. It coordinates interactions with repositories, external APIs, and internal workflows.
+For example, `DatasetService.finalizeUpload()` may orchestrate encryption (`DataCipherService`), validation (`ValidationService`), and storage operations (`StorageService`)—this demonstrates Facade use by simplifying these dependencies into a single method call.
+The Dependency Inversion Principle is applied by injecting interfaces (repositories, clients) into services rather than hardcoding implementations, making components testable and interchangeable. Each service follows SRP by focusing on one area (uploads, AI, auditing), and code reuse is reinforced via shared helpers/utilities, following DRY.
 
-`Object design patterns interact with requests or any other trigger`
+- `AuthService` manages user credentials, token generation, and verification. It interfaces with an RDS or NoSQL store for user records and signs JWTs for stateless authentication.
+- `SessionService` tracks active sessions, refresh tokens, and expiration times, ensuring users can seamlessly obtain new access tokens without re‑authentication.
+- `AccessControlService` evaluates policies for dataset and row‑level permissions. It generates policy documents, caches decisions, and interacts with Snowflake grants or IAM rules.
+- `DatasetService` handles metadata CRUD operations on Snowflake, abstracting SQL queries, schema migrations, and versioning of dataset definitions.
+- `StorageService` orchestrates S3 multipart uploads, presigned URL generation, and handles retries on network failures.
+- `DataCipherService` wraps encryption and decryption routines using AWS KMS or custom key management, ensuring all persisted data is encrypted at rest and in transit.
+- `UploadSessionService` tracks the state of multi‑part uploads, persists session records, and implements idempotent retry logic.
+- `ValidationService` verifies data format, file hashes, and schema conformance before datasets are finalized.
+- `DigitalSignatureService` signs dataset artifacts to prevent tampering and provides cryptographic proof of integrity.
+- `IntegrityMonitor` scans stored data periodically for corruption or unauthorized changes, issuing alerts through `AuditService`.
+- `AIService` provides a high‑level API for training, evaluating, and deploying ML models. It submits jobs to AWS Batch or SageMaker and stages artifacts in S3.
+- `PipelineService` orchestrates long‑running workflows using AWS Step Functions or custom state machines, handling retries and error states.
+- `PaymentService` integrates with Stripe (or other gateways), handles webhooks, and ensures PCI‑compliance for payment operations.
+- `SubscriptionService` manages subscription plans, billing cycles, and integrates usage metrics with billing rates.
+- `ViewService` and `MetadataService` power dashboard creation and schema introspection for the front end.
+- `LogExportService` retrieves logs from CloudWatch or Elasticsearch and exports them to S3 or third‑party analytics tools.
+- `AuditService` centralizes event logging with user, action, and trace ID, producing a complete audit trail for compliance.
 
 #### 4. Repository Layer 
-Implements interfaces for different data sources
-Handles persistence logic
+This layer abstracts direct interactions with external storage and identity backends, providing consistent `IRepository` interfaces for various persistence mechanisms. Lambda Handlers and Services use these repositories for low-level CRUD and operational calls.
+Design Patterns: Repository Pattern, Facade Pattern (MainRepository), Adapter Pattern (external services)
+Principles Applied: Interface Segregation Principle, Single Responsability Principle, Dependency Inversion, DRY
 
-`Object design patterns interact with requests or any other trigger`
+- `MainRepository` acts as a factory or facade, exposing specific sub-repositories:
+- `S3Repository` for object storage
+- `SFRepository` for Snowflake operations
+- `AWSVaultRepository` for secrets management
+- `CognitoRepository` for user identity and token management
+- `S3Repository` implements `IRepository` to manage S3 objects:
+	- `putObject()`, `getObject()`, `deleteObject()`, `listObjects()`, `copyObject()`
+	- Multipart upload support: `initiateMultipartUpload()`, `uploadPart()`, `completeMultipartUpload()`, `abortMultipartUpload()`
+	- `generatePresignedUrl()` and `headObject()` for preflight checks
+	- Internally uses `s3Client` (AWS.S3), `bucketManager`, and `multipartUploadManager` for robust uploads.
+- `SFRepository` implements data warehouse operations:
+	- Generic query execution via `executeQuery(sql, params)`
+	- Specialized utilities: `createTemporaryTable()`, `bulkLoadFromStage()`, `cloneTable()`, `getQueryProfile()`, `executeAIQuery()`
+	- CRUD operations on warehouse artifacts (roles, procedures) through standardized methods.
+- `AWSVaultRepository` manages secrets and dynamic credentials in a secure vault:
+	- `writeSecret()`, `readSecret()`, `deleteSecret()`, `listSecrets()` for static secrets
+	- Policy management: `createPolicy()`, `attachPolicy()`
+	- Dynamic credential lifecycle: `generateDynamicCredentials()`, `renewLease()`, `revokeLease()`
+	- Relies on `VaultClient`, `VaultAuthManager`, and `SecretManager` internally.
+- `CognitoRepository` encapsulates AWS Cognito user pool operations:
+	- `authenticateUser()`, `validateToken()`, `refreshToken()` for session management
+	- User management: `createUser()`, `getUserInfo()`, `updateUserAttributes()`, `deleteUser()`, `resetPassword()`, `confirmUser()`
+	- Uses `cognitoClient`, `userPoolManager`, and `tokenValidator` under the hood.
 
-**Repository Pattern**
-Abstracts data source operations behind interfaces. Allows handlers/services to work with data without knowing storage details. this separation is key for integrating GraphQL resolvers and REST endpoints without duplicating logic.
-`MainRepository` and corresponding implementations gets and creates.
+Necessity of AWSVaultRepository and CognitoRepository:
+`AWSVaultRepository` is critical if your system integrates with a central secrets vault for rotating database credentials, API keys, or encryption keys. If you rely solely on AWS IAM roles and KMS, you may simplify by removing it.
+`CognitoRepository` is necessary only if you use AWS Cognito for user identity. If authentication is entirely custom or via another provider, you can omit this repository and adapt `AuthService` to your chosen auth backend.
+
 
 #### 5. Security Layer
 
