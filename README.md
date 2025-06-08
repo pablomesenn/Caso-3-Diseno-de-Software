@@ -468,21 +468,33 @@ DevOps & CI/CD:
 
 Quality Assurance:
 
-  
-## Frontend design specifications
-
-## Data
-
-## Third-Party 
-
-## Cloud
-
-## Protocols
-
 # FRONTEND
 ## Authentication platform
-### POC
-## Biometrics
+To ensure secure access across Snowflake, AWS, and Amazon S3, the development and operations team must implement Multi-Factor Authentication (MFA) and support biometric authentication where possible.
+### Technologies Involved
+- Frontend: React + Okta SDK (OIDC + biometrics via WebAuthn)
+- Backend: Python Flask + Okta JWT Verification
+- CI/CD: GitHub + GitHub Actions (with 2FA enforced via Okta)
+- Cloud Infrastructure: AWS (IAM, S3) + Snowflake
+
+**AWS Identity and Access Management (IAM)** is Amazon Web Services' native service that allows administrators to control who can access specific AWS resources and how. IAM lets us:
+
+- Create and manage users, groups, roles, and permissions.
+- Enforce fine-grained access policies for services like S3, and Lambda.
+- Use temporary credentials and role-based access control (RBAC) for automation and services.
+- Audit access via CloudTrail logs.
+
+**Okta** is a leading Identity as a Service (IDaaS) platform that provides:
+
+- User Authentication and Authorization
+- Multi-Factor Authentication (MFA)
+- Single Sign-On (SSO) across applications
+- Biometric authentication (fingerprint and face recognition) using WebAuthn
+- Support for OpenID Connect (OIDC) and SAML 2.0
+- Possible integration with AWS, Snowflake, GitHub.
+
+### POC MFA
+
 
 
 # BACKEND
