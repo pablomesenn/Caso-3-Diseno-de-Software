@@ -138,7 +138,7 @@ All code must follow predefined standards to ensure readability, consistency, an
   - `dim_` for dimension tables (reference data)
   - `fct_` for fact tables (transactional or measurable data)
 - All Snowflake object names (tables, schemas, views, columns) must use snake_case naming conventions.
-- Data stored in Amazon S3 must follow a clear folder and file naming structure aligned with project requirements, including environment and date partitions (e.g., `s3://bucket-name/project/env/date=YYYY-MM-DD/`).
+- Data stored in Amazon S3 must follow a clear folder and file naming structure aligned with project requirements, including environment and date partitions (`s3://bucket-name/project/env/date=YYYY-MM-DD/`).
 - When ingesting data from S3 into Snowflake, ensure data formats are consistent, with schemas enforced via Snowflake external tables or COPY commands with file format definitions.
 
 ## 3. Pull Requests and Code Review
