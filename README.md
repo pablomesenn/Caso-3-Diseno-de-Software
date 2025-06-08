@@ -480,6 +480,10 @@ Quality Assurance:
 ## Protocols
 
 # FRONTEND
+## Authentication platform
+### POC
+## Biometrics
+
 
 # BACKEND
 
