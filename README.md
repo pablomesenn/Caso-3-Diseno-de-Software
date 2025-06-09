@@ -518,10 +518,10 @@ This access token contains embedded information, including:
 For the backend to verify the token, it follows the next steps:
 - Step 1: Fetch Okta's Public Signing Keys (JWKS): Okta signs all access tokens using a private key. It publishes the corresponding public keys at a secure endpoint. The backend uses these public keys to validate that the token signature is authentic and unmodified. This ensures no one could have faked or altered the token.
 - Step 2: Decode and Validate the Token, the backend checks:
--- Signature: Is it valid and signed by a known Okta key?
--- Expiration (exp): Has the token expired?
--- Audience (aud): Was this token meant for this backend?
--- Issuer (iss): Was this token really issued by your Okta tenant?
+	-Signature: Is it valid and signed by a known Okta key?
+	- Expiration (exp): Has the token expired?
+	- Audience (aud): Was this token meant for this backend?
+	- Issuer (iss): Was this token really issued by your Okta tenant?
 If any check fails, the request is rejected.
 Once the token is verified, your Flask backend can authorize the request based on the token contents. The groups claim inside the token may say for example:
 `["admin", "donor"]`
