@@ -474,24 +474,58 @@ To ensure secure access across Snowflake, AWS, and Amazon S3, the development an
 ### Technologies Involved
 - Frontend: React + Okta SDK (OIDC + biometrics via WebAuthn)
 - Backend: Python Flask + Okta JWT Verification
-- CI/CD: GitHub + GitHub Actions (with 2FA enforced via Okta)
-- Cloud Infrastructure: AWS (IAM, S3) + Snowflake
 
-**AWS Identity and Access Management (IAM)** is Amazon Web Services' native service that allows administrators to control who can access specific AWS resources and how. IAM lets us:
+### Workflow  
+React frontend is integrated with Okta’s Auth JS SDK, which simplifies OpenID Connect (OIDC) login flows.
+When the user clicks “Log In,” your app:
 
-- Create and manage users, groups, roles, and permissions.
-- Enforce fine-grained access policies for services like S3, and Lambda.
-- Use temporary credentials and role-based access control (RBAC) for automation and services.
-- Audit access via CloudTrail logs.
+When the user clicks login:
+1. Redirects the user to Okta’s hosted login page.
+2. Specifies scopes like `openid`, `profile`, and `email`.
+3. Adds a redirect_uri to bring them back after login.
 
-**Okta** is a leading Identity as a Service (IDaaS) platform that provides:
+In the Okta's page:
+1. The user enters their credentials
+2. MFA is enforced based on the user's policy (SMS, Google, Okta Verify)
+3. Biometric Login (WebAuthn) prompts the user to use FaceID, or TouchID.
 
-- User Authentication and Authorization
-- Multi-Factor Authentication (MFA)
-- Single Sign-On (SSO) across applications
-- Biometric authentication (fingerprint and face recognition) using WebAuthn
-- Support for OpenID Connect (OIDC) and SAML 2.0
-- Possible integration with AWS, Snowflake, GitHub.
+The user gets redirected by Okta back to the platform with an authorization code after succesfully login in. This redirection URL isn’t random, it contains a temporary, one-time-use authorization code in the query string. Example:
+`https://yourapp.com/login/callback?code=AUTH_CODE&state=xyz`
+- `code=AUTH_CODE`: This is the temporary authorization code.
+- `state=xyz`: A value used to verify that the response is tied to the initial login request (protects against CSRF attacks).
+
+At this point there no tokens yet, just a temporary code. So the next step is to exchange that code for real tokens.Using the Okta SDK, your app sends a secure request directly to Okta’s /token endpoint. This request contains:
+- The authorization code you just received
+- A client identifier (so Okta knows which app is asking)
+- The redirect URI (to match it against the one registered)
+- A proof of identity, such as a client secret or PKCE challenge
+
+Okta validates everything and responds with:
+
+- Access Token (JWT): This is the most important token for the backend. It's a signed JSON Web Token (JWT) that proves the user is authenticated. It includes what the user is allowed to do, expiry, and user ID. The platform uses this to call your Flask backend API in a secure way.
+- ID Token (JWT): This token contains user identity details, like their name, email, and roles. Used by the frontend to display profile info or make UI decisions. Not sent to the backend.
+
+These tokens are stored securely in the frontend, in memory or browser session (not local storage). Okta SDK can manage session renewal automatically. Once the platform has successfully received the Access Token (JWT) from Okta, it now uses this token to make authenticated API requests to the backend (Python Flask). Each API request includes the access token in the Authorization header of the HTTP request like this:
+`Authorization: Bearer <access_token>`
+This access token contains embedded information, including:
+- The user’s unique ID (sub)
+- The user's email address
+- The groups or roles the user belongs to
+- Token issuance time (iat) and expiration time (exp)
+- The audience (aud), who the token is meant for (API)
+- The issuer (iss), Okta domain
+
+For the backend to verify the token, it follows the next steps:
+- Step 1: Fetch Okta's Public Signing Keys (JWKS): Okta signs all access tokens using a private key. It publishes the corresponding public keys at a secure endpoint. The backend uses these public keys to validate that the token signature is authentic and unmodified. This ensures no one could have faked or altered the token.
+- Step 2: Decode and Validate the Token, the backend checks:
+-- Signature: Is it valid and signed by a known Okta key?
+-- Expiration (exp): Has the token expired?
+-- Audience (aud): Was this token meant for this backend?
+-- Issuer (iss): Was this token really issued by your Okta tenant?
+If any check fails, the request is rejected.
+Once the token is verified, your Flask backend can authorize the request based on the token contents. The groups claim inside the token may say for example:
+`["admin", "donor"]`
+The backend can map these to your platform’s internal permissions. This mapping controls which endpoints each user can reach and what actions they can perform. Now that the backend knows who the user is and what they’re allowed to do, it can allow or deny access to the specific route, return secure, personalized data and continue processing the business logic.
 
 ### POC MFA
 
