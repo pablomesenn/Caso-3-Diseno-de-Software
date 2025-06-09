@@ -16,8 +16,9 @@ Members: Pablo Mesén, Alonso Durán Muñoz, Ana Hernández Muñoz, Jesus Valver
 # DESCRIPTION
 
 # STRATEGY AND PLANNING
-## Roadmaop
-![Agile Product Roadmap](https://github.com/user-attachments/assets/41e78649-b798-461c-a0dc-3f73e239cb19)
+## Roadmap
+![Agile Product Roadmap](https://github.com/user-attachments/assets/290593af-6321-4e67-8d2a-53b4e363d946)
+
 ## Milestones
 - M1: Validated architecture
 
@@ -45,10 +46,141 @@ Members: Pablo Mesén, Alonso Durán Muñoz, Ana Hernández Muñoz, Jesus Valver
 | Product Manager           | 1            | Agile delivery coordination, documentation                                 |
 | UI/UX Designer            | 1            | Portal and backoffice interface design                                     |
 | Legal & Compliance Advisor| 1            | Legal analysis, data protection, IP/data ownership                         |
+## UX Journeys
+![UX Journey 1](https://github.com/user-attachments/assets/51a549f9-286c-4e5f-b118-af91c3e0b110)
+![UX Journey 2](https://github.com/user-attachments/assets/09dd118f-dcd9-4822-b251-ae6915d54a82)
+![UX Journey 3](https://github.com/user-attachments/assets/b1a67421-d2fb-4313-828a-e91145229388)
+##  Risks Assesment 
+| ID  | Risk Description                                                              | Likelihood | Impact   | Risk Level | Control/Mitigation Measures                                                    | Owner                |
+|-----|----------------------------------------------------------------------------------|------------|----------|------------|----------------------------------------------------------------------------------|----------------------|
+| R1  | Failure in biometric identity validation due to poor image/document quality     | Medium     | High     | **High**   | Implement quality filters, retry mechanism, and fallback to manual validation   | DevOps / Identity    |
+| R2  | Unauthorized access due to improper IP restriction configuration                | Low        | High     | **Medium** | Enforce IP whitelist checks, automate validation tests on deploy                | Security Team        |
+| R3  | Data breach of confidential datasets marked as “restricted”                     | Low        | Critical | **High**   | Encrypt at rest with AWS KMS, enable row-level access policies in Snowflake     | Security / Infra     |
+| R4  | Misuse of uploaded datasets due to incorrect permissioning                      | Medium     | High     | **High**   | Create permission configuration wizard with preview and rollback                | Data Engineering     |
+| R5  | System downtime during batch ingestion or data validation                       | Medium     | Medium   | **Medium** | Queue-based ingestion (SQS), retry logic, alerting via EventBridge              | Platform Ops         |
+| R6  | Reputational damage due to publication of inaccurate or unverified data         | Medium     | High     | **High**   | Enforce ML validation and mandatory manual QA for public datasets               | Data Governance      |
+| R7  | Frustration due to poor UX in uploading or dashboarding tools                   | High       | Medium   | **Medium** | Add progress indicators, previews, guided steps and clear errors                | UX / Frontend Team   |
+| R8  | Breach of user personal data from onboarding                                    | Low        | Critical | **High**   | Encrypted transmission, audit logs, token masking, PII redaction                | Infra / Security     |
+| R9  | Regulatory non-compliance                                                       | Low        | Critical | **High**   | Regular audits, privacy policy updates, DPIA documentation                      | Legal / Compliance   |
+| R10 | Excessive cost due to inefficient cloud resource usage                          | Medium     | Medium   | **Medium** | Cost monitoring dashboards, job timeouts, quotas                                | Cloud FinOps         |
+
+#### Likelihood
+- **Low**: Rare or unlikely to occur  
+- **Medium**: Could occur occasionally under certain conditions  
+- **High**: Expected to occur frequently  
+
+#### Impact
+- **Medium**: Moderate disruption, user complaints, minor SLA breach  
+- **High**: Major disruption, sensitive data exposure, trust loss  
+- **Critical**: Legal implications, national-level breach, irreversible damage
+## Code, CI/CD, and Cloud Deployment Practices
+The team must use Git as the version control system, with repositories hosted on GitHub.
+The following branching model must be implemented based on Git Flow:
+### 1.1 Git Flow Branching Strategy
+
+| Branch        | Purpose                                 | Merges into           | Created from         |
+|---------------|------------------------------------------|------------------------|-----------------------|
+| `main`        | Stable code in production                | –                      | `release/*`, `hotfix/*` |
+| `develop`     | Development and integration branch       | `release/*`            | `feature/*`           |
+| `feature/*`   | New features or enhancements             | `develop`              | `develop`             |
+| `release/*`   | Prepares code for production release     | `main` and `develop`   | `develop`             |
+| `hotfix/*`    | Urgent fixes applied to production       | `main` and `develop`   | `main`      
+
+### 1.2 Commit Message Convention
+
+All commit messages must follow a standardized structure for clarity and traceability:
+
+<type>(component): short description in present tense
+
+# Examples:
+feat(api): add validation to donation endpoint
+fix(auth): resolve login timeout issue
+chore(ci): update deployment script for staging
+
+The development team must use the following commit types for consistency and clarity in version control:
+
+| Type      | Description                           |
+|-----------|---------------------------------------|
+| `feat`    | New feature                           |
+| `fix`     | Bug fix                               |
+| `docs`    | Documentation changes                 |
+| `style`   | Formatting only (no code logic change)|
+| `refactor`| Code restructuring (no behavior change)|
+| `test`    | Adding or updating tests              |
+| `chore`   | Maintenance tasks, tooling, CI/CD     |
+
+## 2. Coding Standards
+
+All code must follow predefined standards to ensure readability, consistency, and quality.
+
+### 2.1 Frontend (React)
+
+- Use Prettier for automatic formatting
+- Use React Testing Library for testing
+- Components: PascalCase
+- Variables/Functions: camelCase
+- Avoid inline styles; use TailwindCSS or component-scoped styles
+
+### 2.2 Backend (Python)
+
+- Use Black for formatting
+- Linting: Pylint 
+- Testing: pytest
+- Validate APIs using OpenAPI specifications
+
+### 2.3 Database
+
+### 2.3 Database (Snowflake and Amazon S3)
+
+- Snowflake models and tables must include data quality tests such as uniqueness, not_null constraints, and referential integrity validations, implemented via Snowflake tasks.
+- Use clear naming conventions and prefixes for Snowflake objects:
+  - `stg_` for staging tables (raw data imported from sources)
+  - `dim_` for dimension tables (reference data)
+  - `fct_` for fact tables (transactional or measurable data)
+- All Snowflake object names (tables, schemas, views, columns) must use snake_case naming conventions.
+- Data stored in Amazon S3 must follow a clear folder and file naming structure aligned with project requirements, including environment and date partitions (`s3://bucket-name/project/env/date=YYYY-MM-DD/`).
+- When ingesting data from S3 into Snowflake, ensure data formats are consistent, with schemas enforced via Snowflake external tables or COPY commands with file format definitions.
+
+## 3. Pull Requests and Code Review
+
+Every change must be reviewed through a pull request (PR):
+
+- All PRs must be based on a feature, hotfix, or release branch
+- At least one approval is required before merging
+- All checks must pass (CI, linting, tests)
+- PR descriptions must explain what was changed and why
+- Screenshots or test output must be included for UI or API changes
+- Large PRs must be split into smaller, manageable commits
+
+## 4. Continuous Integration (CI)
+
+GitHub Actions must be configured for CI on every pull request to `develop` or `main`.
+
+### CI Pipeline Steps
+
+- Checkout repository
+- Install dependencies
+- Run linters
+- Execute unit and integration tests
+
+## 5. Continuous Deployment (CD)
+
+Automatic deployments must be configured for both staging and production environments using GitHub Actions.
+
+| Environment | Branch  | Trigger                | Requires Approval |
+|-------------|---------|------------------------|-------------------|
+| staging     | develop | Push to develop        | No                |
+| production  | main    | Merge or manual trigger| Yes               |
+
+Deployment must include steps for:
+
+- Environment variable injection
+- Health checks post-deployment
+- Rollback mechanism in case of failure
+
 
 ## Comprehensive Strategy
 ## KPIs and Metrics
-## Risk assessment
 
 # DEFINITION OF REQUIREMENTS
 ## Functional Requirements
@@ -336,18 +468,69 @@ DevOps & CI/CD:
 
 Quality Assurance:
 
-  
-## Frontend design specifications
-
-## Data
-
-## Third-Party 
-
-## Cloud
-
-## Protocols
-
 # FRONTEND
+## Authentication platform
+To ensure secure access across Snowflake, AWS, and Amazon S3, the development and operations team must implement Multi-Factor Authentication (MFA) and support biometric authentication where possible.
+### Technologies Involved
+- Frontend: React + Okta SDK (OIDC + biometrics via WebAuthn)
+- Backend: Python Flask + Okta JWT Verification
+
+### Workflow  
+React frontend is integrated with Okta’s Auth JS SDK, which simplifies OpenID Connect (OIDC) login flows.
+When the user clicks “Log In,” your app:
+
+When the user clicks login:
+1. Redirects the user to Okta’s hosted login page.
+2. Specifies scopes like `openid`, `profile`, and `email`.
+3. Adds a redirect_uri to bring them back after login.
+
+In the Okta's page:
+1. The user enters their credentials
+2. MFA is enforced based on the user's policy (SMS, Google, Okta Verify)
+3. Biometric Login (WebAuthn) prompts the user to use FaceID, or TouchID.
+
+The user gets redirected by Okta back to the platform with an authorization code after succesfully login in. This redirection URL isn’t random, it contains a temporary, one-time-use authorization code in the query string. Example:
+`https://yourapp.com/login/callback?code=AUTH_CODE&state=xyz`
+- `code=AUTH_CODE`: This is the temporary authorization code.
+- `state=xyz`: A value used to verify that the response is tied to the initial login request (protects against CSRF attacks).
+
+At this point there no tokens yet, just a temporary code. So the next step is to exchange that code for real tokens. Using the Okta SDK, your app sends a secure request directly to Okta’s token endpoint. This request contains:
+- The authorization code you just received
+- A client identifier (so Okta knows which app is asking)
+- The redirect URI (to match it against the one registered)
+- A proof of identity, such as a client secret or PKCE challenge
+
+Okta validates everything and responds with:
+
+- Access Token (JWT): This is the most important token for the backend. It's a signed JSON Web Token (JWT) that proves the user is authenticated. It includes what the user is allowed to do, expiry, and user ID. The platform uses this to call your Flask backend API in a secure way.
+- ID Token (JWT): This token contains user identity details, like their name, email, and roles. Used by the frontend to display profile info or make UI decisions. Not sent to the backend.
+
+These tokens are stored securely in the frontend, in memory or browser session (not local storage). Okta SDK can manage session renewal automatically. Once the platform has successfully received the Access Token (JWT) from Okta, it now uses this token to make authenticated API requests to the backend (Python Flask). Each API request includes the access token in the Authorization header of the HTTP request like this:
+`Authorization: Bearer <access_token>`
+This access token contains embedded information, including:
+- The user’s unique ID (sub)
+- The user's email address
+- The groups or roles the user belongs to
+- Token issuance time (iat) and expiration time (exp)
+- The audience (aud), who the token is meant for (API)
+- The issuer (iss), Okta domain
+
+For the backend to verify the token, it follows the next steps:
+- Step 1: Fetch Okta's Public Signing Keys (JWKS): Okta signs all access tokens using a private key. It publishes the corresponding public keys at a secure endpoint. The backend uses these public keys to validate that the token signature is authentic and unmodified. This ensures no one could have faked or altered the token.
+- Step 2: Decode and Validate the Token, the backend checks:
+	-Signature: Is it valid and signed by a known Okta key?
+	- Expiration (exp): Has the token expired?
+	- Audience (aud): Was this token meant for this backend?
+	- Issuer (iss): Was this token really issued by your Okta tenant?
+If any check fails, the request is rejected.
+Once the token is verified, your Flask backend can authorize the request based on the token contents. The groups claim inside the token may say for example:
+`["admin", "donor"]`
+The backend can map these to your platform’s internal permissions. This mapping controls which endpoints each user can reach and what actions they can perform. Now that the backend knows who the user is and what they’re allowed to do, it can allow or deny access to the specific route, return secure, personalized data and continue processing the business logic.
+![Agile Product Roadmap](https://github.com/user-attachments/assets/0a7dd9a8-ae89-4567-83ee-db3428ee22ad)
+
+### POC MFA
+
+
 
 # BACKEND
 
