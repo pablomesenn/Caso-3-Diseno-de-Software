@@ -453,9 +453,9 @@ Frontend:
 
 Backend:
 
-    Node.js 20.x: Handles all incoming REST requests. Connects to the PostgreSQL database. Implements general business logic (authentication, user management, file uploads, task creation) implementing external services such as AWS services.
+    Python: Handles all incoming REST requests. Connects to the PostgreSQL database. Implements general business logic (authentication, user management, file uploads, task creation) implementing external services such as AWS services.
 
-    Express 4.x: Web framework for Node.js, used to handle REST, manage middleware, routing, and request/response lifecycle.
+    Flask: Web framework for Node.js, used to handle REST, manage middleware, routing, and request/response lifecycle.
 
     REST: For structured, not state-dependant operation and service-oriented operations. Authentication and registration, use of AWS services, etc... 
 
