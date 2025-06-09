@@ -559,24 +559,19 @@ The API will follow the principles of Representational State Transfer (REST). Re
 - File uploads 
 - Authentication and user management
 
-### Serverless, Cloud, On-Premise, or Hybrid?
+##### Logical division for workload distribution
 
-```
-Hardware Demands and Cloud Machine Types
-Impacts frameworks, libraries, and programming languages
+The monolithic architecture chosen for this project contains layers designed to be responsible for different tasks, ensuring good separation of concerns and maintainability. The general responsabilities of each layer are describe in the following table.
 
-Service vs Microservice - Planning of migrate to microservice
-API Gateway (Security & Scalability)?
+| **Layer**          | **Responsibilities**                                                                                                                                                                                                                                              |
+|--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Handler Layer**  | 1. Acts as the entry point for incoming HTTP requests. <br> 2. Parses requests, extracts parameters, and delegates work to the Service Layer. <br> 3. Formats and returns HTTP responses to the client. <br> 4. Handles routing and basic input validation (with Middleware support). |
+| **Middleware Layer** | 1. Handles cross-cutting concerns such as logging, request parsing, authentication, error handling, and rate limiting.                                                                                                                                             |
+| **Service Layer**  | 1. Contains the core application logic and business rules. <br> 2. Coordinates operations and validations before or after database and external system interactions. <br> 3. Serves as the intermediary between the Handler Layer and the Repository Layer.              |
+| **Security Layer** | 1. Handles authentication and authorization. <br> 2. Manages access control for system functionalities, data, logs, and user administration. <br> 3. Encapsulates logic for token management (e.g., JWT).                                                           |
+| **Repository Layer** | 1. Encapsulates all database interactions. <br> 2. Provides a clean interface for querying, inserting, updating, or deleting records without exposing database internals to other layers.                                                                            |
+| **AI Layer**       | 1. Contains logic powered by Artificial Intelligence. <br> 2. Analyzes large volumes of data and metadata to detect patterns. <br> 3. Makes autonomous or administrator-assisted decisions to modify or enhance system data. <br> 4. Integrates with AI/ML agents.       |
 
-Definir arquitectura monolítica con migración a microservicios
-Implementar versionamiento de endpoints
-Crear módulos de autenticación y autorización
-Diseñar gestión de credenciales y cifrado
-Implementar auditoría y trazabilidad completa
-Crear endpoints para gestión de datasets
-```
-
-#### Internal Layers Handling Requests/Responses
 
 #### 1. Handler Layer
 This is the entry point for all the HTTP requests (REST), exposes HTTP endpoints, orchestrates middleware execution, delegates business logic to the Service Layer, applies middleware for cross-cutting concerns, returns formatted HTTP responses.
@@ -723,7 +718,31 @@ Necessity of AWSVaultRepository and CognitoRepository:
 
 `Object design patterns interact with requests or any other trigger`
 
+### Serverless Architecture and AWS Services
+
+```
+Hardware Demands and Cloud Machine Types
+Impacts frameworks, libraries, and programming languages
+
+Service vs Microservice - Planning of migrate to microservice
+API Gateway (Security & Scalability)?
+
+Definir arquitectura monolítica con migración a microservicios
+Implementar versionamiento de endpoints
+Crear módulos de autenticación y autorización
+Diseñar gestión de credenciales y cifrado
+Implementar auditoría y trazabilidad completa
+Crear endpoints para gestión de datasets
+```
+
+#### Hardware demands and Cloud Machine types
+
+#### AWS services used to complement the design
+
+#### Impactful frameworks, libraries, and programming languages
+
 ## BACKOFFICE PORTAL WEB
+
 ```
 Diseñar interfaz de administración de usuarios
 Crear gestión de reglas de carga de datos
