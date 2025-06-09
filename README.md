@@ -439,7 +439,8 @@ DataPuraVida is not simply a technological infrastructure, but a platform for th
 
 Frontend:
 
-    React Native 18.2.x – Provides high performance and scalability for web and mobile interactions.
+    React Native 18.2.x – Provides high performance and scalability for web.
+    Okta - MFA and Biometrics, needs license
 
 Backend:
 
