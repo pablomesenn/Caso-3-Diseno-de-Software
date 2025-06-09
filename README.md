@@ -526,6 +526,7 @@ If any check fails, the request is rejected.
 Once the token is verified, your Flask backend can authorize the request based on the token contents. The groups claim inside the token may say for example:
 `["admin", "donor"]`
 The backend can map these to your platform’s internal permissions. This mapping controls which endpoints each user can reach and what actions they can perform. Now that the backend knows who the user is and what they’re allowed to do, it can allow or deny access to the specific route, return secure, personalized data and continue processing the business logic.
+
 ![Agile Product Roadmap](https://github.com/user-attachments/assets/0a7dd9a8-ae89-4567-83ee-db3428ee22ad)
 
 ### POC MFA
