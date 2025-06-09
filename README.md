@@ -494,7 +494,7 @@ The user gets redirected by Okta back to the platform with an authorization code
 - `code=AUTH_CODE`: This is the temporary authorization code.
 - `state=xyz`: A value used to verify that the response is tied to the initial login request (protects against CSRF attacks).
 
-At this point there no tokens yet, just a temporary code. So the next step is to exchange that code for real tokens.Using the Okta SDK, your app sends a secure request directly to Okta’s /token endpoint. This request contains:
+At this point there no tokens yet, just a temporary code. So the next step is to exchange that code for real tokens. Using the Okta SDK, your app sends a secure request directly to Okta’s /token endpoint. This request contains:
 - The authorization code you just received
 - A client identifier (so Okta knows which app is asking)
 - The redirect URI (to match it against the one registered)
