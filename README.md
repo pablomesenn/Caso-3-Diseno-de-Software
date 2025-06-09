@@ -545,8 +545,6 @@ The backend can map these to your platform’s internal permissions. This mappin
 
 # BACKEND
 
-## APPROACH
-
 ### API Design and Architecture
 
 ![image](https://github.com/user-attachments/assets/a45c5c49-22f3-4361-b8e1-7931298a7524)
@@ -561,7 +559,7 @@ The API will follow the principles of Representational State Transfer (REST). Re
 
 ##### Logical division for workload distribution
 
-The monolithic architecture chosen for this project contains layers designed to be responsible for different tasks, ensuring good separation of concerns and maintainability. The general responsabilities of each layer are describe in the following table.
+The monolithic architecture chosen for this project contains layers designed to be responsible for different tasks, ensuring good separation of concerns and maintainability. The general responsabilities of each layer are describe in the following table. Ahead of the table each layer will be explained in detail.
 
 | **Layer**          | **Responsibilities**                                                                                                                                                                                                                                              |
 |--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -571,6 +569,8 @@ The monolithic architecture chosen for this project contains layers designed to 
 | **Security Layer** | 1. Handles authentication and authorization. <br> 2. Manages access control for system functionalities, data, logs, and user administration. <br> 3. Encapsulates logic for token management (e.g., JWT).                                                           |
 | **Repository Layer** | 1. Encapsulates all database interactions. <br> 2. Provides a clean interface for querying, inserting, updating, or deleting records without exposing database internals to other layers.                                                                            |
 | **AI Layer**       | 1. Contains logic powered by Artificial Intelligence. <br> 2. Analyzes large volumes of data and metadata to detect patterns. <br> 3. Makes autonomous or administrator-assisted decisions to modify or enhance system data. <br> 4. Integrates with AI/ML agents.       |
+
+
 
 
 #### 1. Handler Layer
@@ -645,8 +645,8 @@ The use of specialized components (AuthenticationMiddleware, LoggingMiddleware, 
 
 #### 3. Service Layer
 Contains core business logic, coordinates between repositories and other services, validations and transformations, abstracts away direct interactions with data stores and third‑party APIs.
-Design Patterns: Service Layer Pattern
-Principles Applied: Single Responsability Principle, DRY, Dependency Inversion Principle (via repository abstractions), Encapsulation
+**Design Patterns:** Service Layer Pattern
+**Principles Applied:** Single Responsability Principle, DRY, Dependency Inversion Principle (via repository abstractions), Encapsulation
 The service layer abstracts and centralizes domain-specific operations, removing complexity from handlers. It coordinates interactions with repositories, external APIs, and internal workflows.
 For example, `DatasetService.finalizeUpload()` may orchestrate encryption (`DataCipherService`), validation (`ValidationService`), and storage operations (`StorageService`)—this demonstrates Facade use by simplifying these dependencies into a single method call.
 The Dependency Inversion Principle is applied by injecting interfaces (repositories, clients) into services rather than hardcoding implementations, making components testable and interchangeable. Each service follows SRP by focusing on one area (uploads, AI, auditing), and code reuse is reinforced via shared helpers/utilities, following DRY.
@@ -715,8 +715,27 @@ Necessity of AWSVaultRepository and CognitoRepository:
 `Object design patterns interact with requests or any other trigger`
 
 #### 6. AI Layer
+The AI Layer is responsible for analyzing vast quantities of system data and metadata to autonomously or semi-autonomously make decisions that transform the underlying system database. It uses artificial intelligence strategies such as supervised and unsupervised learning to detect patterns, classify data stimuli, and select appropriate actions. This layer orchestrates agents—intelligent components powered by machine learning models—to execute actions that optimize or evolve the system based on learned insights.To ensure system stability and data integrity, the Compensating Transactions pattern is applied to review all transformations proposed by the AI layer. Each suggested change is validated and reversible, allowing the system to recover gracefully from partial failures or undesired modifications. After successful validation and approval of the actions, the Claim Check pattern is employed to offload the large transformation payloads. This approach separates heavy data from the processing flow by temporarily storing it and passing lightweight references instead. Finally, once transformations are validated and checked, the changes and corresponding data are securely uploaded to the production database in Snowflake, ensuring consistency, scalability, and performance in the final data state.
 
-`Object design patterns interact with requests or any other trigger`
+
+**Design Patterns:** Learning based patttern for AI
+**Principles Applied:** Single Responsability Principle, DRY
+
+
+- **Stimuli** represents data inputs or events the system must respond to. Stores metadata and values. Provides methods for retrieving metadata, extracting values, and validating the stimulus.
+	- **Principle Methods** `get_metadata() -> Dict`, `is_valid() -> bool`
+- **StimulusSelector** defines strategies to select relevant stimuli for processing. Holds classification rules and allows adding or clearing them.
+	- **Principle Methods** `classifyAction(inputs: List[Stimuli]) -> List[Stimuli]`, `add_rule(rule: Rule) -> void`, `clear_rules() -> void`
+- **Executor** core orchestrator of the AI Layer. Executes actions based on selected stimuli using available agents. Detects the type of action required and delegates it to the appropriate agent.
+	- **Principle Methods** `execute(inputs: List[Stimuli]) -> Output`, `detect_action(inputs: List[Stimuli]) -> str`, `select_agent(action: str) -> Agent`
+- **Agent** represents a functional AI unit powered by an ML model. Executes specific actions using a list of stimuli.
+	- **Principle Methods** `action(data: List[Stimuli]) -> Output`
+- **UnionAgent/AppendAgent/SplitAgent/...** specialized agent types (polymorphic) designed to perform specific types of data transformation actions, such as merging datasets, appending information, or splitting content.
+- **MLModel** abstracts machine learning logic. Stores model type and learning strategy.
+- **SupervisedLearning** implements a concrete learning strategy for labeled data. Capable of looking for patterns and finding similar documents.
+- **UnsupervisedLearning** implements learning strategy for unlabeled data. Also looks for patterns and similar documents but without supervision.
+- **DataProcessor** responsible for pulling metadata and datasets from the system. Acts as a bridge between the system’s stored data and the AI Layer.
+
 
 ### Serverless Architecture and AWS Services
 
@@ -741,16 +760,7 @@ Crear endpoints para gestión de datasets
 
 #### Impactful frameworks, libraries, and programming languages
 
-## BACKOFFICE PORTAL WEB
-
-```
-Diseñar interfaz de administración de usuarios
-Crear gestión de reglas de carga de datos
-Implementar administración de conectividad externa
-Diseñar sistema de auditoría y reportes
-Crear monitoreo operativo del sistema
-Implementar RBAC (Role-Based Access Control)
-```
+### Snowflake Integration
 
 ## Data Layer Design
 
