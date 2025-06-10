@@ -546,14 +546,14 @@ The design will consist of four layers:
 - Okta SDK (OIDC + WebAuthn Biometric login)
 - Redux Toolkit (ViewModel logic)
 - Storybook for component testing
-- 
+  
 **Class and Components**
 `LoginPage`, `BiometricPrompt`, `DashboardLayout`, `TaskCard`, `LiveTranscriptionPanel`, `AssistantContainer`, `TaskGuideOverlay`
 
 **Design Patterns**
 - MVVM (React View + Redux ViewModel)
 - Component-Based Architecture – UI split into reusable functional components
-- 
+  
 **Principles**
 - Separation of Concerns: UI handles only rendering and user interactions  
 - DRY: Extract reusable hooks and atomic components  
