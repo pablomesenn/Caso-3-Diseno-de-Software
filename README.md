@@ -847,21 +847,21 @@ Example: read a dataset
 The Security Layer acts as a centralized security orchestrator that enforces authentication, authorization, encryption, and access control across all system components. It integrates seamlessly with the existing Handler, Service, and Repository layers.
 
 ### Security Components
-1. SecurityManager
+1. `SecurityManager`
 This is the central orchestrator that coordinates all security operations across the system.
 - Acts as a facade that unifies all security components
 - Creates and manages security contexts for requests
 - Coordinates between authentication, authorization, key management, and geographic validation
 - Provides a single interface for handlers to perform security operations, by being injected into `BaseHandler`
 
-2. SecurityContext
+2. `SecurityContext`
 Container object that carries security information throughout the request lifecycle.
 
 - Immutable object created once per request, attached to request objects in SecurityContextMiddleware through securityManager, passed to all service methods that need security validation, and used by repositories for row-level security and access control
 - Contains user identity, permissions, IP address, and organization memberships
 - Provides security information for authorization decisions
 
-3. TripartiteKeyManager
+3. `TripartiteKeyManager`
 Manages the three-party key system where keys are split between Data Pura Vida and two custodians.
 
 - Uses Shamir's Secret Sharing  (https://www.geeksforgeeks.org/shamirs-secret-sharing-algorithm-cryptography/) to split keys into 3 parts.
@@ -872,7 +872,7 @@ Manages the three-party key system where keys are split between Data Pura Vida a
 
 This is used when a new user (org, company, person) registers with `OrganizationSecurityService `, `DataCipherService ` uses it for creating a specific encryption , used by custodians to access or upload data `DataSetHandler` and for key rotation of 90 days. 
 
-4. CustodianManager
+4. `CustodianManager`
 
 Manages custodian assignments, approval workflows, and multi-party authorization during entity registration, dataset sharing and key operations.
 
@@ -882,7 +882,7 @@ Manages custodian assignments, approval workflows, and multi-party authorization
 - Enforces multi-party approval requirements for sensitive operations
 `DatSetSharingHandler` uses it for dataset sharing approvals, `OrganizarionSecurityService` for access delegation, and `AccessControlService` for permission changes.
 
-5. GeoAccessValidator
+5. `GeoAccessValidator`
 Enforces geographic restrictions, ensuring access only from Costa Rica or whitelisted institutional IPs by `GeoRestrictionMiddleware` for every request and `SecurityManager` for request validation.
 
 - Maintains IP ranges for Costa Rica
@@ -890,7 +890,7 @@ Enforces geographic restrictions, ensuring access only from Costa Rica or whitel
 - Validates client IP against allowed ranges on every request
 - Supports dynamic IP registration for institutions
 
-6. UsageLimitEnforcer
+6. `UsageLimitEnforcer`
 Monitors and enforces usage limits, automatically suspending access when limits are exceeded with `UsageLimitMiddleware` for every request and `QueryExecutionHandler` before query execution.
 - Tracks real-time usage per user/dataset
 - Compares against subscription plan limits
@@ -898,14 +898,14 @@ Monitors and enforces usage limits, automatically suspending access when limits 
 - Provides upgrade options and renewal paths
 
 ### Related Services
-1. OrganizationSecurityService
+1. `OrganizationSecurityService`
 Manages multi-organization accounts and security delegation within organizations through organization management handlers during user access delegation workflows. 
 - Allows single users to manage multiple organizations
 - Enforces custodian approval for access delegation
 - Manages organization-specific security keys
 - Controls user access assignment and revocation
 
-2. DataProtectionService
+2. `DataProtectionService`
 Protects sensitive data from unauthorized access, including platform engineers, in `DatasetHandler` during dataset finalization (after upload)  for datasets that are marked as sensitive through policy configuration.
 - Encrypts sensitive dataset columns with entity-specific keys
 - Creates secure access zones in Snowflake
@@ -913,21 +913,21 @@ Protects sensitive data from unauthorized access, including platform engineers, 
 - Implements controlled data views that prevent bulk downloads
 
 ### Related Middleware
-1. SecurityContextMiddleware
+1. `SecurityContextMiddleware`
 Creates and attaches security context to every incoming request, triggered before any other security validations because it sets up a security foundation for the entire request.
 - Extracts authentication information from request headers
 - Validates session and retrieves user information
 - Creates `SecurityContext` object with user permissions and metadata
 - Attaches context to request for use by subsequent layers
 
-2. GeoRestrictionMiddleware
+2. `GeoRestrictionMiddleware`
 Right after `SecurityContextMiddleware` validates geographic access restrictions on every request.
 - Extracts client IP from request
 - Validates IP against Costa Rica ranges and institutional whitelist
 - Blocks requests from unauthorized geographic locations
 - Logs geographic access attempts for audit
 
-3. UsageLimitMiddleware
+3. `UsageLimitMiddleware`
 Validates usage limits before allowing requests to proceed, applied to requests involving dataset queries or access.
 - Checks current user usage against subscription limits
 - Prevents operations that would exceed limits
@@ -935,7 +935,7 @@ Validates usage limits before allowing requests to proceed, applied to requests 
 - Tracks usage patterns for billing
 
 ### Related Repositories
-1. VaultRepository
+1. `VaultRepository`
 - Manages **custodian** information storage and retrieval through `CustodianManager` using existing vault infrastructure. Stores custodian configurations in AWS Vault, Manages approval requests and responses, Tracks custodian assignment history, Provides custodian lookup functionality. 
 - TripartiteKey: This repo manages tripartite key storage using existing vault infrastructure.
 
@@ -943,7 +943,43 @@ Validates usage limits before allowing requests to proceed, applied to requests 
 
 ### AWS services used to complement the design
 
-#### AWS IAM
+#### **Security Services**
+
+Critical AWS Services (Must Have):
+
+(Explicar AWS SDK)
+
+Core Security:
+
+- AWS Cognito - User authentication & MFA
+- AWS Secrets Manager - Tripartite key storage
+- AWS CloudHSM - Hardware key generation
+- AWS KMS - Dataset encryption
+- AWS IAM: Fine-grained access control, role-based permissions, and service-to-service authentication for all security components, service authentication, role management
+	- Creates entity-specific roles for users and organizations
+	- Manages dataset access policies with fine-grained permissions
+	- Handles role assumption for secure operations
+	- Sets up service roles for Lambda, Fargate, and Snowflake
+ 	-  Creates organization groups and admin policies
+	- Delegates access within organizations with custodian approval
+	- Manages multi-organization permissions for single users
+	- Creates custodian-specific roles with limited permissions
+	- Enforces approval-only access (custodians can approve but not access data)
+	- Manages custodian role assumption for approval workflows
+ 	- `SecurityManager`: Enhanced with IAM role validation, `AccessControlService`: Creates IAM policies for dataset access, `DatasetHandler`: Uses role assumption for operations, `CustodianManager`: Validates IAM permissions for approvals
+
+Network Security:
+
+- AWS WAF - Costa Rica IP filtering
+- AWS VPC - Network isolation
+- AWS Certificate Manager - SSL/TLS
+
+Monitoring & Compliance:
+
+- AWS CloudTrail - Complete audit logging
+- AWS CloudWatch - Real-time monitoring
+- AWS Config - Compliance validation
+
 
 #### AWS Secrets
 
