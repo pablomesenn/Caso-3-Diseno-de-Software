@@ -568,7 +568,7 @@ The monolithic architecture chosen for this project contains layers designed to 
 | **Service Layer**  | 1. Contains the core application logic and business rules. <br> 2. Coordinates operations and validations before or after database and external system interactions. <br> 3. Serves as the intermediary between the Handler Layer and the Repository Layer.              |
 | **Security Layer** | 1. Handles authentication and authorization. <br> 2. Manages access control for system functionalities, data, logs, and user administration. <br> 3. Encapsulates logic for token management (e.g., JWT).                                                           |
 | **Repository Layer** | 1. Encapsulates all database interactions. <br> 2. Provides a clean interface for querying, inserting, updating, or deleting records without exposing database internals to other layers.                                                                            |
-| **AI Layer**       | 1. Contains logic powered by Artificial Intelligence. <br> 2. Analyzes large volumes of data and metadata to detect patterns. <br> 3. Makes autonomous or administrator-assisted decisions to modify or enhance system data. <br> 4. Integrates with AI/ML agents.       |
+| **AI Data Tranformation Layer**       | 1. Contains logic powered by Artificial Intelligence. <br> 2. Analyzes large volumes of data and metadata to detect patterns. <br> 3. Makes autonomous or administrator-assisted decisions to modify or enhance system data. <br> 4. Integrates with AI/ML agents.       |
 
 
 
@@ -714,7 +714,7 @@ Necessity of AWSVaultRepository and CognitoRepository:
 
 `Object design patterns interact with requests or any other trigger`
 
-#### 6. AI Layer
+#### 6. AI Data Transformation Layer
 The AI Layer is responsible for analyzing vast quantities of system data and metadata to autonomously or semi-autonomously make decisions that transform the underlying system database. It uses artificial intelligence strategies such as supervised and unsupervised learning to detect patterns, classify data stimuli, and select appropriate actions. This layer orchestrates agents—intelligent components powered by machine learning models—to execute actions that optimize or evolve the system based on learned insights.To ensure system stability and data integrity, the Compensating Transactions pattern is applied to review all transformations proposed by the AI layer. Each suggested change is validated and reversible, allowing the system to recover gracefully from partial failures or undesired modifications. After successful validation and approval of the actions, the Claim Check pattern is employed to offload the large transformation payloads. This approach separates heavy data from the processing flow by temporarily storing it and passing lightweight references instead. Finally, once transformations are validated and checked, the changes and corresponding data are securely uploaded to the production database in Snowflake, ensuring consistency, scalability, and performance in the final data state.
 
  
@@ -737,22 +737,98 @@ The AI Layer is responsible for analyzing vast quantities of system data and met
 - **DataProcessor** responsible for pulling metadata and datasets from the system. Acts as a bridge between the system’s stored data and the AI Layer.
 
 
-### Serverless Architecture and AWS Services
+### Serverless Architecture
 
-```
-Hardware Demands and Cloud Machine Types
-Impacts frameworks, libraries, and programming languages
+The project’s serverless structure is based on two main principles: leveraging fully managed cloud services and decoupling infrastructure management from application logic. By using services like AWS Fargate for containerized API execution and a combination of tools such as S3, Glue, Cognito, Step Functions, and Snowflake, the system avoids the need to provision or maintain servers.
 
-Implementar versionamiento de endpoints
-```
+This serverless architecture simplifies the need for hardware demands and cloud machine types, as it eliminates the need to manage servers, scaling, or provisioning infrastructure manually—delegating those responsibilities to fully managed cloud services that automatically handle compute, memory, and scaling behind the scenes.
 
-#### Hardware demands and Cloud Machine types
+#### Overview of the architecture
 
-#### AWS services used to complement the design
+This project implements a Serverless Architecture to enable a highly scalable, resilient, and low-maintenance data platform. The system is composed of three primary components:
 
-#### Impactful frameworks, libraries, and programming languages
+- Flask-based API hosted on AWS Fargate
+
+- AWS Managed Services (Cognito, S3, Glue, Step Functions, QuickSight, KMS, etc.)
+
+- Snowflake as the centralized data platform
+
+All of this grounded in the following **principles**.
+
+- No infrastucture management
+
+- Event-driven processing
+
+-  Auto-scalling and pay-per-use
+
+#### Architecture Components and Design
+
+##### 1. Flask API with AWS Fargate (Containerized Serverless)
+
+- AWS Fargate enables serverless containers by abstracting EC2 management.
+- The Flask API is packaged into a Docker container and deployed with Fargate using ECS, providing:
+	- Scalable RESTful endpoints
+	- Stateless compute execution
+	- Integration with other AWS services
+
+##### 2. AWS Serverless Services
+
+The project uses a suite of AWS services that collectively handle authentication, storage, orchestration, analytics, and encryption—all without managing servers.
+
+
+| **Service**            | **Purpose**                                                        |
+| ---------------------- | ------------------------------------------------------------------ |
+| **Amazon Cognito**     | Serverless user authentication and authorization                   |
+| **Amazon S3**          | Serverless object storage for files, data inputs, and outputs      |
+| **AWS Glue**           | Serverless ETL for processing and transforming data into Snowflake |
+| **AWS Step Functions** | Serverless orchestration of ETL and data pipelines                 |
+| **Amazon QuickSight**  | Serverless BI for dashboards and data visualization                |
+| **AWS KMS**            | Key management for encryption of sensitive data                    |
+
+##### 3. Snowflake – Serverless Data Platform
+
+Snowflake complements the architecture by providing: 
+
+- Serverless SQL query execution
+- Automatic scaling of compute warehouses
+- Zero-managment data sharing (ability to share live, ready-to-query data across accounts and organizations without needing to manage infrastructure, data movement, or replication manually.)
+- Integration with AWS via Snowpipe, external stages, and S3
+
+#### Example workflow for a simple file upload
+
+![alt text](image.png)
+
+### AWS services used to complement the design
+
+#### AWS IAM
+
+#### AWS Secrets
+
+#### AWS KMS
+
+#### AWS CloudWatch
+
+#### AWS Vault 
+ 
+#### AWS Fargate
+ 
+#### AWS QuickSight
+
+#### AWS EventBridge
+
+#### AWS StepFunctions
+
+#### AWS Lambda
+
+#### AWS Glue
+
+#### Amazon S3
+
+#### Amazon Cognito
 
 ### Snowflake Integration
+
+#### Cortex
 
 ## Data Layer Design
 
