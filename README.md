@@ -592,7 +592,61 @@ The monolithic architecture chosen for this project contains layers designed to 
 | **Repository Layer**       | - Encapsulates all database access.<br>- Provides clean interfaces for CRUD operations.<br><br>**Key Components:**<br>- `SFRepository`: Snowflake operations<br>- `S3Repository`: Dataset and artifact storage<br>- `AWSVaultRepository`: Secret and identity management |
 | **AI Data Transformation Layer** | - Hosts AI-driven logic for data processing.<br>- Detects patterns in data and metadata.<br>- Makes autonomous or human-assisted decisions to modify or enrich data.<br>- Integrates with AI/ML agents. |
 
+### Serverless Architecture
 
+The project’s serverless structure is based on two main principles: leveraging fully managed cloud services and decoupling infrastructure management from application logic. By using services like AWS Fargate for containerized API execution and a combination of tools such as S3, Glue, Cognito, Step Functions, and Snowflake, the system avoids the need to provision or maintain servers.
+
+This serverless architecture simplifies the need for hardware demands and cloud machine types, as it eliminates the need to manage servers, scaling, or provisioning infrastructure manually—delegating those responsibilities to fully managed cloud services that automatically handle compute, memory, and scaling behind the scenes.
+
+#### Overview of the architecture
+
+This project implements a Serverless Architecture to enable a highly scalable, resilient, and low-maintenance data platform. The system is composed of three primary components:
+
+- Flask-based API hosted on AWS Fargate
+
+- AWS Managed Services (Cognito, S3, Glue, Step Functions, QuickSight, KMS, etc.)
+
+- Snowflake as the centralized data platform
+
+All of this grounded in the following **principles**.
+
+- No infrastucture management
+
+- Event-driven processing
+
+-  Auto-scalling and pay-per-use
+
+#### Architecture Components and Design
+
+##### 1. Flask API with AWS Fargate (Containerized Serverless)
+
+- AWS Fargate enables serverless containers by abstracting EC2 management.
+- The Flask API is packaged into a Docker container and deployed with Fargate using ECS, providing:
+	- Scalable RESTful endpoints
+	- Stateless compute execution
+	- Integration with other AWS services
+
+##### 2. AWS Serverless Services
+
+The project uses a suite of AWS services that collectively handle authentication, storage, orchestration, analytics, and encryption—all without managing servers.
+
+
+| **Service**            | **Purpose**                                                        |
+| ---------------------- | ------------------------------------------------------------------ |
+| **Amazon Cognito**     | Serverless user authentication and authorization                   |
+| **Amazon S3**          | Serverless object storage for files, data inputs, and outputs      |
+| **AWS Glue**           | Serverless ETL for processing and transforming data into Snowflake |
+| **AWS Step Functions** | Serverless orchestration of ETL and data pipelines                 |
+| **Amazon QuickSight**  | Serverless BI for dashboards and data visualization                |
+| **AWS KMS**            | Key management for encryption of sensitive data                    |
+
+##### 3. Snowflake – Serverless Data Platform
+Snowflake complements the architecture by providing: 
+
+- Serverless SQL query execution
+- Automatic scaling of compute warehouses
+- Zero-managment data sharing (ability to share live, ready-to-query data across accounts and organizations without needing to manage infrastructure, data movement, or replication manually.)
+- Integration with AWS via Snowpipe, external stages, and S3
 
 ## API Endpoints
 
@@ -703,6 +757,10 @@ GET    /subscriptions                   # Get user subscriptions
 ## Key Workflows
 
 ### 1. Dataset Upload & Encryption
+
+Example workflow for a simple file upload
+
+![alt text](image.png)
 
 ![image](https://github.com/user-attachments/assets/d5839f90-2cfd-4438-82fb-278102f37f5d)
 
@@ -952,67 +1010,6 @@ Validates usage limits before allowing requests to proceed, applied to requests 
 1. VaultRepository
 - Manages **custodian** information storage and retrieval through `CustodianManager` using existing vault infrastructure. Stores custodian configurations in AWS Vault, Manages approval requests and responses, Tracks custodian assignment history, Provides custodian lookup functionality. 
 - TripartiteKey: This repo manages tripartite key storage using existing vault infrastructure.
-
-### Serverless Architecture
-
-The project’s serverless structure is based on two main principles: leveraging fully managed cloud services and decoupling infrastructure management from application logic. By using services like AWS Fargate for containerized API execution and a combination of tools such as S3, Glue, Cognito, Step Functions, and Snowflake, the system avoids the need to provision or maintain servers.
-
-This serverless architecture simplifies the need for hardware demands and cloud machine types, as it eliminates the need to manage servers, scaling, or provisioning infrastructure manually—delegating those responsibilities to fully managed cloud services that automatically handle compute, memory, and scaling behind the scenes.
-
-#### Overview of the architecture
-
-This project implements a Serverless Architecture to enable a highly scalable, resilient, and low-maintenance data platform. The system is composed of three primary components:
-
-- Flask-based API hosted on AWS Fargate
-
-- AWS Managed Services (Cognito, S3, Glue, Step Functions, QuickSight, KMS, etc.)
-
-- Snowflake as the centralized data platform
-
-All of this grounded in the following **principles**.
-
-- No infrastucture management
-
-- Event-driven processing
-
--  Auto-scalling and pay-per-use
-
-#### Architecture Components and Design
-
-##### 1. Flask API with AWS Fargate (Containerized Serverless)
-
-- AWS Fargate enables serverless containers by abstracting EC2 management.
-- The Flask API is packaged into a Docker container and deployed with Fargate using ECS, providing:
-	- Scalable RESTful endpoints
-	- Stateless compute execution
-	- Integration with other AWS services
-
-##### 2. AWS Serverless Services
-
-The project uses a suite of AWS services that collectively handle authentication, storage, orchestration, analytics, and encryption—all without managing servers.
-
-
-| **Service**            | **Purpose**                                                        |
-| ---------------------- | ------------------------------------------------------------------ |
-| **Amazon Cognito**     | Serverless user authentication and authorization                   |
-| **Amazon S3**          | Serverless object storage for files, data inputs, and outputs      |
-| **AWS Glue**           | Serverless ETL for processing and transforming data into Snowflake |
-| **AWS Step Functions** | Serverless orchestration of ETL and data pipelines                 |
-| **Amazon QuickSight**  | Serverless BI for dashboards and data visualization                |
-| **AWS KMS**            | Key management for encryption of sensitive data                    |
-
-##### 3. Snowflake – Serverless Data Platform
-
-Snowflake complements the architecture by providing: 
-
-- Serverless SQL query execution
-- Automatic scaling of compute warehouses
-- Zero-managment data sharing (ability to share live, ready-to-query data across accounts and organizations without needing to manage infrastructure, data movement, or replication manually.)
-- Integration with AWS via Snowpipe, external stages, and S3
-
-#### Example workflow for a simple file upload
-
-![alt text](image.png)
 
 ### AWS services used to complement the design
 
