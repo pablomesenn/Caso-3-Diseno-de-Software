@@ -11,6 +11,8 @@ Members: Pablo Mesén, Alonso Durán Muñoz, Ana Hernández Muñoz, Jesus Valver
 - [SYSTEM ANALYSIS](#SYSTEM-ANALYSIS)
 - [LEGAL AND REGULATORY FRAMEWORK](#LEGAL-AND-REGULATORY-FRAMEWORK)
 - [STACK](#STACK)
+- [FRONTEND](#FRONTEND)
+- [BACKEND](#BACKEND)
 
 
 # DESCRIPTION
@@ -567,7 +569,7 @@ Data Pura Vida is a secure data platform for Costa Rican institutions, providing
 - **AI-Powered Analytics**: Natural language queries and automated insights
 - **Governed Data Sharing**: Multi-party approval workflows with custodian controls
 - **Geographic Compliance**: Costa Rica-specific access controls and data residency
-- 
+  
 ### API Design and Architecture
 
 The chosen approach for the API architecture is a Monolithic architecture. Meaning, the entire application (UI, business logic, data access, integrations) is built, deployed and managed as a single, cohesive unit. Components within the monolith typically communicate directly through method calls or internal APIs.
@@ -753,80 +755,6 @@ POST   /purchase/datasets/{id}          # Purchase dataset access
 GET    /billing/usage                   # Get usage metrics
 GET    /subscriptions                   # Get user subscriptions
 ```
-
-## Key Workflows
-
-### 1. Dataset Upload & Encryption
-
-Example workflow for a simple file upload
-
-![alt text](image.png)
-
-![image](https://github.com/user-attachments/assets/d5839f90-2cfd-4438-82fb-278102f37f5d)
-
-
-![image](https://github.com/user-attachments/assets/102f5e7b-8904-43d8-8c21-770ed9119730)
-
-![image](https://github.com/user-attachments/assets/751408d1-674d-457b-b176-c10d02f73df6)
-
-
-The AI Layer handles large-scale data and metadata processing to determine and apply intelligent system transformations. It leverages machine learning techniques, both supervised and unsupervised, to identify patterns, classify relevant stimuli, and delegate transformation actions. These actions are executed by a coordinated set of agents, each designed for specific data operations such as merging, splitting, or appending. To ensure transformation integrity, proposed actions undergo a review process using a compensating transactions mechanism. This approach validates each action and ensures reversibility, enabling consistent rollback in case of errors or partial execution. For operations involving significant data volumes, the claim check pattern is used to temporarily externalize payloads and replace them with lightweight references within the processing flow.
-
-After validation, transformations are committed to the production environment through a high-throughput, cloud-native data warehousing solution, ensuring durable and performant integration.
- 
-**Design Patterns:** Learning based patttern for AI, claim check pattern, compensating transaction pattern
-**Principles Applied:** Single Responsability Principle, DRY
-
-##### Core Components
-
-- **Stimuli**  
-  Represent contextualized input elements within the system. Each instance holds associated metadata and runtime values, providing interfaces to access descriptors, verify content integrity, and extract meaningful signals.  
-  - `get_metadata() -> Dict`  
-  - `is_valid() -> bool`
-
-- **StimulusSelector**  
-  Defines classification strategies to isolate meaningful input candidates. It maintains a registry of rules and supports dynamic updates.  
-  - `classifyAction(inputs: List[Stimuli]) -> List[Stimuli]`  
-  - `add_rule(rule: Rule) -> void`  
-  - `clear_rules() -> void`
-
-- **Executor**  
-  Orchestrates the full lifecycle of transformation. It evaluates stimuli, determines the required transformation type, and delegates execution to the appropriate agent.  
-  - `execute(inputs: List[Stimuli]) -> Output`  
-  - `detect_action(inputs: List[Stimuli]) -> str`  
-  - `select_agent(action: str) -> Agent`
-
-- **Agent**  
-  Encapsulates operational intelligence for a specific transformation. These units consume selected stimuli and apply a bounded action informed by a learning model.  
-  - `action(data: List[Stimuli]) -> Output`
-
-- **UnionAgent / AppendAgent / SplitAgent / ...**  
-  Specializations of `Agent`, each tailored to a defined category of transformation logic.
-
-- **MLModel**  
-  Abstracts the learning engine used within agents. It specifies the learning approach and model configuration.
-
-- **SupervisedLearning**  
-  Supports labeled data processing to detect recurring patterns and correlate inputs to known outcomes.
-
-- **UnsupervisedLearning**  
-  Explores unlabeled inputs to reveal latent clusters and infer relationships through similarity analysis.
-
-- **DataProcessor**  
-  Intermediates between the AI Layer and the broader system. It extracts structured metadata and operational data required for contextual learning and transformation.
-  
-### 2. Secure Data Sharing with Custodian Approval
-
-![image](https://github.com/user-attachments/assets/da4b0a49-1cdc-4904-bb44-a6315e683853)
-
-### 3. AI-Powered Query Translation
-
-![image](https://github.com/user-attachments/assets/9440c17d-f9d8-438f-87ea-667b7f0cac30)
-
-### 4. Geographic Access Control
-
-![image](https://github.com/user-attachments/assets/7a49013a-36e5-46e2-a19b-cce6265764c0)
-
 ## Important Classes & Components
 
 ### Core Services
@@ -1011,6 +939,8 @@ Validates usage limits before allowing requests to proceed, applied to requests 
 - Manages **custodian** information storage and retrieval through `CustodianManager` using existing vault infrastructure. Stores custodian configurations in AWS Vault, Manages approval requests and responses, Tracks custodian assignment history, Provides custodian lookup functionality. 
 - TripartiteKey: This repo manages tripartite key storage using existing vault infrastructure.
 
+## THIRDPARTY SERVICES
+
 ### AWS services used to complement the design
 
 #### AWS IAM
@@ -1042,6 +972,80 @@ Validates usage limits before allowing requests to proceed, applied to requests 
 ### Snowflake Integration
 
 #### Cortex
+
+## Key Workflows
+
+### 1. Dataset Upload & Encryption
+
+Example workflow for a simple file upload
+
+![alt text](image.png)
+
+![image](https://github.com/user-attachments/assets/d5839f90-2cfd-4438-82fb-278102f37f5d)
+
+
+![image](https://github.com/user-attachments/assets/102f5e7b-8904-43d8-8c21-770ed9119730)
+
+![image](https://github.com/user-attachments/assets/751408d1-674d-457b-b176-c10d02f73df6)
+
+
+The AI Layer handles large-scale data and metadata processing to determine and apply intelligent system transformations. It leverages machine learning techniques, both supervised and unsupervised, to identify patterns, classify relevant stimuli, and delegate transformation actions. These actions are executed by a coordinated set of agents, each designed for specific data operations such as merging, splitting, or appending. To ensure transformation integrity, proposed actions undergo a review process using a compensating transactions mechanism. This approach validates each action and ensures reversibility, enabling consistent rollback in case of errors or partial execution. For operations involving significant data volumes, the claim check pattern is used to temporarily externalize payloads and replace them with lightweight references within the processing flow.
+
+After validation, transformations are committed to the production environment through a high-throughput, cloud-native data warehousing solution, ensuring durable and performant integration.
+ 
+**Design Patterns:** Learning based patttern for AI, claim check pattern, compensating transaction pattern
+**Principles Applied:** Single Responsability Principle, DRY
+
+##### Core Components
+
+- **Stimuli**  
+  Represent contextualized input elements within the system. Each instance holds associated metadata and runtime values, providing interfaces to access descriptors, verify content integrity, and extract meaningful signals.  
+  - `get_metadata() -> Dict`  
+  - `is_valid() -> bool`
+
+- **StimulusSelector**  
+  Defines classification strategies to isolate meaningful input candidates. It maintains a registry of rules and supports dynamic updates.  
+  - `classifyAction(inputs: List[Stimuli]) -> List[Stimuli]`  
+  - `add_rule(rule: Rule) -> void`  
+  - `clear_rules() -> void`
+
+- **Executor**  
+  Orchestrates the full lifecycle of transformation. It evaluates stimuli, determines the required transformation type, and delegates execution to the appropriate agent.  
+  - `execute(inputs: List[Stimuli]) -> Output`  
+  - `detect_action(inputs: List[Stimuli]) -> str`  
+  - `select_agent(action: str) -> Agent`
+
+- **Agent**  
+  Encapsulates operational intelligence for a specific transformation. These units consume selected stimuli and apply a bounded action informed by a learning model.  
+  - `action(data: List[Stimuli]) -> Output`
+
+- **UnionAgent / AppendAgent / SplitAgent / ...**  
+  Specializations of `Agent`, each tailored to a defined category of transformation logic.
+
+- **MLModel**  
+  Abstracts the learning engine used within agents. It specifies the learning approach and model configuration.
+
+- **SupervisedLearning**  
+  Supports labeled data processing to detect recurring patterns and correlate inputs to known outcomes.
+
+- **UnsupervisedLearning**  
+  Explores unlabeled inputs to reveal latent clusters and infer relationships through similarity analysis.
+
+- **DataProcessor**  
+  Intermediates between the AI Layer and the broader system. It extracts structured metadata and operational data required for contextual learning and transformation.
+  
+### 2. Secure Data Sharing with Custodian Approval
+
+![image](https://github.com/user-attachments/assets/da4b0a49-1cdc-4904-bb44-a6315e683853)
+
+### 3. AI-Powered Query Translation
+
+![image](https://github.com/user-attachments/assets/9440c17d-f9d8-438f-87ea-667b7f0cac30)
+
+### 4. Geographic Access Control
+
+![image](https://github.com/user-attachments/assets/7a49013a-36e5-46e2-a19b-cce6265764c0)
+
 
 ## Data Layer Design
 
