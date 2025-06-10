@@ -715,26 +715,54 @@ Necessity of AWSVaultRepository and CognitoRepository:
 `Object design patterns interact with requests or any other trigger`
 
 #### 6. AI Data Transformation Layer
-The AI Layer is responsible for analyzing vast quantities of system data and metadata to autonomously or semi-autonomously make decisions that transform the underlying system database. It uses artificial intelligence strategies such as supervised and unsupervised learning to detect patterns, classify data stimuli, and select appropriate actions. This layer orchestrates agents—intelligent components powered by machine learning models—to execute actions that optimize or evolve the system based on learned insights.To ensure system stability and data integrity, the Compensating Transactions pattern is applied to review all transformations proposed by the AI layer. Each suggested change is validated and reversible, allowing the system to recover gracefully from partial failures or undesired modifications. After successful validation and approval of the actions, the Claim Check pattern is employed to offload the large transformation payloads. This approach separates heavy data from the processing flow by temporarily storing it and passing lightweight references instead. Finally, once transformations are validated and checked, the changes and corresponding data are securely uploaded to the production database in Snowflake, ensuring consistency, scalability, and performance in the final data state.
+The AI Layer handles large-scale data and metadata processing to determine and apply intelligent system transformations. It leverages machine learning techniques, both supervised and unsupervised, to identify patterns, classify relevant stimuli, and delegate transformation actions. These actions are executed by a coordinated set of agents, each designed for specific data operations such as merging, splitting, or appending.
+
+To ensure transformation integrity, proposed actions undergo a review process using a compensating transactions mechanism. This approach validates each action and ensures reversibility, enabling consistent rollback in case of errors or partial execution. For operations involving significant data volumes, the claim check pattern is used to temporarily externalize payloads and replace them with lightweight references within the processing flow.
+
+After validation, transformations are committed to the production environment through a high-throughput, cloud-native data warehousing solution, ensuring durable and performant integration.
 
  
 **Design Patterns:** Learning based patttern for AI, claim check pattern, compensating transaction pattern
 **Principles Applied:** Single Responsability Principle, DRY
 
 
-- **Stimuli** represents data inputs or events the system must respond to. Stores metadata and values. Provides methods for retrieving metadata, extracting values, and validating the stimulus.
-	- **Principle Methods** `get_metadata() -> Dict`, `is_valid() -> bool`
-- **StimulusSelector** defines strategies to select relevant stimuli for processing. Holds classification rules and allows adding or clearing them.
-	- **Principle Methods** `classifyAction(inputs: List[Stimuli]) -> List[Stimuli]`, `add_rule(rule: Rule) -> void`, `clear_rules() -> void`
-- **Executor** core orchestrator of the AI Layer. Executes actions based on selected stimuli using available agents. Detects the type of action required and delegates it to the appropriate agent.
-	- **Principle Methods** `execute(inputs: List[Stimuli]) -> Output`, `detect_action(inputs: List[Stimuli]) -> str`, `select_agent(action: str) -> Agent`
-- **Agent** represents a functional AI unit powered by an ML model. Executes specific actions using a list of stimuli.
-	- **Principle Methods** `action(data: List[Stimuli]) -> Output`
-- **UnionAgent/AppendAgent/SplitAgent/...** specialized agent types (polymorphic) designed to perform specific types of data transformation actions, such as merging datasets, appending information, or splitting content.
-- **MLModel** abstracts machine learning logic. Stores model type and learning strategy.
-- **SupervisedLearning** implements a concrete learning strategy for labeled data. Capable of looking for patterns and finding similar documents.
-- **UnsupervisedLearning** implements learning strategy for unlabeled data. Also looks for patterns and similar documents but without supervision.
-- **DataProcessor** responsible for pulling metadata and datasets from the system. Acts as a bridge between the system’s stored data and the AI Layer.
+##### Core Components
+
+- **Stimuli**  
+  Represent contextualized input elements within the system. Each instance holds associated metadata and runtime values, providing interfaces to access descriptors, verify content integrity, and extract meaningful signals.  
+  - `get_metadata() -> Dict`  
+  - `is_valid() -> bool`
+
+- **StimulusSelector**  
+  Defines classification strategies to isolate meaningful input candidates. It maintains a registry of rules and supports dynamic updates.  
+  - `classifyAction(inputs: List[Stimuli]) -> List[Stimuli]`  
+  - `add_rule(rule: Rule) -> void`  
+  - `clear_rules() -> void`
+
+- **Executor**  
+  Orchestrates the full lifecycle of transformation. It evaluates stimuli, determines the required transformation type, and delegates execution to the appropriate agent.  
+  - `execute(inputs: List[Stimuli]) -> Output`  
+  - `detect_action(inputs: List[Stimuli]) -> str`  
+  - `select_agent(action: str) -> Agent`
+
+- **Agent**  
+  Encapsulates operational intelligence for a specific transformation. These units consume selected stimuli and apply a bounded action informed by a learning model.  
+  - `action(data: List[Stimuli]) -> Output`
+
+- **UnionAgent / AppendAgent / SplitAgent / ...**  
+  Specializations of `Agent`, each tailored to a defined category of transformation logic.
+
+- **MLModel**  
+  Abstracts the learning engine used within agents. It specifies the learning approach and model configuration.
+
+- **SupervisedLearning**  
+  Supports labeled data processing to detect recurring patterns and correlate inputs to known outcomes.
+
+- **UnsupervisedLearning**  
+  Explores unlabeled inputs to reveal latent clusters and infer relationships through similarity analysis.
+
+- **DataProcessor**  
+  Intermediates between the AI Layer and the broader system. It extracts structured metadata and operational data required for contextual learning and transformation.
 
 
 ### Serverless Architecture
@@ -822,9 +850,9 @@ Snowflake complements the architecture by providing:
 
 #### AWS Glue
 
-#### Amazon S3
+#### AWS S3
 
-#### Amazon Cognito
+#### AWS Cognito
 
 ### Snowflake Integration
 
@@ -842,14 +870,20 @@ Snowflake complements the architecture by providing:
 
 #### d) Tenancy and Data Security
 
-### Object-Oriented Design - Programming
+#### e) Recovery and Fault Tolerance:
 
 ### Object-Oriented Design - Programming
+
 #### a) Transactionality
+
 #### b) Use of ORM
+
 #### c) Connection Pooling
+
 #### d) Use of Cache
+
 #### e) Drivers
+
 #### f) Data Design
 
 ```
