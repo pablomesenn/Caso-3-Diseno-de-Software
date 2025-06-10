@@ -717,8 +717,8 @@ Necessity of AWSVaultRepository and CognitoRepository:
 #### 6. AI Layer
 The AI Layer is responsible for analyzing vast quantities of system data and metadata to autonomously or semi-autonomously make decisions that transform the underlying system database. It uses artificial intelligence strategies such as supervised and unsupervised learning to detect patterns, classify data stimuli, and select appropriate actions. This layer orchestrates agents—intelligent components powered by machine learning models—to execute actions that optimize or evolve the system based on learned insights.To ensure system stability and data integrity, the Compensating Transactions pattern is applied to review all transformations proposed by the AI layer. Each suggested change is validated and reversible, allowing the system to recover gracefully from partial failures or undesired modifications. After successful validation and approval of the actions, the Claim Check pattern is employed to offload the large transformation payloads. This approach separates heavy data from the processing flow by temporarily storing it and passing lightweight references instead. Finally, once transformations are validated and checked, the changes and corresponding data are securely uploaded to the production database in Snowflake, ensuring consistency, scalability, and performance in the final data state.
 
-
-**Design Patterns:** Learning based patttern for AI
+ 
+**Design Patterns:** Learning based patttern for AI, claim check pattern, compensating transaction pattern
 **Principles Applied:** Single Responsability Principle, DRY
 
 
@@ -743,15 +743,7 @@ The AI Layer is responsible for analyzing vast quantities of system data and met
 Hardware Demands and Cloud Machine Types
 Impacts frameworks, libraries, and programming languages
 
-Service vs Microservice - Planning of migrate to microservice
-API Gateway (Security & Scalability)?
-
-Definir arquitectura monolítica con migración a microservicios
 Implementar versionamiento de endpoints
-Crear módulos de autenticación y autorización
-Diseñar gestión de credenciales y cifrado
-Implementar auditoría y trazabilidad completa
-Crear endpoints para gestión de datasets
 ```
 
 #### Hardware demands and Cloud Machine types
@@ -816,7 +808,6 @@ Validacion de formatos de datos
 Scanners de documentos (Naciona, extrangeros, 3rd party services)
 Diseno de DB: Cada cloud tiene al menos una maquina de workflows
 ```
-
 
 ### Datalake
 
