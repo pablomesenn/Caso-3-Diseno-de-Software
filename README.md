@@ -531,8 +531,27 @@ The backend can map these to your platform’s internal permissions. This mappin
 ![Agile Product Roadmap](https://github.com/user-attachments/assets/0a7dd9a8-ae89-4567-83ee-db3428ee22ad)
 
 ### POC MFA
+## Clean Architecture
+Clean Architecture is a software design pattern that organizes code into clear, separated layers based on how abstract or concrete the code is. Is especially effective in large-scale, long-living, and mission-critical systems, like this platform.
+The main advantages are:
+- Isolate business rules from frameworks, UI, and external services.
+- Makes the application easier to test, extend, and maintain.
+- Allows replacing pieces (frameworks, APIs, databases) without changing core logic.
+  The design will consist of four layers:
+  1. Presentation Layer (UI Layer): Displays UI and captures user input. Delegates all logic.
+  2. Application Layer (Use Cases): Coordinates tasks across domain + infrastructure. No UI or framework code.
+  3. Domain Layer (Entities): Models and rules of your system. No dependencies on any framework.
+  4. Infraestructure Layer (Adapters): External world. APIs, DBs, Storage, Frameworks.
 
+## Visual Components
 
+## Object Design Patterns
+
+## External Services
+
+## Structure
+
+## FE Architecture Diagram
 
 # BACKEND
 
