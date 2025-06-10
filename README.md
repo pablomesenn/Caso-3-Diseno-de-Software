@@ -555,7 +555,14 @@ The backend can map these to your platform’s internal permissions. This mappin
 
 
 # BACKEND
+Data Pura Vida is a secure data platform for Costa Rican institutions, providing dataset management, AI-powered analytics, and governed data sharing with enterprise-grade security controls.
 
+### Core Capabilities
+- **Secure Dataset Management**: Upload, encrypt, and manage sensitive datasets
+- **AI-Powered Analytics**: Natural language queries and automated insights
+- **Governed Data Sharing**: Multi-party approval workflows with custodian controls
+- **Geographic Compliance**: Costa Rica-specific access controls and data residency
+- 
 ### API Design and Architecture
 
 ![image](https://github.com/user-attachments/assets/a45c5c49-22f3-4361-b8e1-7931298a7524)
@@ -574,168 +581,141 @@ The monolithic architecture chosen for this project contains layers designed to 
 
 | **Layer**          | **Responsibilities**                                                                                                                                                                                                                                              |
 |--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Handler Layer**  | 1. Acts as the entry point for incoming HTTP requests. <br> 2. Parses requests, extracts parameters, and delegates work to the Service Layer. <br> 3. Formats and returns HTTP responses to the client. <br> 4. Handles routing and basic input validation (with Middleware support). |
-| **Middleware Layer** | 1. Handles cross-cutting concerns such as logging, request parsing, authentication, error handling, and rate limiting.                                                                                                                                             |
-| **Service Layer**  | 1. Contains the core application logic and business rules. <br> 2. Coordinates operations and validations before or after database and external system interactions. <br> 3. Serves as the intermediary between the Handler Layer and the Repository Layer.              |
+| **Handler Layer**  | 1. HTTP request/response handling and endpoint orchestration. <br> 2. The entry point for all API requests. Handlers parse HTTP inputs, delegate to services, and format responses. Each handler focuses on a specific domain area. <br> **Key Responsibilities**:<br> - HTTP request parsing and validation <br>- Authentication context extraction <br>- Service layer coordination <br>- Response formatting <br>- Error handling
+|
+| **Middleware Layer** | Cross-cutting concerns applied to request/response pipeline.<br> Middleware components execute in a chain before and after handlers, implementing shared functionality across all endpoints. <br>**Key Components**:<br> - `SecurityContextMiddleware`: Creates security context for every request<br>- `GeoRestrictionMiddleware`: Enforces Costa Rica IP restrictions<br>- `AuthenticationMiddleware`: Validates JWT tokens and sessions <br> - `UsageLimitMiddleware`: Enforces subscription and query limits <br>- `AuditMiddleware`: Logs all operations for compliance                                                                                                                                             |
+| **Service Layer**  | 1. Contains the core application logic and business rules. <br> 2. Coordinates operations and validations before or after database and external system interactions. <br> 3. Serves as the intermediary between the Handler Layer and the Repository Layer. <br> **Key Responsibilities**:<br>- Business rule enforcement<br>- Multi-repository coordination<br>- External service integration <br>- Transaction management <br> - Domain-specific validations              |
 | **Security Layer** | 1. Handles authentication and authorization. <br> 2. Manages access control for system functionalities, data, logs, and user administration. <br> 3. Encapsulates logic for token management (e.g., JWT).                                                           |
-| **Repository Layer** | 1. Encapsulates all database interactions. <br> 2. Provides a clean interface for querying, inserting, updating, or deleting records without exposing database internals to other layers.                                                                            |
+| **Repository Layer** | 1. Encapsulates all database interactions. <br> 2. Provides a clean interface for querying, inserting, updating, or deleting records without exposing database internals to other layers.<br> **Key Components**: <br>- `SFRepository`: Snowflake data warehouse operations <br>- `S3Repository`: Object storage for datasets and artifacts <br>- `AWSVaultRepository`: Secrets/Cognito and key management                                                                          |
 | **AI Data Tranformation Layer**       | 1. Contains logic powered by Artificial Intelligence. <br> 2. Analyzes large volumes of data and metadata to detect patterns. <br> 3. Makes autonomous or administrator-assisted decisions to modify or enhance system data. <br> 4. Integrates with AI/ML agents.       |
 
 
 
 
-#### 1. Handler Layer
-This is the entry point for all the HTTP requests (REST), exposes HTTP endpoints, orchestrates middleware execution, delegates business logic to the Service Layer, applies middleware for cross-cutting concerns, returns formatted HTTP responses.
+## API Endpoints
 
-**Design Patterns**: Controller Pattern, Template Method Pattern (via BaseHandler).
-**Principles Applied**: Code structure follows the Single Responsibility Principle by strictly separating concerns (HTTP, auth, business logic), and encourages DRY via shared base classes and middleware use, Open/Closed Principle (extensible handler logic).
+### Authentication & Sessions
+```
+POST   /auth/login              # User authentication
+POST   /auth/logout             # Session termination
+POST   /auth/refresh            # Token refresh
+GET    /auth/session/validate   # Session validation
+```
 
-- **BaseHandler**: initializes a `middlewareChain` and a `logger`, exposes methods `executeMiddleware()`  to run pre- and post-processing hooks, `createSuccessResponse()` to build a standard OK response with payload, and `createErrorResponse()` to format errors into appropriate HTTP messages. Concrete handlers override the abstract `handle()` method to implement endpoint-specific behavior.
+**Example Login Request**:
+```json
+{
+  "email": "analyst@itcr.ac.cr",
+  "password": "vivalaliga",
+  "organization_id": "itcr_pollito"
+}
+```
 
-- **AuthHandler** focuses on user authentication workflows. Its key methods—`login()`, `logout()`, `validateSession()`, and `refreshToken()`—delegate credential checks to `AuthService`, record actions in `AuditService`, and manage session state via `SessionService`. Errors like invalid credentials or expired tokens are captured and returned through the base error flow.
+**Example Login Response**:
+```json
+{
+  "access_token": "sdgklhaeouirhgpaorgergh...",
+  "refresh_token": "erthertwhwertgerg...",
+  "expires_in": 3600,
+  "user": {
+    "id": "alonso",
+    "email": "alduran@estudiantec.cr",
+    "organizations": ["itcr_pollito"],
+    "permissions": ["dataset.read", "query.execute"]
+  }
+}
+```
 
-- **DatasetSharingHandler** manages granting and revoking permissions on datasets. Methods such as `shareDataset()` and `revokeAccess()` call `AccessControlService` to update policies in Snowflake, while `setRowLevelCriteria()` and `validateRowAccess()` enforce fine-grained security via `RowLevelSecurityService`.
+### Dataset Management
+```
+POST   /datasets/upload/init            		# Initialize dataset upload
+POST   /datasets/upload/{session}/chunk 		# Upload data chunk
+POST   /datasets/upload/{session}/finalize 		# Complete upload
+GET    /datasets                        		# List available datasets
+GET    /datasets/{id}                   		# Get dataset details
+DELETE /datasets/{id}                   		# Delete dataset
+GET    /datasets/{id}/preview           		# Get data sample
+GET    /datasets/{id}/schema            		# Get dataset schema
+```
 
-- **DatasetHandler** orchestrates dataset lifecycle operations: initialization (`initUpload()`), chunked uploads (`uploadChunk()`, `finalizeUpload()`), status queries (`getUploadStatus()`), and cleanup (`cancelUpload()`, `deleteDataset()`). It uses `UploadSessionService` to track progress, `StorageService` for S3 interactions, `ValidationService` to verify data integrity, and `DataCipherService` for encryption.
+**Example Dataset Upload Initialization**:
+```json
+{
+  "name": "Costa Rica Padron Electoral",
+  "description": "blah blah blah",
+  "classification": "SENSITIVE",
+  "file_size": 420,
+  "file_hash": "...",
+  "schema": {
+    "columns": [
+      {"name": "province", "type": "string", "nullable": false},
+      {"name": "population", "type": "integer", "nullable": false}
+    ]
+  }
+}
+```
 
-- **DatasetDiscoveryHandler** provides dataset search, browsing, and discovery capabilities, when users explore available datasets through the platform UI. Uses Uses `DatasetService`, `MetadataService`, and `AccessControlService`. And It’s key methods are 
-`searchDatasets()`: Full-text search across dataset metadata
-`browseByCategory()`: Browse datasets by category/domain
-`getRecommendations()`: Get personalized dataset recommendations
-`getDatasetCatalog()`: Retrieve dataset catalog with filtering
+### Query Execution
+```
+POST   /queries/execute         # Execute SQL query
+GET    /queries/{id}/status     # Check query status
+GET    /queries/{id}/results    # Get query results
+DELETE /queries/{id}            # Cancel running query
+GET    /queries/history         # Get user's query history
+```
 
-- **DatasetPreviewHandler** provides data samples and previews while respecting access controls, when users want to preview data before purchasing access. Uses `ViewService` and `AccessControlService`. Its key methods are:
-`getDatasetPreview()`: Get limited data sample for free users
-`getDatasetSchema()`: Get dataset schema information
-`getDatasetStats()`: Get statistical summary of dataset
+**Example Query Execution**:
+```json
+{
+  "sql": "SELECT province, AVG(population) FROM padron_2025 GROUP BY province",
+  "dataset_ids": ["dataset_vivalaliga"],
+  "output_format": "json",
+  "limit": 1000
+}
+```
 
-- **QueryExecutionHandler** handles SQL query execution against datasets and views, as the primary interface for data analysis and exploration. Uses `AIChatService` for query translation and `AccessControlService`. Its key methods are:
- `executeQuery()`: Execute SQL queries with user limits
- `getQueryStatus()`: Check status of long-running queries
- `cancelQuery()`: Cancel running queries
- `getQueryResults()`: Retrieve query results with pagination
- `getQueryHistory()`: Get user's query history
+### AI-Powered Analytics
+```
+POST   /ai/chat                 # Natural language query
+POST   /ai/schema/analyze       # AI schema analysis
+POST   /ai/insights/generate    # Generate data insights
+GET    /ai/suggestions          # Get query suggestions
+```
 
-- **MonetizationHandler** manages dataset monetization, pricing, and access purchases, when users engage in purchase and access verification flows. Uses `PricingService`, `PaymentService`, and `AccessControlService`. Its key methods are:
- `purchaseDatasetAccess()`: Buy access to premium datasets
- `getDatasetPricing()`: Get pricing information for datasets
- `checkAccessStatus()`: Verify user's access level to datasets
- `getUsageMetrics()`: Get user's usage statistics
+### Data Sharing & Permissions
+```
+POST   /sharing/datasets/{id}/share     # Share dataset access
+POST   /sharing/datasets/{id}/revoke    # Revoke dataset access
+GET    /sharing/datasets/{id}/access    # Get access list
+POST   /sharing/approve/{request_id}    # Custodian approval
+```
 
-- **MetadataHandler** provides dataset metadata, schema introspection, and lineage information, when users perform dataset documentation, schema browsing, and data governance. Uses `MetadataService` and `DatasetService`. Its key methods are:
- `getDatasetMetadata()`: Get comprehensive dataset metadata
- `getSchemaEvolution()`: Get schema change history
- `getDatasetLineage()`: Get data lineage and relationships
- `updateMetadata()`: Update dataset metadata (admin only)
+### Monetization
+```
+GET    /pricing/datasets/{id}           # Get dataset pricing
+POST   /purchase/datasets/{id}          # Purchase dataset access
+GET    /billing/usage                   # Get usage metrics
+GET    /subscriptions                   # Get user subscriptions
+```
 
+## Key Workflows
 
-- Other Handlers such as `AIHandler`, `SubscriptionHandler`, `ViewHandler`, `LogHandler`, and `AccessHandler` follow a similar pattern: they delegate domain-specific operations to appropriate services (AIService for model training in AIHandler, PaymentService in SubscriptionHandler) and encapsulate all HTTP-specific logic (parsing inputs, handling exceptions, formatting outputs).
+### 1. Dataset Upload & Encryption
 
-#### 2. Middleware Layer
-
-Pre-/post-processing for handlers, authentication, logging, request parsing, could be optional or mandatory depending on context. The Middleware layer implements cross-cutting concerns by chaining together small, focused components:
-**Design Patterns**: Chain of Responsibility Pattern, Strategy Pattern (different middleware types)
-**Principles Applied**: Separation of Concerns, DRY, Open/Closed Principle
-Each middleware acts as an independent processing step, allowing flexible reuse across different request types. The Chain of Responsibility pattern allows requests to pass through a dynamically composed stack of middleware functions.
-Each middleware implements a common interface with `before()` and `after()` hooks, making it easy to plug new logic without modifying existing handlers.
-The use of specialized components (AuthenticationMiddleware, LoggingMiddleware, etc.) cleanly separates concerns, adheres to the Open/Closed Principle by allowing extension without modifying the core framework, and promotes DRY by avoiding repeated inline validations.
-
-- **MiddlewareChain** holds an ordered list of `Middleware` objects. When a request arrives, `BaseHandler.executeMiddleware()` invokes each middleware’s `before(request)` hook; after the handler runs, any defined `after(response)` hooks execute in reverse order.
-- **AuthenticationMiddleware** checks incoming JWTs or session tokens, aborting unauthorized requests early.
-- **ValidationMiddleware** uses predefined JSON schemas or parameter definitions to validate request payloads, returning detailed Bad Request errors if validation fails.
-- **SecurityMiddleware** enforces payload encryption, CSRF (a malicious exploit) protection, or signature verification as needed.
-- **LoggingMiddleware** logs request metadata, user IDs, and trace IDs at the start and end of each request. It writes to the centralized logger, ensuring all events are captured.
-- **RateLimitMiddleware** enforces per‑user or per‑IP call quotas, returning “Too Many Requests” when thresholds are exceeded.
-- **ErrorHandlingMiddleware** wraps the entire chain, catching unhandled exceptions, logging stack traces, and converting them into standardized error responses via `BaseHandler.createErrorResponse()`.
-- **DatasetAccessMiddleware** pre-validates dataset access and enriches request context, activated on any request involving dataset operations. Extracts dataset IDs from request, validates basic access patterns, adds `datasetAccessContext` to request (containing dataset IDs, access hints) and handler uses this context to make informed service calls
-- **QueryLimitMiddleware** pre-validates query patterns and enriches context with limit information, it’s applied to all query execution requests. analyzes query patterns, extracts resource hints, then adds `queryLimitContext` with estimated complexity, user tier info, then handlers uses context to make appropriate service calls
-- **MonetizationMiddleware** enriches requests with payment and subscription context to requests requiring paid access, extracts user subscription info from JWT/session adds `monetizationContext` with subscription tier, payment status, then handlers uses context for service-layer validation.
-- **DataPreviewMiddleware** gives context with data access level information to data preview and sample requests determines user's general access level from session, then can truncate responses based on context (simple filtering only), and adds `previewContext` for handlers to use.
-- **ComplianceMiddleware** adds compliance context to requests to all data access requests, extracts user geography, data classification hints from request, then adds complianceContext with regulatory requirements, then handlers uses context for service-layer compliance checks
-- **QueryCostMiddleware** adds cost estimation context to query requests, applied to query execution requests, performs basic query pattern analysis (syntax only), adds `costContext` with query complexity hints, and logs basic execution metrics
-
-#### 3. Service Layer
-Contains core business logic, coordinates between repositories and other services, validations and transformations, abstracts away direct interactions with data stores and third‑party APIs.
-**Design Patterns:** Service Layer Pattern
-**Principles Applied:** Single Responsability Principle, DRY, Dependency Inversion Principle (via repository abstractions), Encapsulation
-The service layer abstracts and centralizes domain-specific operations, removing complexity from handlers. It coordinates interactions with repositories, external APIs, and internal workflows.
-For example, `DatasetService.finalizeUpload()` may orchestrate encryption (`DataCipherService`), validation (`ValidationService`), and storage operations (`StorageService`)—this demonstrates Facade use by simplifying these dependencies into a single method call.
-The Dependency Inversion Principle is applied by injecting interfaces (repositories, clients) into services rather than hardcoding implementations, making components testable and interchangeable. Each service follows SRP by focusing on one area (uploads, AI, auditing), and code reuse is reinforced via shared helpers/utilities, following DRY.
-
-- **AuthService** manages user credentials, token generation, and verification. It interfaces with an RDS or NoSQL store for user records and signs JWTs for stateless authentication.
-- **SessionService** tracks active sessions, refresh tokens, and expiration times, ensuring users can seamlessly obtain new access tokens without re‑authentication.
-- **AccessControlService** evaluates policies for dataset and row‑level permissions. It generates policy documents, caches decisions, and interacts with Snowflake grants or IAM rules.
-- **DatasetService** handles metadata CRUD operations on Snowflake, abstracting SQL queries, schema migrations, and versioning of dataset definitions.
-- **StorageService** orchestrates S3 multipart uploads, presigned URL generation, and handles retries on network failures.
-- **DataCipherService** wraps encryption and decryption routines using AWS KMS or custom key management, ensuring all persisted data is encrypted at rest and in transit.
-- **UploadSessionService** tracks the state of multi‑part uploads, persists session records, and implements idempotent retry logic.
-- **ValidationService** verifies data format, file hashes, and schema conformance before datasets are finalized.
-- **DigitalSignatureService** signs dataset artifacts to prevent tampering and provides cryptographic proof of integrity.
-- **IntegrityMonitor** scans stored data periodically for corruption or unauthorized changes, issuing alerts through `AuditService`.
-- **AIService** provides a high‑level API for training, evaluating, and deploying ML models. It submits jobs to AWS Batch or SageMaker and stages artifacts in S3.
-- **PipelineService** orchestrates long‑running workflows using AWS Step Functions or custom state machines, handling retries and error states.
-- **PaymentService** integrates with Stripe (or other gateways), handles webhooks, and ensures PCI‑compliance for payment operations.
-- **SubscriptionService** manages subscription plans, billing cycles, and integrates usage metrics with billing rates.
-- **ViewService** and `MetadataService` power dashboard creation and schema introspection for the front end.
-- **LogExportService** retrieves logs from CloudWatch or Elasticsearch and exports them to S3 or third‑party analytics tools.
-- **AuditService** centralizes event logging with user, action, and trace ID, producing a complete audit trail for compliance.
-- **AIChatService** provides AI-powered chat interface for data queries and analysis, it is central to natural language query processing
-- **MetadataService** handles automatic metadata extraction and schema management, by running after an upload completion for metadata enrichment.
-- **ViewService** powers dashboard creation and data visualization.
-- **QueueService** manages asynchronous job processing and background tasks, orchestrates all background processing workflows
-- **QueryExecutionService** handles complex query execution, optimization, and monitoring, used by QueryExecutionHandler and AIChatService
-- **UsageTrackingService** tracks user usage patterns for billing and analytics, called after queries and data access operations
-
-
-#### 4. Repository Layer 
-This layer abstracts direct interactions with external storage and identity backends, providing consistent `IRepository` interfaces for various persistence mechanisms. Lambda Handlers and Services use these repositories for low-level CRUD and operational calls.
-**Design Patterns**: Repository Pattern, Facade Pattern (MainRepository), Adapter Pattern (external services)
-**Principles Applied**: Interface Segregation Principle, Single Responsability Principle, Dependency Inversion, DRY
-
-- **MainRepository** acts as a factory or facade, exposing specific sub-repositories:
-- **S3Repository** for object storage
-- **SFRepository** for Snowflake operations
-- **AWSVaultRepository** for secrets management
-- **CognitoRepository** for user identity and token management
-- **S3Repository** implements `IRepository` to manage S3 objects:
-	- `putObject()`, `getObject()`, `deleteObject()`, `listObjects()`, `copyObject()`
-	- Multipart upload support: `initiateMultipartUpload()`, `uploadPart()`, `completeMultipartUpload()`, `abortMultipartUpload()`
-	- `generatePresignedUrl()` and `headObject()` for preflight checks
-	- Internally uses `s3Client` (AWS.S3), `bucketManager`, and `multipartUploadManager` for robust uploads.
-- **SFRepository** implements data warehouse operations:
-	- Generic query execution via `executeQuery(sql, params)`
-	- Specialized utilities: `createTemporaryTable()`, `bulkLoadFromStage()`, `cloneTable()`, `getQueryProfile()`, `executeAIQuery()`
-	- CRUD operations on warehouse artifacts (roles, procedures) through standardized methods.
-- **AWSVaultRepository** manages secrets and dynamic credentials in a secure vault:
-	- `writeSecret()`, `readSecret()`, `deleteSecret()`, `listSecrets()` for static secrets
-	- Policy management: `createPolicy()`, `attachPolicy()`
-	- Dynamic credential lifecycle: `generateDynamicCredentials()`, `renewLease()`, `revokeLease()`
-	- Relies on `VaultClient`, `VaultAuthManager`, and `SecretManager` internally.
-- **CognitoRepository** encapsulates AWS Cognito user pool operations:
-	- `authenticateUser()`, `validateToken()`, `refreshToken()` for session management
-	- User management: `createUser()`, `getUserInfo()`, `updateUserAttributes()`, `deleteUser()`, `resetPassword()`, `confirmUser()`
-	- Uses `cognitoClient`, `userPoolManager`, and `tokenValidator` under the hood.
-
-Necessity of AWSVaultRepository and CognitoRepository:
-`AWSVaultRepository` is critical if your system integrates with a central secrets vault for rotating database credentials, API keys, or encryption keys. If you rely solely on AWS IAM roles and KMS, you may simplify by removing it.
-`CognitoRepository` is necessary only if you use AWS Cognito for user identity. If authentication is entirely custom or via another provider, you can omit this repository and adapt `AuthService` to your chosen auth backend.
+![image](https://github.com/user-attachments/assets/d5839f90-2cfd-4438-82fb-278102f37f5d)
 
 
-#### 5. Security Layer
+![image](https://github.com/user-attachments/assets/102f5e7b-8904-43d8-8c21-770ed9119730)
 
-`Object design patterns interact with requests or any other trigger`
+![image](https://github.com/user-attachments/assets/751408d1-674d-457b-b176-c10d02f73df6)
 
-#### 6. AI Data Transformation Layer
-The AI Layer handles large-scale data and metadata processing to determine and apply intelligent system transformations. It leverages machine learning techniques, both supervised and unsupervised, to identify patterns, classify relevant stimuli, and delegate transformation actions. These actions are executed by a coordinated set of agents, each designed for specific data operations such as merging, splitting, or appending.
 
-To ensure transformation integrity, proposed actions undergo a review process using a compensating transactions mechanism. This approach validates each action and ensures reversibility, enabling consistent rollback in case of errors or partial execution. For operations involving significant data volumes, the claim check pattern is used to temporarily externalize payloads and replace them with lightweight references within the processing flow.
+The AI Layer handles large-scale data and metadata processing to determine and apply intelligent system transformations. It leverages machine learning techniques, both supervised and unsupervised, to identify patterns, classify relevant stimuli, and delegate transformation actions. These actions are executed by a coordinated set of agents, each designed for specific data operations such as merging, splitting, or appending. To ensure transformation integrity, proposed actions undergo a review process using a compensating transactions mechanism. This approach validates each action and ensures reversibility, enabling consistent rollback in case of errors or partial execution. For operations involving significant data volumes, the claim check pattern is used to temporarily externalize payloads and replace them with lightweight references within the processing flow.
 
 After validation, transformations are committed to the production environment through a high-throughput, cloud-native data warehousing solution, ensuring durable and performant integration.
-
  
 **Design Patterns:** Learning based patttern for AI, claim check pattern, compensating transaction pattern
 **Principles Applied:** Single Responsability Principle, DRY
-
 
 ##### Core Components
 
@@ -774,7 +754,202 @@ After validation, transformations are committed to the production environment th
 
 - **DataProcessor**  
   Intermediates between the AI Layer and the broader system. It extracts structured metadata and operational data required for contextual learning and transformation.
+  
+### 2. Secure Data Sharing with Custodian Approval
 
+![image](https://github.com/user-attachments/assets/da4b0a49-1cdc-4904-bb44-a6315e683853)
+
+### 3. AI-Powered Query Translation
+
+![image](https://github.com/user-attachments/assets/9440c17d-f9d8-438f-87ea-667b7f0cac30)
+
+### 4. Geographic Access Control
+
+![image](https://github.com/user-attachments/assets/7a49013a-36e5-46e2-a19b-cce6265764c0)
+
+## Important Classes & Components
+
+### Core Services
+
+#### **DatasetService**
+Central orchestrator for dataset lifecycle management.
+- **Key Methods**: `initializeUpload()`, `finalizeUpload()`, `getDatasetMetadata()`
+- **Dependencies**: StorageService, ValidationService, MetadataService
+- **Responsibilities**: Dataset CRUD, metadata management, lifecycle coordination
+
+#### **AccessControlService**
+Manages permissions and access policies.
+- **Key Methods**: `validateAccess()`, `grantPermission()`, `revokeAccess()`
+- **Dependencies**: SecurityManager, SFRepository
+- **Responsibilities**: RBAC enforcement, row-level security, policy evaluation
+
+#### **AIChatService**
+Handles natural language query processing.
+- **Key Methods**: `translateQuery()`, `executeNLQuery()`, `generateInsights()`
+- **Dependencies**: QueryExecutionService, AccessControlService
+- **Responsibilities**: NL-to-SQL translation, query optimization, result interpretation
+
+### Security Components
+
+#### **SecurityManager**
+Central security coordinator for all operations.
+- **Key Methods**: `createSecurityContext()`, `validateOperation()`
+- **Dependencies**: TripartiteKeyManager, CustodianManager, GeoAccessValidator
+- **Responsibilities**: Security orchestration, context management, operation validation
+
+#### **TripartiteKeyManager**
+Manages three-party key splitting and reconstruction.
+- **Key Methods**: `generateEntityKeys()`, `reconstructKeyForOperation()`
+- **Dependencies**: AWSVaultRepository
+- **Responsibilities**: Shamir's Secret Sharing, key lifecycle, secure reconstruction
+
+### Repository Abstractions
+
+#### **SFRepository**
+Snowflake data warehouse operations.
+- **Key Methods**: `executeQuery()`, `createTemporaryTable()`, `bulkLoadFromStage()`
+- **Responsibilities**: SQL execution, warehouse management, performance optimization
+
+#### **S3Repository**
+Object storage for datasets and artifacts.
+- **Key Methods**: `putObject()`, `initiateMultipartUpload()`, `generatePresignedUrl()`
+- **Responsibilities**: File storage, multipart uploads, presigned URL generation
+
+### Custom Middleware
+
+#### **SecurityContextMiddleware**
+Creates security context for every request.
+- **Execution Order**: First (sets foundation for all other middleware)
+- **Responsibilities**: Context creation, user validation, permission extraction
+
+#### **GeoRestrictionMiddleware**
+Enforces geographic access controls.
+- **Execution Order**: After SecurityContext
+- **Responsibilities**: IP validation, institutional whitelist checking, access logging
+
+## Error Handling
+
+### Standard Error Response Format
+Example: read a dataset
+```
+{
+  "error": {
+    "code": "INSUFFICIENT_PERMISSIONS",
+    "message": "User lacks required permissions for this dataset",
+    "details": {
+      "required_permissions": ["dataset.read"],
+      "user_permissions": ["query.execute"]
+    },
+    "trace_id": "trace_abc123"
+  }
+}
+```
+
+### Common Error Codes
+- `AUTHENTICATION_FAILED`: Invalid or expired credentials
+- `INSUFFICIENT_PERMISSIONS`: User lacks required permissions
+- `GEOGRAPHIC_RESTRICTION`: Access denied due to location
+- `USAGE_LIMIT_EXCEEDED`: Subscription limits reached
+- `CUSTODIAN_APPROVAL_REQUIRED`: Operation requires custodian approval
+- `DATASET_NOT_FOUND`: Requested dataset doesn't exist
+- `QUERY_TIMEOUT`: Query execution exceeded time limit
+
+## Security Layer Design
+
+The Security Layer acts as a centralized security orchestrator that enforces authentication, authorization, encryption, and access control across all system components. It integrates seamlessly with the existing Handler, Service, and Repository layers.
+
+### Security Components
+1. SecurityManager
+This is the central orchestrator that coordinates all security operations across the system.
+- Acts as a facade that unifies all security components
+- Creates and manages security contexts for requests
+- Coordinates between authentication, authorization, key management, and geographic validation
+- Provides a single interface for handlers to perform security operations, by being injected into `BaseHandler`
+
+2. SecurityContext
+Container object that carries security information throughout the request lifecycle.
+
+- Immutable object created once per request, attached to request objects in SecurityContextMiddleware through securityManager, passed to all service methods that need security validation, and used by repositories for row-level security and access control
+- Contains user identity, permissions, IP address, and organization memberships
+- Provides security information for authorization decisions
+
+3. TripartiteKeyManager
+Manages the three-party key system where keys are split between Data Pura Vida and two custodians.
+
+- Uses Shamir's Secret Sharing  (https://www.geeksforgeeks.org/shamirs-secret-sharing-algorithm-cryptography/) to split keys into 3 parts.
+- Generates both symmetric (AES-256) and asymmetric (RSA-4096) keys
+- Stores one share with Data Pura Vida, distributes two to custodians
+- Reconstructs keys temporarily in secure memory for operations
+- Immediately purges reconstructed keys after use
+
+This is used when a new user (org, company, person) registers with `OrganizationSecurityService `, `DataCipherService ` uses it for creating a specific encryption , used by custodians to access or upload data `DataSetHandler` and for key rotation of 90 days. 
+
+4. CustodianManager
+
+Manages custodian assignments, approval workflows, and multi-party authorization during entity registration, dataset sharing and key operations.
+
+- Assigns primary and secondary custodians to entities
+- Sends approval requests via notifications through email
+- Tracks approval status and validates signatures
+- Enforces multi-party approval requirements for sensitive operations
+`DatSetSharingHandler` uses it for dataset sharing approvals, `OrganizarionSecurityService` for access delegation, and `AccessControlService` for permission changes.
+
+5. GeoAccessValidator
+Enforces geographic restrictions, ensuring access only from Costa Rica or whitelisted institutional IPs by `GeoRestrictionMiddleware` for every request and `SecurityManager` for request validation.
+
+- Maintains IP ranges for Costa Rica
+- Manages institutional IP whitelist with custodian approval
+- Validates client IP against allowed ranges on every request
+- Supports dynamic IP registration for institutions
+
+6. UsageLimitEnforcer
+Monitors and enforces usage limits, automatically suspending access when limits are exceeded with `UsageLimitMiddleware` for every request and `QueryExecutionHandler` before query execution.
+- Tracks real-time usage per user/dataset
+- Compares against subscription plan limits
+- Temporarily disables access when limits exceeded
+- Provides upgrade options and renewal paths
+
+### Related Services
+1. OrganizationSecurityService
+Manages multi-organization accounts and security delegation within organizations through organization management handlers during user access delegation workflows. 
+- Allows single users to manage multiple organizations
+- Enforces custodian approval for access delegation
+- Manages organization-specific security keys
+- Controls user access assignment and revocation
+
+2. DataProtectionService
+Protects sensitive data from unauthorized access, including platform engineers, in `DatasetHandler` during dataset finalization (after upload)  for datasets that are marked as sensitive through policy configuration.
+- Encrypts sensitive dataset columns with entity-specific keys
+- Creates secure access zones in Snowflake
+- Removes direct data access for platform engineers
+- Implements controlled data views that prevent bulk downloads
+
+### Related Middleware
+1. SecurityContextMiddleware
+Creates and attaches security context to every incoming request, triggered before any other security validations because it sets up a security foundation for the entire request.
+- Extracts authentication information from request headers
+- Validates session and retrieves user information
+- Creates `SecurityContext` object with user permissions and metadata
+- Attaches context to request for use by subsequent layers
+
+2. GeoRestrictionMiddleware
+Right after `SecurityContextMiddleware` validates geographic access restrictions on every request.
+- Extracts client IP from request
+- Validates IP against Costa Rica ranges and institutional whitelist
+- Blocks requests from unauthorized geographic locations
+- Logs geographic access attempts for audit
+
+3. UsageLimitMiddleware
+Validates usage limits before allowing requests to proceed, applied to requests involving dataset queries or access.
+- Checks current user usage against subscription limits
+- Prevents operations that would exceed limits
+- Provides upgrade options when limits reached
+- Tracks usage patterns for billing
+
+### Related Repositories
+1. VaultRepository
+- Manages **custodian** information storage and retrieval through `CustodianManager` using existing vault infrastructure. Stores custodian configurations in AWS Vault, Manages approval requests and responses, Tracks custodian assignment history, Provides custodian lookup functionality. 
+- TripartiteKey: This repo manages tripartite key storage using existing vault infrastructure.
 
 ### Serverless Architecture
 
