@@ -1045,17 +1045,195 @@ Snowflake complements the architecture by providing:
 
 ## Data Layer Design
 
+This document defines the architecture, configuration, and access patterns for the Data Layer of the system. It provides implementation-level guidance for developers and architects working on the core data flows, including the stage (raw) and production (refined) environments. The system is deployed in AWS Fargate, with integrations to several AWS-native services and Snowflake as the primary data engine.
+
 ### Data Architecture & Storage
 
 #### a) Data Topology
 
+1. **Cloud Service Technology:**
+
+  - The data layer is composed of two primary environments: a Staging environment hosted in Amazon S3, and a Production environment hosted in Snowflake. The system uses AWS Glue and Step Functions for data orchestration and transformation.
+
+  - Data ingestion from external sources is staged in S3, then ETL jobs transform and load this data into Snowflake for production use.
+
+2. **Object-Oriented Design Patterns:**
+
+  PENDIENTE
+
+3. **Class Layers for Data Access:**
+
+- **Repository Layer:** Classes with S3 for staging and Snowflake for production. Repositories are accesed by the main repositorie class and implemented using cloud-specific SDKs (Boto3, Snowflake Connector). Classes involved are `SFRepository`, `S3Repository` and `MainRepository`.
+
+- **Service Layer:** Handles transformation logic, orchestration triggers, and data preparation.
+
+4. **Configuration Policies/Rules:**
+
+- Clear separation between staging and production environments
+
+- Versioned S3 buckets with lifecycle policies
+
+- Snowflake environment with separate schemas for staged, and curated data
+
+- Automated ETL pipelines via AWS Glue
+
+- Data transformation process to production data with AI
+
+- Handle congested data access with Snowflake multi-cluster architecture with data blocks.
+
+5. **Expected Benefits:**
+
+Decoupling of ingestion and processing layers
+
+Scalable architecture with clean separation of environments
+
+Simplified rollback and audit through versioning and schema separation
+
+6. Data Topology Classification:
+
+- The data topology follows a **Distributed and Replicated Model**:
+
+  - **Distributed:** Data is ingested from diverse sources and processed in parallel through AWS Step Functions and Glue jobs. The architecture scales horizontally across services.
+
+  - **Replicated:** Staging data in S3 is versioned and often replicated across availability zones for durability, while Snowflake supports replication and Time Travel for high availability and fault tolerance.
+
 #### b) Big Data Repository - Data Lake
+
+1. **Cloud Service Technology:**
+
+- Amazon S3 functions as the raw data lake, optimized for scale and throughput
+
+- Snowflake acts as the enterprise data warehouse/data mart for curated and production data
+
+- AWS Glue provides cataloging and ETL capabilities
+
+2. **Cloud Design Patterns:**
+
+- **Claim-check pattern:** Used to upload chunks of big payloads given by the client to S3. More information about the pattern in the following link: https://learn.microsoft.com/en-us/azure/architecture/patterns/claim-check
+
+- **Compensating transaction patterm** Use to validate the steps the data transformation AI suggested. More information about the pattern un the following link: https://learn.microsoft.com/en-us/azure/architecture/patterns/compensating-transaction
+
+3. **Class Layers for Data Access:**
+
+- Ingestion Handlers: Manage data arrival in S3 and trigger pipelines
+
+- Glue Jobs / Services: Transform raw data into structured formats
+
+- Snowflake Writers: Insert transformed data into appropriate schemas
+
+4. **Configuration Policies/Rules:**
+
+- Defined S3 folder hierarchy: /raw/, /staged/, /processed/
+
+- Glue Data Catalogs and Crawlers auto-register schemas
+
+- Snowflake Time Travel and Fail-safe features enabled
+
+- Row-level access policies for sensitive datasets
+
+5. **Expected Benefits:**
+
+- Unified and centralized repository for all enterprise data
+
+- Automated metadata management via Glue Catalog
+
+- Flexible query engine through Snowflake for analytics and reporting
 
 #### c) Database Engine
 
+1. **Cloud Service Technology:**
+
+- Snowflake as the primary production engine (relational, columnar storage, SQL-based analytics)
+
+- Amazon S3 with Parquet/ORC formats for semi-structured or unstructured data
+
+2. **Configuration Policies/Rules:**
+
+- Snowflake auto-scaling policies configured
+
+- Query tagging and warehouse monitoring enabled
+
+- Schema versioning policies in place
+
+3. **Expected Benefits:**
+
+- High-performance analytics with Snowflake’s MPP engine
+
+- Cost-effective storage and flexible data formats in S3
+
+- Pluggable design to support new data engines
+
 #### d) Tenancy and Data Security
 
-#### e) Recovery and Fault Tolerance:
+1. **Cloud Service Technology:**
+
+- AWS Cognito for user identity and federated access
+
+- AWS KMS for key management and encryption of S3 buckets
+
+- AWS Secrets Manager for storing Snowflake credentials
+
+- Snowflake RBAC and Network Policies
+
+2. **Object-Oriented Design Patterns:**
+
+  SECURITY LAYER
+
+3. **Class Layers for Data Access:**
+
+  SECURITY LAYER
+
+4. **Configuration Policies/Rules:**
+
+- S3 encryption at rest and in transit
+
+- Snowflake role-based access and row-level security
+
+- Fine-grained IAM roles per microservice and Lambda function
+
+- Access audits and alerts integrated with CloudWatch
+
+5. **Expected Benefits:**
+
+- Centralized and enforceable access control
+
+- Granular permission model for multi-tenant architecture
+
+- Encryption and auditability as standard features. Audit system with help of AWS Cloudwatch 
+
+- Prevent any data engineer, DevOps personnel, or technical staff with privileges from accessing data in plain text or without proper authorization.
+
+- Allow multiple levels of access with logical control, based on user, entity, or data type.
+
+#### e) Recovery and Fault Tolerance
+
+1. **Cloud Service Technology:**
+
+- S3 Versioning & Replication for backup and disaster recovery
+
+- Snowflake Time Travel and Fail-safe features
+
+- CloudWatch Alarms, Step Functions Retries, and DLQs (Dead Letter Queues)
+
+3. **Class Layers for Data Access:**
+
+  AUDIT SYSTEM
+
+4. **Configuration Policies/Rules:**
+
+S3 Lifecycle Rules with Glacier for archival
+
+Snowflake recovery window configured per schema
+
+Circuit breakers for long-running queries
+
+5. **Expected Benefits:**
+
+- High availability and resilience across data layers
+
+- Minimal data loss with versioned and replicated backups
+
+- Cost-efficient long-term archival and legal compliance
 
 ### Object-Oriented Design - Programming
 
