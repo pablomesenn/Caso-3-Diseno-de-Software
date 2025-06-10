@@ -33,7 +33,9 @@ Members: Pablo Mesén, Alonso Durán Muñoz, Ana Hernández Muñoz, Jesus Valver
 - M6: Ecosystem validated through security audits and regulatory compliance
 
 - M7: 10+ integrated institutions, 100+ active datasets, first monetization revenue
+
 ## Technical Team
+
 | **Role**                  | **Quantity** | **Responsibilities**                                                       |
 |---------------------------|--------------|-----------------------------------------------------------------------------|
 | Cloud Solutions Architect | 1            | Designs cloud infrastructure, security, scalability                        |
@@ -181,6 +183,15 @@ Deployment must include steps for:
 
 ## Comprehensive Strategy
 ## KPIs and Metrics
+
+KPIs: System availability (≥99.9%), query latency (<200ms), error rate (<0.1%), data ingestion time (<2 min), security compliance (100%), active datasets (≥100), user satisfaction (≥4.5), recovery time (<2 hours).
+
+
+Data Collection: CloudWatch logs availability, latency, and errors; Snowflake tracks queries and datasets; S3/Snowpipe measures ingestion; Okta logs authentication; surveys capture satisfaction; WAF/KMS monitor security—all in real-time or per event.
+
+Calculation Methods: Availability = uptime/total time (M2); latency = P95 query time (M5); error rate = failed/total requests (M1); ingestion time = processing duration (M4); compliance = audit pass rate (M6); datasets = table count (M7); satisfaction = survey average (M7); recovery = test duration (M6).
+
+Dashboard: QuickSight displays gauges (availability, satisfaction), line charts (latency), bar charts (errors), scatter plots (ingestion), tables (compliance), and counters (datasets), with filters, SNS alerts, and RBAC/RLS security, ensuring no data exports and auditability.
 
 ## Deployment and Operations Strategy
 
