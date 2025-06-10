@@ -537,15 +537,89 @@ The main advantages are:
 - Isolate business rules from frameworks, UI, and external services.
 - Makes the application easier to test, extend, and maintain.
 - Allows replacing pieces (frameworks, APIs, databases) without changing core logic.
-  The design will consist of four layers:
-  1. Presentation Layer (UI Layer): Displays UI and captures user input. Delegates all logic.
-  2. Application Layer (Use Cases): Coordinates tasks across domain + infrastructure. No UI or framework code.
-  3. Domain Layer (Entities): Models and rules of your system. No dependencies on any framework.
-  4. Infraestructure Layer (Adapters): External world. APIs, DBs, Storage, Frameworks.
+The design will consist of four layers:
+### Presentation Layer (UI Layer): Displays UI and captures user input. Delegates all logic.
+**Technologies**
+- React
+- Tailwind CSS (Utility-first styling)
+- Okta SDK (OIDC + WebAuthn Biometric login)
+- Redux Toolkit (ViewModel logic)
+- Storybook for component testing
+**Class and Components**
+`LoginPage`, `BiometricPrompt`, `DashboardLayout`, `TaskCard`, `TaskRecorderButton`, `LiveTranscriptionPanel`, `AssistantContainer`, `TaskGuideOverlay`
+**Design Patterns**
+- MVVM (React View + Redux ViewModel)
+- Component-Based Architecture – UI split into reusable functional components
+**Principles**
+- Separation of Concerns: UI handles only rendering and user interactions  
+- DRY: Extract reusable hooks and atomic components  
+- Accessibility: Use Tailwind + ARIA standards  
+- Responsive Design: Tailwind responsive utilities + Flexbox/Grid
+### Application Layer (Use Cases): Coordinates tasks across domain + infrastructure. No UI or framework code.
+**Technologies**
+- TypeScript modules (frontend)
+- Python services (Flask backend)
+**Class and Components**
+`StartTaskRecordingUseCase`, `ProvideRealTimeGuidanceUseCase`, `RegisterBiometricDeviceUseCase`, `ValidateUserSessionUseCase`
+**Design Patterns**
+- Facade: `TaskManager` coordinates recording, transcription, intent recognition
+- Strategy: `RecordProcessingStrategy` (real-time vs batch)
+**Principles**
+- SRP: Each use case does one job
+- Open/Closed: New behaviors via strategy injection
+- Dependency Inversion: Interfaces rely on abstractions from Domain layer
+### Domain Layer (Entities): Models and rules of your system. No dependencies on any framework.
+**Technologies**
+- TypeScript domain models (frontend)
+- Python dataclasses / Pydantic models (backend)
+**Class and Components**
+`User`, `Task`, `Recording`, `VoiceInput`, `Company`, `SubscriptionPlan`, `EncryptingDecorator`, `CompressionDecorator`
+Design Patterns
+- None strictly required beyond clean modeling principles
+**Principles**
+- Liskov Substitution Principle: Entities should be replaceable by their subtypes without affecting correctness  
+- Interface Segregation Principle: Define focused interfaces for domain operations  
+- Pure Logic: No dependencies on UI, framework, or databases
+### Infraestructure Layer (Adapters): External world. APIs, DBs, Storage, Frameworks.
+**Technologies**
+- Backend: Flask, Snowflake, AWS S3/Lambda, Okta JWT
+- Frontend: Okta SDK
+**Class and Components**
+`OktaAuthService`, `ApiService`, `AudioManager`, `SnowflakeQueryAdapter`, `TaskRepositoryImpl`,`S3UploadService`, `LambdaTriggerService`
+**Design Patterns**
+- Adapter: Wrap external dependencies to conform to domain interfaces  
+- Repository: Abstracts data access and storage details
+**Principles**
+- Dependency Inversion: Infrastructure depends on domain abstractions, not vice versa  
+- SRP: Each service manages one aspect of external integration  
+- Loose Coupling: Keep infrastructure isolated from core business logic
+**Cross-Cutting Services**
+Services used across layers, implemented cleanly and decoupled:
+- AI Guidance: `AIModelService`, `KeywordExtractor`, `PromptBuilder`, `IntentResolver`
+- Plans & Billing: `SubscriptionService`, `CompanyBillingService`, `OktaGroupMapper`
 
-## Visual Components
+## Summary of Essential Design Patterns & Principles
 
-## Object Design Patterns
+| Pattern                | Where Used             | Purpose                                          |
+|------------------------|-----------------------|-------------------------------------------------|
+| MVVM                   | Presentation Layer    | Separate UI (View) from logic (ViewModel)       |
+| Component-Based        | Presentation Layer    | Build reusable UI pieces                          |
+| Facade                 | Application Layer     | Simplify complex workflows                        |
+| Strategy               | Application Layer     | Enable flexible business rule implementations    |
+| Adapter                | Infrastructure Layer  | Bridge external APIs/databases with domain code |
+| Repository             | Infrastructure Layer  | Abstract data persistence                         |
+
+| Principle              | Where Relevant         | Purpose                                          |
+|------------------------|-----------------------|-------------------------------------------------|
+| Single Responsibility   | All layers             | One class, one reason to change                  |
+| Open/Closed             | Application Layer      | Extend without modifying existing code           |
+| Dependency Inversion    | Application/Infra      | Depend on abstractions, not concrete classes     |
+| Separation of Concerns  | Presentation Layer     | UI vs logic separation                            |
+| DRY                    | Presentation Layer     | Avoid code duplication                            |
+| Liskov Substitution     | Domain Layer           | Replace entities with subtypes safely            |
+| Interface Segregation   | Domain Layer           | Focused interfaces                                |
+| Loose Coupling          | Infrastructure Layer   | Decouple external dependencies                    |
+
 
 ## External Services
 
