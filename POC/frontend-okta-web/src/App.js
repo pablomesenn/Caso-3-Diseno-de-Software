@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { OktaAuth } from '@okta/okta-auth-js';
 
 const oktaAuth = new OktaAuth({
-  issuer: `${process.env.REACT_APP_OKTA_DOMAIN}/oauth2/default`,
-  clientId: process.env.REACT_APP_OKTA_CLIENT_ID,
+  issuer: 'https://dev-w425j2q1a431gpdw.us.okta.com/oauth2/default',
+  clientId: 'AzrNIzpdapSkqzh4q1zUJRYZUX3KsXlD',
   redirectUri: window.location.origin + '/login/callback',
   scopes: ['openid', 'profile', 'email'],
 });
@@ -14,16 +14,22 @@ function App() {
   const [apiResponse, setApiResponse] = useState(null);
 
   const login = async () => {
-    try {
-      const tokens = await oktaAuth.token.getWithPopup();
-      oktaAuth.tokenManager.setTokens(tokens);
-      const userInfo = await oktaAuth.token.getUserInfo(tokens.accessToken);
-      setAccessToken(tokens.accessToken.accessToken);
-      setProfile(userInfo);
-    } catch (err) {
-      console.error('Login error:', err);
-    }
-  };
+  try {
+    const tokens = await oktaAuth.token.getWithPopup({
+      responseType: ['token', 'id_token'],
+      scopes: ['openid', 'profile', 'email'],
+    });
+    oktaAuth.tokenManager.setTokens(tokens);
+
+    const accessToken = tokens.accessToken?.accessToken;
+    const userInfo = await oktaAuth.token.getUserInfo(tokens.accessToken);
+    setAccessToken(accessToken);
+    setProfile(userInfo);
+  } catch (err) {
+    console.error('Login error:', err);
+  }
+};
+
 
   const callBackend = async () => {
     if (!accessToken) return alert('Primero inicia sesión');

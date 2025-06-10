@@ -8,12 +8,14 @@ from functools import wraps
 app = Flask(__name__)
 CORS(app)
 
-AUTH0_DOMAIN = 'dev-w425j2q1a431gpdw.us.auth0.com'
-API_AUDIENCE = 'api://default'
+OKTA_DOMAIN = 'dev-w425j2q1a431gpdw.us.okta.com'
+OKTA_ISSUER = f'https://{OKTA_DOMAIN}/oauth2/default'
+API_AUDIENCE = 'AzrNIzpdapSkqzh4q1zUJRYZUX3KsXlD'  # <- tu Client ID real
+
 ALGORITHMS = ['RS256']
 
 # Obtiene la clave pública para verificar los JWT
-jwks_url = f'https://{AUTH0_DOMAIN}/.well-known/jwks.json'
+jwks_url = f'{OKTA_ISSUER}/v1/keys'
 jwks_client = PyJWKClient(jwks_url)
 
 def token_required(f):
@@ -31,7 +33,7 @@ def token_required(f):
                 signing_key,
                 algorithms=ALGORITHMS,
                 audience=API_AUDIENCE,
-                issuer=f'https://{AUTH0_DOMAIN}/'
+                issuer=f'https://dev-w425j2q1a431gpdw.us.okta.com/oauth2/default'
             )
             # Aquí podrías usar `decoded_token` para identificar al usuario si quieres
         except jwt.ExpiredSignatureError:
@@ -45,7 +47,7 @@ def token_required(f):
 @app.route("/api/secure-data", methods=["GET"])
 @token_required
 def secure_data():
-    return jsonify({"data": "Esto es información protegida por Auth0"})
+    return jsonify({"data": "Esto es información protegida por Okta"})
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)
