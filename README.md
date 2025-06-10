@@ -555,6 +555,11 @@ The backend can map these to your platform’s internal permissions. This mappin
 
 
 # BACKEND
+
+Complete Diagram: https://lucid.app/lucidchart/6b3cff80-ec40-4584-99eb-46dad1afd5ec/edit?invitationId=inv_c137e4e0-9a2d-446c-8f9d-16471948de2a&page=HWEp-vi-RSFO#
+
+![image](https://github.com/user-attachments/assets/38344fe9-cb99-4504-b84c-cded9db1f45f)
+
 Data Pura Vida is a secure data platform for Costa Rican institutions, providing dataset management, AI-powered analytics, and governed data sharing with enterprise-grade security controls.
 
 ### Core Capabilities
