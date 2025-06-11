@@ -21,7 +21,7 @@ Members: Pablo Mesén, Alonso Durán Muñoz, Ana Hernández Muñoz, Jesus Valver
    	- [SECURITY LAYER DESIGN](#Security-Layer-Design)
    	- [AUDIT & LOGGING](#Audit-&-Logging)
    	- [THIRDPARTY SERVICES](#THIRDPARTY-SERVICES)
-   	- [KEY WORKFLOW](#Key-Workflows)
+   	- [KEY WORKFLOWS](#Key-Workflows)
    	- [DATA LAYER DESIGN](#Data-Layer-Design)
 
 
@@ -418,8 +418,7 @@ High Availability: Snowflake’s multi-cluster architecture and Fargate auto-sca
 
 # SYSTEM ANALYSIS
 ## DETAILED DECOMPOSITION BY COMPONENTS DIAGRAM
-![XLNBRjim4BpxArWVUkqlH7x02M2tgTtcKlIm9TSA4OghBga2Rf6FoJ67dFe9-h4kOyTsAHaY147WKfpXpAnq5I9mR2etUcTmQpsgzNpwfVYuMCwLTX32A3nONmD3fJHLDNdqSHDt3XMZZk1BXwDH3Ve1IbJZZGqHAr0hykJQbsWrZTMVaPBnUZikB7pxv6omGUtKdGqDEFiRj6t_-](https://github.com/user-attachments/assets/2d0e8aa1-a408-4513-9dce-fd5304d7900a)
-![ZLR1Rjf04Btp5TkSMZLIVo64a9GA8WGqbwg7OJsug-pkMBlhg4cLJ-X7SCmXfznwzOzrrauWh8t04eXunfwtRzwyoPaFu49fTEz3XYjbKSo6WqN_-cey55A3zpr_gsm13eoGP0goQCCyt6iK3cK0cslizGgGjv2ZE9ah7z20c90bNJq79Ub4_Ea9lkglJU80GhNMb9CNz-8AVL3LY](https://github.com/user-attachments/assets/60f70a46-ae3e-4757-a464-0577708d3d5e)
+
 
 # LEGAL AND REGULATORY FRAMEWORK
 
