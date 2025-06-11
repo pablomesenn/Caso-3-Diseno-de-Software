@@ -548,7 +548,7 @@ The design will consist of four layers:
 - Storybook for component testing
   
 **Class and Components**
-`LoginPage`, `BiometricPrompt`, `DashboardLayout`, `TaskCard`, `LiveTranscriptionPanel`, `AssistantContainer`, `TaskGuideOverlay`
+`LoginPage`, `BiometricPrompt`, `DashboardLayout`, `TaskCard`, `LiveTranscriptionPanel`, `AssistantContainer`, `TaskGuideOverlay`, `NavigationBar`, 
 
 **Design Patterns**
 - MVVM (React View + Redux ViewModel)
@@ -559,6 +559,7 @@ The design will consist of four layers:
 - DRY: Extract reusable hooks and atomic components  
 - Accessibility: Use Tailwind + ARIA standards  
 - Responsive Design: Tailwind responsive utilities + Flexbox/Grid
+
 ### Application Layer (Use Cases): Coordinates tasks across domain + infrastructure. No UI or framework code.
 
 **Technologies**
@@ -566,16 +567,17 @@ The design will consist of four layers:
 - Python services (Flask backend)
 
 **Class and Components**
-``ProvideRealTimeGuidanceUseCase`, `RegisterBiometricDeviceUseCase`, `ValidateUserSessionUseCase`
+`ProvideRealTimeGuidanceUseCase`, `RegisterBiometricDeviceUseCase`, `ValidateUserSessionUseCase`, `RegisterOrganizationUseCase`, `GenerateDashboardReportUseCase`, `SubscribeToPlanUseCase`, `ReportBuilder`
 
 **Design Patterns**
-- Facade: `TaskManager` coordinates recording, transcription, intent recognition
-- Strategy: `RecordProcessingStrategy` (real-time vs batch)
+- Facade: `AccessManagerFacade` simplifies access and subscription orchestration by interacting with multiple domain services.
+- Strategy: `PricingStrategy` supports various pricing logics (flat rate, usage-based, freemium).
   
 **Principles**
-- SRP: Each use case does one job
-- Open/Closed: New behaviors via strategy injection
-- Dependency Inversion: Interfaces rely on abstractions from Domain layer
+- SRP: Each use case is focused on a single business capability.
+- Open/Closed Principle: New use cases or workflows can be added by injecting new strategies.
+- Dependency Inversion: Use cases depend on interfaces from the Domain Layer — never on infrastructure or UI layers.
+
 ### Domain Layer (Entities): Models and rules of your system. No dependencies on any framework.
 
 **Technologies**
