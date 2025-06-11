@@ -1343,6 +1343,90 @@ Image Reference:
 
 ### 3. AI-Powered Query Translation
 
+#### Overview
+
+This AI-driven workflow enables users to submit natural language (NL) queries that are securely translated into SQL statements, executed on Snowflake, and returned in a compliant, non-downloadable format. It leverages **Snowflake Cortex**, integrated with security, audit, and access control mechanisms to ensure data safety, performance (sub-200ms latency for 95% of queries), and policy enforcement.
+
+#### Workflow Description
+
+The system translates natural language queries into SQL, validates both the query and user permissions, executes the SQL on Snowflake, formats the result, and delivers a secure response. Invalid queries and unauthorized access are intercepted early, as shown in the flow diagram.
+
+#### Step-by-Step Breakdown  
+
+- Natural Language Query Submission
+  - Endpoint: POST /ai/chat
+  - User Action: A user submits an NL query (e.g., _“Show me the average population by province in the 2025 electoral dataset”_).
+  - Component: AIQueryHandler receives the request.
+
+- AI Service Invocation
+  - Component: AIChatService receives the NL query.
+  - Middlewares:
+    - AuthenticationMiddleware: Validates JWT via AWS Cognito.
+    - SecurityContextMiddleware: Captures user identity, roles, and IP.
+    - GeoRestrictionMiddleware: Allows only Costa Rica or whitelisted IPs.
+    - UsageLimitMiddleware: Enforces plan-based usage quotas.
+
+- Query Validation
+  - Purpose: Ensures the NL query can be safely and meaningfully processed.
+  - Outcome:  
+    - Valid Query: Proceeds to permission checks.  
+    - Invalid Query: Returns an error (e.g., malformed, ambiguous).
+
+- Permission Check
+  - Component: AccessControlService
+  - Validation: Ensures query.execute permission and dataset-level access.
+  - Outcome:  
+    - Sufficient Permissions: Proceeds to SQL generation.  
+    - Insufficient Permissions: Returns “Access Denied”.
+- SQL Generation
+  - Component: AIChatService + MLModel
+  - Process:
+    - Parses intent (e.g., aggregate, filter).
+    - Maps tokens to dataset schema (GET /datasets/{id}/schema).
+    - Generates sanitized SQL using LLM models like **Snowflake Cortex**.
+- Query Execution
+  - Component: SFRepository, QueryExecutionService
+  - Execution: Runs in a Snowflake virtual warehouse with auto-scaling.
+  - Tracking:
+    - GET /queries/{id}/status
+    - GET /queries/{id}/results
+  - Security:
+    - Row-Level Security (RLS)
+    - Encrypted in transit (TLS 1.3)
+- Result Formatting
+  - Component: AIChatService + DataProcessor
+  - Output: Returned in user-specified format (e.g., JSON, table)
+  - Optional Visualization: Integration with Amazon QuickSight
+  - Security: DataProtectionService enforces:
+    - Non-downloadable formats
+    - Sensitive field masking
+    - Output conversions (e.g., SVG, PDF)
+- Response to User
+  - Delivery: Results returned via API or embedded dashboards.
+  - Sharing: Internal dashboards require custodian approval (POST /sharing/dashboards)
+  - Audit: Execution and access events logged by AuditService (/datapuravida/queries)
+
+#### Key Components
+
+1. AIChatService: Translates NL to SQL, validates and optimizes queries
+2. MLModel: Learns NL→SQL mappings using supervised learning
+3. SFRepository: Executes SQL and manages result lifecycle
+4. AccessControlService: Enforces RBAC and RLS access policies
+5. DataProtectionService: Secures output formats, blocks unauthorized exports
+6. SecurityManager: Coordinates auth, geo-restrictions, and classification compliance
+7. AuditService: Logs all query activity and result access for regulatory audit
+8. AWS Services: Cognito (auth), QuickSight (viz), KMS (encryption), WAF
+
+#### Security and Compliance
+
+- Encryption: TLS 1.3 (transit), AES-256 (at rest via AWS KMS)
+- Audit Logging: Logs retained for 3 years; includes query, SQL, metadata
+- Compliance:
+  - Law 8968 (Costa Rica): Subject rights, limited processing
+  - GDPR: Minimization, transparency
+- Geo Restrictions: Requests must originate from approved IPs (CR-only)
+- Performance SLA: 95% of queries return in <200ms (CloudWatch monitored)
+
 ![image](https://github.com/user-attachments/assets/9440c17d-f9d8-438f-87ea-667b7f0cac30)
 
 ### 4. Geographic Access Control
