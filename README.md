@@ -620,7 +620,7 @@ Services used across layers, implemented cleanly and decoupled:
 
 ## Summary of Essential Design Patterns & Principles
 
-| Pattern                | Where Used             | Purpose                                          |
+| Pattern                | Where its Used             | Purpose                                          |
 |------------------------|-----------------------|-------------------------------------------------|
 | MVVM                   | Presentation Layer    | Separate UI (View) from logic (ViewModel)       |
 | Component-Based        | Presentation Layer    | Build reusable UI pieces                          |
@@ -629,7 +629,7 @@ Services used across layers, implemented cleanly and decoupled:
 | Adapter                | Infrastructure Layer  | Bridge external APIs/databases with domain code |
 | Repository             | Infrastructure Layer  | Abstract data persistence                         |
 
-| Principle              | Where Relevant         | Purpose                                          |
+| Principle              | Where its Relevant         | Purpose                                          |
 |------------------------|-----------------------|-------------------------------------------------|
 | Single Responsibility   | All layers             | One class, one reason to change                  |
 | Open/Closed             | Application Layer      | Extend without modifying existing code           |
