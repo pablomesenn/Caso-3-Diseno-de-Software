@@ -1264,16 +1264,174 @@ After validation, transformations are committed to the production environment th
   
 ### 2. Secure Data Sharing with Custodian Approval
 
+#### Overview
+
+This workflow facilitates the secure sharing of datasets within the Data Pura Vida platform, requiring approval from two custodians to ensure compliance with regulatory standards (e.g., Law 8968, GDPR) and organizational policies. The process leverages a tripartite key system, Role-Based Access Control (RBAC), Row-Level Security (RLS), and geographic restrictions, with all actions logged for auditability. The diagram illustrates the sequence of events from the requester's initial request to the final granting of access, including key reconstruction and purging.
+
+#### Workflow Description
+
+The workflow begins with a requester initiating a dataset access request, which the System validates. Approval requests are sent to two custodians (Custodian1 and Custodian2), who must both approve the request. Upon approval, the System reconstructs the access keys using the tripartite system, updates Snowflake with row-level permissions, and grants access to the requester. Post-access, the keys are purged from memory to maintain security. The process is orchestrated by the SecurityManager, CustodianManager, and AccessControlService, with integration into Snowflake and AWS services.
+
+#### Steps
+
+- Request Dataset Access
+  - Actor: Requester
+  - Action: The requester sends a request to access a dataset via POST /sharing/datasets/{id}/share.
+  - System Interaction: The request is received by the System, initiating the workflow.
+  - Security: The SecurityContextMiddleware validates the requester’s identity (via JWT from AWS Cognito), and GeoRestrictionMiddleware checks the IP against Costa Rica or whitelisted institutional IPs.
+- Validate Request
+  - Actor: System
+  - Action: The System validates the request, checking the requester’s permissions (dataset.share) and dataset eligibility (e.g., not restricted) using AccessControlService.
+  - Process: The SecurityManager ensures compliance with RBAC and dataset classification (e.g., SENSITIVE requires custodian approval).
+  - Security: Validation logs are recorded in /datapuravida/security/audit via AuditService.
+- Send Approval Request
+  - Actor: System
+  - Action: The System sends approval requests to Custodian1 and Custodian2 via AWS SNS (encrypted notifications).
+  - Components Involved:
+    - CustodianManager: Assigns custodians based on dataset ownership and retrieves their details from VaultRepository (AWS Secrets Manager).
+    - Notification Service: Delivers requests with a unique request_id.
+  - Security: Notifications are encrypted, and custodian identities are validated with AWS IAM roles.
+- Approve Request
+  - Actors: Custodian1 and Custodian2
+  - Action: Each custodian reviews and approves the request via POST /sharing/approve/{request_id}, submitting their key share.
+  - Components Involved:
+    - CustodianApprovalHandler: Processes approval requests.
+    - TripartiteKeyManager: Validates custodian signatures and prepares for key reconstruction.
+  - Security: Both approvals are required within a time window (e.g., 24 hours). Unauthorized attempts trigger alerts via AWS CloudWatch.
+- Reconstruct Access Keys
+  - Actor: System
+  - Action: The System reconstructs the dataset’s access keys using the tripartite shares (one from Data Pura Vida, one from each custodian) via TripartiteKeyManager.
+  - Process: Shamir’s Secret Sharing is applied to reconstruct the AES-256 key in secure memory.
+  - Security: The key is temporary, used only for permission updates, and immediately purged post-operation (highlighted in the diagram).
+- Grant Row-Level Permissions
+  - Actor: System
+  - Action: The System updates Snowflake with row-level permissions for the requester using AccessControlService.
+  - Components Involved:
+    - SFRepository: Applies RLS policies in Snowflake.
+    - DataProtectionService: Ensures sensitive columns remain encrypted and bulk downloads are prevented.
+  - Process: Permissions are granted based on the sharing scope (e.g., read-only, specific columns).
+  - Security: Access is restricted to authorized IPs via GeoAccessValidator and logged in /datapuravida/queries.
+- Access Granted
+  - Actor: Requester
+  - Action: The System notifies the requester of access approval, enabling dataset access (e.g., via GET /datasets/{id}/preview).
+  - Components Involved: S3Repository generates presigned URLs if S3 artifacts are involved.
+  - Security: Access is logged, and results are delivered in non-downloadable formats (e.g., SVG, PDF).
+- Keys Purged from Memory
+  - Actor: System
+  - Action: After access is granted, the reconstructed keys are purged from memory to prevent unauthorized use.
+  - Security: This step ensures compliance with security best practices (e.g., ISO 27001), with the purge logged in /datapuravida/security/audit.
+
+#### Key Components
+
+1. SecurityManager: Orchestrates validation, key reconstruction, and permission updates.
+2. TripartiteKeyManager: Manages key splitting and reconstruction using Shamir’s Secret Sharing.
+3. CustodianManager: Assigns custodians and handles approval workflows.
+4. AccessControlService: Enforces RBAC and RLS for access control.
+5. AuditService: Logs all steps (validation, approvals, access) for compliance.
+6. GeoAccessValidator: Ensures geographic compliance.
+7. AWS Services: Cognito (authentication), KMS (encryption), SNS (notifications), CloudWatch (logging), Secrets Manager (key storage), Snowflake (data management).
+
+#### Security and Compliance
+
+1. Encryption: Data in transit uses TLS 1.3, and at rest uses AES-256 via AWS KMS. Access keys are reconstructed and purged per operation.
+2. Auditability: All actions are logged with trace_id in CloudWatch, with a 7-year retention for security logs, meeting Law 8968 and GDPR requirements.
+3. Regulatory Compliance: Ensures informed consent, data subject rights, and purpose limitation. Custodian approvals provide accountability.
+4. Geographic Restriction: Enforced via AWS WAF and GeoAccessValidator, limiting access to Costa Rica or approved IPs.
+
+Image Reference:
 ![image](https://github.com/user-attachments/assets/da4b0a49-1cdc-4904-bb44-a6315e683853)
 
 ### 3. AI-Powered Query Translation
+
+#### Overview
+
+This AI-driven workflow enables users to submit natural language (NL) queries that are securely translated into SQL statements, executed on Snowflake, and returned in a compliant, non-downloadable format. It leverages **Snowflake Cortex**, integrated with security, audit, and access control mechanisms to ensure data safety, performance (sub-200ms latency for 95% of queries), and policy enforcement.
+
+#### Workflow Description
+
+The system translates natural language queries into SQL, validates both the query and user permissions, executes the SQL on Snowflake, formats the result, and delivers a secure response. Invalid queries and unauthorized access are intercepted early, as shown in the flow diagram.
+
+#### Step-by-Step Breakdown  
+
+- Natural Language Query Submission
+  - Endpoint: POST /ai/chat
+  - User Action: A user submits an NL query (e.g., _“Show me the average population by province in the 2025 electoral dataset”_).
+  - Component: AIQueryHandler receives the request.
+
+- AI Service Invocation
+  - Component: AIChatService receives the NL query.
+  - Middlewares:
+    - AuthenticationMiddleware: Validates JWT via AWS Cognito.
+    - SecurityContextMiddleware: Captures user identity, roles, and IP.
+    - GeoRestrictionMiddleware: Allows only Costa Rica or whitelisted IPs.
+    - UsageLimitMiddleware: Enforces plan-based usage quotas.
+
+- Query Validation
+  - Purpose: Ensures the NL query can be safely and meaningfully processed.
+  - Outcome:  
+    - Valid Query: Proceeds to permission checks.  
+    - Invalid Query: Returns an error (e.g., malformed, ambiguous).
+
+- Permission Check
+  - Component: AccessControlService
+  - Validation: Ensures query.execute permission and dataset-level access.
+  - Outcome:  
+    - Sufficient Permissions: Proceeds to SQL generation.  
+    - Insufficient Permissions: Returns “Access Denied”.
+- SQL Generation
+  - Component: AIChatService + MLModel
+  - Process:
+    - Parses intent (e.g., aggregate, filter).
+    - Maps tokens to dataset schema (GET /datasets/{id}/schema).
+    - Generates sanitized SQL using LLM models like **Snowflake Cortex**.
+- Query Execution
+  - Component: SFRepository, QueryExecutionService
+  - Execution: Runs in a Snowflake virtual warehouse with auto-scaling.
+  - Tracking:
+    - GET /queries/{id}/status
+    - GET /queries/{id}/results
+  - Security:
+    - Row-Level Security (RLS)
+    - Encrypted in transit (TLS 1.3)
+- Result Formatting
+  - Component: AIChatService + DataProcessor
+  - Output: Returned in user-specified format (e.g., JSON, table)
+  - Optional Visualization: Integration with Amazon QuickSight
+  - Security: DataProtectionService enforces:
+    - Non-downloadable formats
+    - Sensitive field masking
+    - Output conversions (e.g., SVG, PDF)
+- Response to User
+  - Delivery: Results returned via API or embedded dashboards.
+  - Sharing: Internal dashboards require custodian approval (POST /sharing/dashboards)
+  - Audit: Execution and access events logged by AuditService (/datapuravida/queries)
+
+#### Key Components
+
+1. AIChatService: Translates NL to SQL, validates and optimizes queries
+2. MLModel: Learns NL→SQL mappings using supervised learning
+3. SFRepository: Executes SQL and manages result lifecycle
+4. AccessControlService: Enforces RBAC and RLS access policies
+5. DataProtectionService: Secures output formats, blocks unauthorized exports
+6. SecurityManager: Coordinates auth, geo-restrictions, and classification compliance
+7. AuditService: Logs all query activity and result access for regulatory audit
+8. AWS Services: Cognito (auth), QuickSight (viz), KMS (encryption), WAF
+
+#### Security and Compliance
+
+- Encryption: TLS 1.3 (transit), AES-256 (at rest via AWS KMS)
+- Audit Logging: Logs retained for 3 years; includes query, SQL, metadata
+- Compliance:
+  - Law 8968 (Costa Rica): Subject rights, limited processing
+  - GDPR: Minimization, transparency
+- Geo Restrictions: Requests must originate from approved IPs (CR-only)
+- Performance SLA: 95% of queries return in <200ms (CloudWatch monitored)
 
 ![image](https://github.com/user-attachments/assets/9440c17d-f9d8-438f-87ea-667b7f0cac30)
 
 ### 4. Geographic Access Control
 
 ![image](https://github.com/user-attachments/assets/7a49013a-36e5-46e2-a19b-cce6265764c0)
-
 
 ## Data Layer Design
 
@@ -1725,5 +1883,3 @@ Justificar decisiones técnicas
 Crear guías de diseño para el equipo
 Establecer estándares de calidad
 ```
-
-
