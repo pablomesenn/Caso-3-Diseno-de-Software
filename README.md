@@ -12,7 +12,17 @@ Members: Pablo Mesén, Alonso Durán Muñoz, Ana Hernández Muñoz, Jesus Valver
 - [LEGAL AND REGULATORY FRAMEWORK](#LEGAL-AND-REGULATORY-FRAMEWORK)
 - [STACK](#STACK)
 - [FRONTEND](#FRONTEND)
+	-[AUTHENTICATION PLATFORM](#Authentication-platform)
+	-[POC MFA](#POC-MFA)
 - [BACKEND](#BACKEND)
+	- [API ENDPOINTS](#API-Endpoints)
+   	- [IMPORTANT CLASSES & COMPONENTS](#Important-Classes-&-Components)
+   	- [ERROR HANDLING](#Error-Handling)
+   	- [SECURITY LAYER DESIGN](#Security-Layer-Design)
+   	- [AUDIT & LOGGING](#Audit-&-Logging)
+   	- [THIRDPARTY SERVICES](#THIRDPARTY-SERVICES)
+   	- [KEY WORKFLOW](#Key-Workflows)
+   	- [DATA LAYER DESIGN](#Data-Layer-Design)
 
 
 # DESCRIPTION
