@@ -940,6 +940,187 @@ Validates usage limits before allowing requests to proceed, applied to requests 
 - Manages **custodian** information storage and retrieval through `CustodianManager` using existing vault infrastructure. Stores custodian configurations in AWS Vault, Manages approval requests and responses, Tracks custodian assignment history, Provides custodian lookup functionality. 
 - TripartiteKey: This repo manages tripartite key storage using existing vault infrastructure.
 
+
+## Audit & Logging
+
+![TPDDJyCm38Rl-HKM9pWW3jnsG8Zn8Q4960NjxALcYvOs8t4OyEjnqdIqVDngv_5h-qrw7XWznyOgDcm9fjR5Ue6irp1pgm3iO1wDtbHcjMQuH4Qujcwd56fs7fu3URKL1QFD5bk6Wny21u01felqEUPcs2nh4OkjPkFQp7MvCLUTmaNK6s8uVCGTt5RtTqSPhaub7hCtDie67dUMV](https://github.com/user-attachments/assets/665464ff-5705-460f-8ba4-3dea8995535a)
+
+### Achitectura Principles
+The system implements comprehensive audit logging with AWS CloudWatch, structured logging, and long-term archival. All logs follow a standardized JSON structure for consistency, correlation, and automated processing. The architecture supports real-time monitoring, compliance reporting, and business intelligenc
+
+### Core Design Patterns
+
+- Observer Pattern: Components emit events that are automatically captured by the audit system
+- Strategy Pattern: Different log categories use specialized processing strategies
+- Pipeline Pattern: Logs flow through structured transformation stages
+- Correlation Pattern: All events include trace IDs for end-to-end request tracking
+
+### Logging Categories
+
+#### Standard Log Format
+
+```
+{
+  "timestamp": "2025-06-10T14:30:15.123Z",
+  "event_type": "DATASET_ACCESS",
+  "trace_id": "trace_abc123",
+  "severity": "INFO",
+  "user": {
+    "id": "user_alonso",
+    "email": "alduran@itcr.ac.cr",
+    "organization": "tec",
+    "roles": ["data_analyst"]
+  },
+  "operation": {
+    "type": "DATASET_QUERY",
+    "dataset_id": "dataset_1",
+    "classification": "SENSITIVE",
+    "query_hash": "gsergherhqergqwerge",
+    "approval_required": false
+  },
+  "security_context": {
+    "ip_address": "200.9.156.45",
+    "country": "CR",
+    "device_fingerprint": "fp_xyz789",
+    "session_id": "sess_abc456",
+    "user_agent": "Mozilla/5.0..."
+  },
+  "result": {
+    "status": "SUCCESS",
+    "rows_accessed": 1500,
+    "processing_time_ms": 2847
+  }
+}
+```
+
+#### 1. Security Audit Logs
+Comprehensive security event tracking for compliance and threat detection.
+
+**CloudWatch Group**: `/datapuravida/security/audit`  
+**Retention**: 7 years
+**Encryption**: AWS KMS
+
+**Events Logged**:
+- Authentication and authorization events
+- Data access and permission changes
+- Custodian approval workflows
+- Geographic access control violations
+- Encryption key operations
+
+#### 2. Application Performance Logs
+Application behavior monitoring and performance optimization
+
+**CloudWatch Group**: `/datapuravida/application`  
+**Retention**: 1 year  
+**Encryption**: AWS KMS
+
+**Events Logged**:
+- Request/response lifecycle
+- Service method execution
+- Error conditions and stack traces
+- Performance metrics and SLA monitoring
+
+### 3. Query Execution Logs
+Data query performance and billing tracking
+
+**CloudWatch Group**: `/datapuravida/queries`  
+**Retention**: 3 years  
+**Encryption**: AWS KMS
+
+### 4. Snowflake Integration Logs
+Complete database activity monitoring via native Snowflake logging
+
+**CloudWatch Group**: `/datapuravida/snowflake`  
+**Data Source**: Snowflake Information Schema + Query History  
+**Processing**: AWS Lambda with 5-minute intervals
+
+## Implementation Architecture
+### Audit Service Design
+
+The centralized `AuditService` provides a consistent interface for all audit logging operations across the application stack.
+
+### End-to-End Logging Flow
+#### 1. Log Generation
+Logs are generated at multiple points in the application architecture:
+
+**Handler Layer**: All handlers extend `BaseHandler` which provides automatic audit logging through the middleware chain.
+
+**Middleware Layer**: Specialized middleware components generate contextual logs
+- `LoggingMiddleware`: Captures request metadata and trace id's
+- `AuthenticationMiddleware`: Logs authentication events
+- `SecurityMiddleware`: Records security violations
+- `ComplianceMiddleware`: Tracks regulatory compliance events
+
+**ServiceLayer**: Besiness logic services emit operation-specific logs
+- `AuditService`: Centralizes all audit event generation
+- `DatasetService`: Logs dataset lifecycle events
+- `QueryExecutionService`: Captures query performance metrics
+- `PaymentService`: Records monetization events
+
+All application components write structured logs to designated CloudWatch Log Groups. The AuditService provides a unified interface for consistent log formatting and routing.
+
+```
+# Interfaz del servicio de auditoría
+class AuditService(ABC):
+
+    @abstractmethod
+    async def log_security_event(self, event: SecurityEvent) -> None:
+        pass
+
+    @abstractmethod
+    async def log_data_access(self, event: DataAccessEvent) -> None:
+        pass
+
+    @abstractmethod
+    async def log_query_execution(self, event: QueryEvent) -> None:
+        pass
+
+    @abstractmethod
+    async def log_system_event(self, event: SystemEvent) -> None:
+        pass
+
+    @abstractmethod
+    async def log_custodian_approval(self, event: ApprovalEvent) -> None:
+        pass
+```
+#### 2. Data Processing Pipeline
+The system implements a complete ETL pipeline for log processing
+
+![PP4zRiCm34PtdOB8qYbJzoAERCS8ZFuvG6T6PcGrikJA59AUgqVenUe86PncuGVYFO2Kk1eP0yVUYl5et801Ux364NyF13vmvsUWfGD6opiwSsQDTZqv1ZKL2a8yG4u7uumolpzkKi7vreyYa69qsX8ifFMn_K1M7THUZml04RAvK6E_Rn6Ayp1DXZ8wnSQxvAtdNlC8xtY2RVFo3](https://github.com/user-attachments/assets/c2874817-a75e-47ca-8e1f-7049ee35d133)
+
+CloudWatch log groups trigger Lambda functions on log arrival, lambda exports raw JSON logs to S3 buckets organized by date and log category, and raw logs stored in S3 with path structure: `s3://logs-bucket/year/month/day/hour/`
+
+### Event Correlation
+
+All log entries include a `trace_id` that enables end-to-end request tracking across distributed components.
+
+### Data Processing Infrastructure
+**Lambda Functions**
+- `log-export-function`: Exports CloudWatch logs to S3 (triggered every 5 minutes)
+- `snowflake-integration`: Pulls Snowflake query history (runs every 5 minutes)
+- `log-enrichment`: Adds geolocation and user context to logs
+
+### Glue Components
+- `audit-logs-crawler`: Daily schema discovery for all log categories
+- `security-logs-etl`: Processes security audit logs for compliance reporting
+- `performance-logs-etl`: Transforms performance data for dashboard analytics
+- `query-logs-etl`: Processes query execution data for billing and optimization
+
+### S3 Storage Structure
+
+```
+audit-logs-bucket/
+├── raw-json/
+│   ├── security/year/month/day/hour/
+│   ├── application/year/month/day/hour/
+│   └── queries/year/month/day/hour/
+└── processed-parquet/
+    ├── security/year/month/day/
+    ├── application/year/month/day/
+    └── queries/year/month/day/
+```
+
+
 ## THIRDPARTY SERVICES
 
 ### AWS services used to complement the design
