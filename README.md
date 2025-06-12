@@ -1266,60 +1266,111 @@ After validation, transformations are committed to the production environment th
 
 #### Overview
 
-This workflow facilitates the secure sharing of datasets within the Data Pura Vida platform, requiring approval from two custodians to ensure compliance with regulatory standards (e.g., Law 8968, GDPR) and organizational policies. The process leverages a tripartite key system, Role-Based Access Control (RBAC), Row-Level Security (RLS), and geographic restrictions, with all actions logged for auditability. The diagram illustrates the sequence of events from the requester's initial request to the final granting of access, including key reconstruction and purging.
+This workflow facilitates the secure sharing of datasets within the Data Pura Vida platform, requiring approval from two custodians to ensure compliance with regulatory standards and organizational policies. The process leverages a tripartite key system, Role-Based Access Control (RBAC), Row-Level Security (RLS), and geographic restrictions, with all actions logged for auditability. The diagram illustrates the sequence of events from the requester's initial request to the final granting of access, including key reconstruction and purging.
 
 #### Workflow Description
 
-The workflow begins with a requester initiating a dataset access request, which the System validates. Approval requests are sent to two custodians (Custodian1 and Custodian2), who must both approve the request. Upon approval, the System reconstructs the access keys using the tripartite system, updates Snowflake with row-level permissions, and grants access to the requester. Post-access, the keys are purged from memory to maintain security. The process is orchestrated by the SecurityManager, CustodianManager, and AccessControlService, with integration into Snowflake and AWS services.
+The workflow begins with a requester initiating a dataset access request, which the System validates. Approval requests are sent to two custodians (Custodian1 and Custodian2), who must both approve the request. Upon approval, the System reconstructs the access keys using the tripartite system, updates Snowflake with row-level permissions, and grants access to the requester. Post-access, the keys are purged from memory to maintain security. The process is orchestrated by the `SecurityManager`, `CustodianManager`, and `AccessControlService`, with integration into Snowflake and AWS services.
 
 #### Steps
 
 - Request Dataset Access
   - Actor: Requester
-  - Action: The requester sends a request to access a dataset via POST /sharing/datasets/{id}/share.
+  - Action: The requester sends a request to access a dataset via `POST /sharing/datasets/{id}/share`.
   - System Interaction: The request is received by the System, initiating the workflow.
-  - Security: The SecurityContextMiddleware validates the requester’s identity (via JWT from AWS Cognito), and GeoRestrictionMiddleware checks the IP against Costa Rica or whitelisted institutional IPs.
+  - AWS Involvement:
+    - Cognito: Validates the requester’s JWT token for authentication.
+    - WAF: Filters the request to ensure it originates from Costa Rica or whitelisted IPs.
+  - Location: Handler Layer(AWS Fargate)
+  - Security: The `SecurityContextMiddleware` validates the requester’s identity, and `GeoRestrictionMiddleware` checks the IP against Costa Rica or whitelisted institutional IPs.
+  - Design Patterns: Observer Pattern (request triggers validation event).
+  - Principles: Single Responsibility (handler focuses on request routing), Least Privilege (Cognito restricts access to authenticated users).
 - Validate Request
   - Actor: System
-  - Action: The System validates the request, checking the requester’s permissions (dataset.share) and dataset eligibility (e.g., not restricted) using AccessControlService.
-  - Process: The SecurityManager ensures compliance with RBAC and dataset classification (e.g., SENSITIVE requires custodian approval).
-  - Security: Validation logs are recorded in /datapuravida/security/audit via AuditService.
+  - Action: The System validates the request, checking the requester’s permissions (`dataset.share`) and dataset eligibility using `AccessControlService`.
+  - AWS Involvement:
+    - IAM: Checks RBAC policies to ensure the requester has `dataset.share` permission.
+    - Secrets Manager: Retrieves custodian metadata and dataset classification rules.
+  - Location: Service Layer (AWS Fargate)
+  - Process: The `SecurityManager` ensures compliance with RBAC and dataset classification.
+  - Security: Validation logs are recorded in `/datapuravida/security/audit` via `AuditService`.
+  - Design Patterns: Strategy Pattern (different validation strategies for different datasets).
+  - Principles: Open/Closed (new datasets can be added without modifying existing code), Accountability (logs ensure traceability).
 - Send Approval Request
   - Actor: System
   - Action: The System sends approval requests to Custodian1 and Custodian2 via AWS SNS (encrypted notifications).
+  - AWS Involvement:
+    - SNS: Sends notifications to custodians with a unique `request_id`.
+    - Secrets Manager: Retrieves custodian details (email, roles) from `VaultRepository`.
+    - KMS: Encrypts notification content.
+  - Location: Service Layer (AWS Fargate) and AWS SNS
   - Components Involved:
-    - CustodianManager: Assigns custodians based on dataset ownership and retrieves their details from VaultRepository (AWS Secrets Manager).
-    - Notification Service: Delivers requests with a unique request_id.
+    - CustodianManager: Assigns custodians based on dataset ownership and retrieves their details from `VaultRepository` (AWS Secrets Manager).
+    - Notification Service: Delivers requests with a unique `request_id`.
   - Security: Notifications are encrypted, and custodian identities are validated with AWS IAM roles.
+  - Design Patterns: Publish-Subscribe Pattern (SNS notifies custodians).
+  - Principles: Data Minimization (only necessary data shared), Transparency (notifications logged).
 - Approve Request
   - Actors: Custodian1 and Custodian2
-  - Action: Each custodian reviews and approves the request via POST /sharing/approve/{request_id}, submitting their key share.
+  - Action: Each custodian reviews and approves the request via `POST /sharing/approve/{request_id}`, submitting their key share.
+  - AWS Involvement:
+    - Cognito: Validates custodian identities.
+    - Secrets Manager: Retrieves custodian key shares from `VaultRepository`.
+    - IAM: Validates custodian permissions for approval.
+  - Location: Handler Layer (AWS Fargate) and AWS Services.
   - Components Involved:
     - CustodianApprovalHandler: Processes approval requests.
     - TripartiteKeyManager: Validates custodian signatures and prepares for key reconstruction.
-  - Security: Both approvals are required within a time window (e.g., 24 hours). Unauthorized attempts trigger alerts via AWS CloudWatch.
+  - Security: Both approvals are required within a time window. Unauthorized attempts trigger alerts via AWS CloudWatch.
+  - Design Patterns: Chain of Responsibility (approval process requires both custodians).
+  - Principles:  Fail-Safe (time-bound approval), Defense in Depth (multi-layer authentication).
 - Reconstruct Access Keys
   - Actor: System
-  - Action: The System reconstructs the dataset’s access keys using the tripartite shares (one from Data Pura Vida, one from each custodian) via TripartiteKeyManager.
+  - Action: The System reconstructs the dataset’s access keys using the tripartite shares via `TripartiteKeyManager`.
+  - AWS Involvement:
+    - KMS: Decrypts the key shares.
+    - Secrets Manager: Retrieves the tripartite key shares from `VaultRepository`.
+  - Location: Service Layer (AWS Fargate).
   - Process: Shamir’s Secret Sharing is applied to reconstruct the AES-256 key in secure memory.
   - Security: The key is temporary, used only for permission updates, and immediately purged post-operation (highlighted in the diagram).
+  - Design Patterns: Command Pattern (key reconstruction as a secure command).
+  - Principles: Ephemeral State (keys exist only during operation), Security by Design.
 - Grant Row-Level Permissions
   - Actor: System
-  - Action: The System updates Snowflake with row-level permissions for the requester using AccessControlService.
+  - Action: The System updates Snowflake with row-level permissions for the requester using `AccessControlService`.
+  - AWS Involvement:
+    - Snowflake: Applies Row-Level Security (RLS) policies based on the reconstructed keys.
+    - IAM: Ensures the System has permissions to modify Snowflake datasets.
+    - KMS: Ensures encrypted data access.
+  - Location: Service Layer (AWS Fargate) and Snowflake.
   - Components Involved:
     - SFRepository: Applies RLS policies in Snowflake.
     - DataProtectionService: Ensures sensitive columns remain encrypted and bulk downloads are prevented.
-  - Process: Permissions are granted based on the sharing scope (e.g., read-only, specific columns).
-  - Security: Access is restricted to authorized IPs via GeoAccessValidator and logged in /datapuravida/queries.
+  - Process: Permissions are granted based on the sharing scope.
+  - Security: Access is restricted to authorized IPs via `GeoAccessValidator` and logged in `/datapuravida/queries`.
+  - Design Patterns: Adapter Pattern (IAM adapts Snowflake permissions).
+  - Principles: Granularity (fine-grained access control), Least Privilege.
 - Access Granted
   - Actor: Requester
-  - Action: The System notifies the requester of access approval, enabling dataset access (e.g., via GET /datasets/{id}/preview).
-  - Components Involved: S3Repository generates presigned URLs if S3 artifacts are involved.
-  - Security: Access is logged, and results are delivered in non-downloadable formats (e.g., SVG, PDF).
+  - Action: The System notifies the requester of access approval, enabling dataset access.
+  - AWS Involvement:
+    - SNS: Sends notification to the requester.
+    - S3Repository: Generates presigned URLs for S3 artifacts if applicable.
+  - Location: Handler Layer (AWS Fargate) and AWS S3.
+  - Components Involved: `S3Repository` generates presigned URLs if S3 artifacts are involved.
+  - Security: Access is logged, and results are delivered in non-downloadable formats.
+  - Design Patterns: Facade Pattern (simplified access interface).
+  - Principles: Usability (accessible format), Accountability (logging).
 - Keys Purged from Memory
   - Actor: System
   - Action: After access is granted, the reconstructed keys are purged from memory to prevent unauthorized use.
-  - Security: This step ensures compliance with security best practices (e.g., ISO 27001), with the purge logged in /datapuravida/security/audit.
+  - AWS Involvement:
+    - CloudWatch: Logs the purge operation.
+    - KMS: Ensures no residual keys remain in memory.
+  - Location: Service Layer (AWS Fargate).
+  - Security: This step ensures compliance with security best practices, with the purge logged in `/datapuravida/security/audit`.
+  - Design Patterns: Cleanup Pattern (post-operation resource release).
+  - Principles: Zero Trust (no residual access), Auditability.
 
 #### Key Components
 
