@@ -418,8 +418,17 @@ High Availability: Snowflake’s multi-cluster architecture and Fargate auto-sca
 
 # SYSTEM ANALYSIS
 ## DETAILED DECOMPOSITION BY COMPONENTS DIAGRAM
-![XLNBRjim4BpxArWVUkqlH7x02M2tgTtcKlIm9TSA4OghBga2Rf6FoJ67dFe9-h4kOyTsAHaY147WKfpXpAnq5I9mR2etUcTmQpsgzNpwfVYuMCwLTX32A3nONmD3fJHLDNdqSHDt3XMZZk1BXwDH3Ve1IbJZZGqHAr0hykJQbsWrZTMVaPBnUZikB7pxv6omGUtKdGqDEFiRj6t_-](https://github.com/user-attachments/assets/2d0e8aa1-a408-4513-9dce-fd5304d7900a)
-![ZLR1Rjf04Btp5TkSMZLIVo64a9GA8WGqbwg7OJsug-pkMBlhg4cLJ-X7SCmXfznwzOzrrauWh8t04eXunfwtRzwyoPaFu49fTEz3XYjbKSo6WqN_-cey55A3zpr_gsm13eoGP0goQCCyt6iK3cK0cslizGgGjv2ZE9ah7z20c90bNJq79Ub4_Ea9lkglJU80GhNMb9CNz-8AVL3LY](https://github.com/user-attachments/assets/60f70a46-ae3e-4757-a464-0577708d3d5e)
+![image](https://github.com/user-attachments/assets/4d110e56-2af7-4c70-84a4-d333e6deef8b)
+
+![image](https://github.com/user-attachments/assets/f457b93b-36ca-47d0-949e-e59e92d764bc)
+
+![image](https://github.com/user-attachments/assets/5e1f18f2-1958-49a5-8eaf-d5fd45738a1d)
+
+![image](https://github.com/user-attachments/assets/59cfe50f-b0c6-4582-a39f-92ece42860ad)
+
+![image](https://github.com/user-attachments/assets/8f7f0329-ee79-4e83-b003-d654225768eb)
+
+![image](https://github.com/user-attachments/assets/aac2c9a3-ca7a-4b80-afff-23feff63fa7a)
 
 # LEGAL AND REGULATORY FRAMEWORK
 
