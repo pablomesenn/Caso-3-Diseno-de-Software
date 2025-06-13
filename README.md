@@ -197,18 +197,27 @@ Deployment must include steps for:
 - Health checks post-deployment
 - Rollback mechanism in case of failure
 
-
-## Comprehensive Strategy
 ## KPIs and Metrics
 
-KPIs: System availability (≥99.9%), query latency (<200ms), error rate (<0.1%), data ingestion time (<2 min), security compliance (100%), active datasets (≥100), user satisfaction (≥4.5), recovery time (<2 hours).
+| Category            | Metric                  | Data Source                          | Calculation Method                          | Visualization       |
+|---------------------|-------------------------|--------------------------------------|---------------------------------------------|---------------------|
+| **System Availability** | ≥99.9%                 | CloudWatch logs                     | Uptime / Total time (Monthly)               | Gauge               |
+| **Query Latency**    | <200ms (P95)           | Snowflake query logs                | 95th percentile query time (Monthly)        | Line chart          |
+| **Error Rate**       | <0.1%                  | CloudWatch error logs               | Failed requests / Total requests (Monthly)  | Bar chart           |
+| **Data Ingestion**   | <2 minutes             | S3/Snowpipe logs                    | Processing duration (Monthly)               | Scatter plot        |
+| **Security Compliance** | 100%                | Okta, WAF, KMS logs                 | Audit pass rate (Semi-annual)               | Table               |
+| **Active Datasets**  | ≥100                   | Snowflake metadata                  | Table count (Quarterly)                     | Counter             |
+| **User Satisfaction**| ≥4.5 (out of 5)        | User surveys                        | Survey average (Quarterly)                  | Gauge               |
+| **Recovery Time**    | <2 hours               | Incident reports                    | Test duration (Semi-annual)                 | -                   |
 
-
-Data Collection: CloudWatch logs availability, latency, and errors; Snowflake tracks queries and datasets; S3/Snowpipe measures ingestion; Okta logs authentication; surveys capture satisfaction; WAF/KMS monitor security—all in real-time or per event.
-
-Calculation Methods: Availability = uptime/total time (M2); latency = P95 query time (M5); error rate = failed/total requests (M1); ingestion time = processing duration (M4); compliance = audit pass rate (M6); datasets = table count (M7); satisfaction = survey average (M7); recovery = test duration (M6).
-
-Dashboard: QuickSight displays gauges (availability, satisfaction), line charts (latency), bar charts (errors), scatter plots (ingestion), tables (compliance), and counters (datasets), with filters, SNS alerts, and RBAC/RLS security, ensuring no data exports and auditability.
+**Dashboard Features:**
+- **Platform:** Amazon QuickSight
+- **Visualizations:** Mixed types (gauges, line charts, bar charts, scatter plots, tables, counters)
+- **Filters:** Time range, service components
+- **Alerts:** SNS notifications for threshold breaches
+- **Security:** RBAC/RLS implementation
+- **Compliance:** No data exports allowed, full auditability
+- **Refresh Rate:** Real-time for operational metrics, periodic for others
 
 ## Deployment and Operations Strategy
 
