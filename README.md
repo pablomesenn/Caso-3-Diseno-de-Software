@@ -1861,52 +1861,7 @@ Toda la información viene de la guía oficial de SF sobre su pricing, a continu
 https://www.snowflake.com/wp-content/uploads/2023/12/The-Simple-Guide-to-Snowflake-Pricing.pdf
 ```
 
-## SECURITY
-### Prácticas de Codificación Segura
-```
-Qué hacer:
-Implementar estándares OWASP
-Aplicar principios SOLID
-Seguir Clean Code practices
-Implementar Twelve-Factor App methodology
-
-### Seguridad de Datos
-Qué hacer:
-Diseñar cifrado de extremo a extremo (llaves de uso tiempo limitado)
-Implementar gestión segura de llaves
-Crear sistema de acceso por roles (RBAC)
-Diseñar Row-Level Security (RLS)
-
-Anotaciones del profesor:
-Hay que asociar llaves criptograficas para cada usuario
-Descifrado en memoria en el FE
-ETL
-Encontrar como hacer GeoAccess
-Tecnologia de data transfer
-IP whitelist
-Casarnos con un esquema de cifrado
-Sistema de logs y monitoreo de lo que esta pasando al procesar las fuentes de datos
-```
-
-## INTEGRATIONS 
-### APIs y Servicios Externos
-```
-Qué hacer:
-Definir integraciones con sistemas externos
-Implementar OAuth2 y JWT
-Crear esquemas de autenticación
-Diseñar manejo de errores y reintentos
-
-### Protocolos de Comunicación
-Qué hacer:
-Definir REST/GraphQL APIs
-Implementar WebSockets para tiempo real
-Crear sistemas de callbacks
-Diseñar message queues
-```
-
 ## QUALITY AND TESTING
-
 ### Estrategia de Pruebas
 ```
 Qué hacer:
@@ -1918,26 +1873,6 @@ Diseñar pruebas de carga y performance
 
 ## DEVOPS AND DEPLOYMENT
 ### Gestión de Código
-### CI/CD Pipeline
-
-## MONITOREO Y OPERACIONES
-### Observabilidad
-```
-Qué hacer:
-Implementar logging centralizado
-Crear métricas de aplicación
-Configurar alertas y notificaciones
-Diseñar dashboards operacionales
-```
-
-### Alta Disponibilidad
-```
-Qué hacer:
-Diseñar arquitectura resiliente
-Implementar load balancing
-Crear estrategias de backup
-Definir disaster recovery plans
-```
 
 ## EVALUACIÓN Y MEJORA
 ### Architecture Compliance Matrix
@@ -1948,12 +1883,4 @@ Identificar fortalezas del diseño
 Documentar limitaciones conocidas
 Proponer mejoras futuras
 Crear roadmap de evolución
-```
-### Principios de Diseño
-```
-Qué hacer:
-Documentar principios arquitectónicos aplicados
-Justificar decisiones técnicas
-Crear guías de diseño para el equipo
-Establecer estándares de calidad
 ```
