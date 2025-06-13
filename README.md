@@ -26,6 +26,11 @@ Members: Pablo Mesén, Alonso Durán Muñoz, Ana Hernández Muñoz, Jesus Valver
 
 
 # DESCRIPTION
+For years, Costa Rica has faced a significant structural limitation: the absence of a centralized data system that facilitates access, analysis, and utilization of information by various actors. Currently, there is no national ecosystem that allows individuals, public institutions, state branches, social organizations, and the private sector to share, reuse, and market information in a structured manner. This fragmentation has hindered evidence-based decision-making, slowed institutional processes, and limited the development of innovative solutions that could emerge from the strategic use of data.
+
+In response to this challenge, the creation of a national ecosystem of interoperable, secure, and regulated data is proposed, in which both public and private entities can contribute and utilize valuable information. This system would allow data to be classified according to its nature: open or restricted access, free or subject to a fee-based model. Robust security and privacy standards would be established to ensure the protection of sensitive information and regulatory compliance. The goal is to enable an environment in which reliable data can be used to generate new applications, technological products, and services based on data science and artificial intelligence.
+
+With the implementation of this ecosystem, Costa Rica could take a leap toward an economy and government driven by real data. Institutions would optimize their processes, the private sector would find new opportunities for innovation and collaboration, and citizens would have access to useful and transparent information. Furthermore, the coexistence of public and private data, managed under clear and secure frameworks, would open up a dynamic space for technological development and the country's sustainable digital transformation.
 
 # STRATEGY AND PLANNING
 ## Roadmap
