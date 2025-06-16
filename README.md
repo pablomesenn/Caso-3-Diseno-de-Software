@@ -2094,6 +2094,18 @@ The DevOps and deployment strategy for Data Pura Vida leverages modern cloud-nat
 
 ### Architecture Compliance Matrix
 
+| Requirement | Compliance Status | Evidence | Notes |
+|-------------|-------------------|----------|-------|
+| 99.9% System Availability | Compliant | Blue-Green deployment, Fargate auto-scaling, Snowflake multi-cluster | Quarterly DR tests validate SLA |
+| <200ms Query Latency | Compliant | Snowflake Query Profiling, CloudWatch metrics | Validated in performance tests |
+| Support 200 Concurrent Users (Year 5) | Compliant | Fargate auto-scaling, Snowflake MPP architecture | Load tests simulate peak usage |
+| AES-256 Encryption | Compliant | AWS KMS for data at rest, TLS 1.3 for transit | Security audits confirm compliance |
+| GDPR Compliance | Compliant | Data minimization, user consent, right to erasure | DPO assigned for oversight |
+| ISO 27001 Compliance | Compliant | Security policies, access controls, audit logs | Regular audits scheduled |
+| AI-Powered Data Normalization | Compliant | Snowflake Cortex, MLModel for ETDL | Validated in integration tests |
+| Tripartite Key System | Compliant | Shamir’s Secret Sharing, custodian approvals | Security tests confirm robustness |
+| Geographic Restriction | Compliant | GeoRestrictionMiddleware, AWS WAF | Penetration tests validate enforcement |
+
 ### Análisis de Ventajas/Desventajas
 
 Qué hacer:
