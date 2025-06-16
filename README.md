@@ -2090,7 +2090,7 @@ The DevOps and deployment strategy for Data Pura Vida leverages modern cloud-nat
   - Multi-AZ deployment for S3 and Fargate.
   - Snowflake replication across regions for fault tolerance.
 
-## EVALUACIÓN Y MEJORA
+## EVALUATION AND IMPROVEMENT
 
 ### Architecture Compliance Matrix
 
@@ -2106,10 +2106,61 @@ The DevOps and deployment strategy for Data Pura Vida leverages modern cloud-nat
 | Tripartite Key System | Compliant | Shamir’s Secret Sharing, custodian approvals | Security tests confirm robustness |
 | Geographic Restriction | Compliant | GeoRestrictionMiddleware, AWS WAF | Penetration tests validate enforcement |
 
-### Análisis de Ventajas/Desventajas
+### Analysis of Advantages/Disadvantages
 
-Qué hacer:
-Identificar fortalezas del diseño
-Documentar limitaciones conocidas
-Proponer mejoras futuras
-Crear roadmap de evolución
+#### Design Strengths
+
+- Scalability:
+  - AWS Fargate and Snowflake auto-scaling support millions of records and thousands of concurrent users.
+  - S3 and Snowflake handle 10TB/year data growth without manual intervention.
+- Security:
+  - AES-256 encryption, TLS 1.3, and tripartite key system ensure data protection.
+  - RBAC, RLS, and geographic restrictions align with GDPR.
+- Compliance:
+  - Comprehensive audit logging ensures traceability.
+  - Privacy by design and data subject rights support regulatory requirements.
+- Flexibility:
+  - Monolithic architecture with modular design supports future migration to microservices.
+  - AI-driven ETDL and NL query processing enhance usability and innovation.
+- Reliability:
+  - Blue-Green deployment ensures zero-downtime updates.
+  - Automated backups and recovery playbooks achieve <2-hour recovery time.
+
+#### Known Limitations
+
+- Monolithic Architecture:
+  - While modular, the monolith may face scaling bottlenecks compared to microservices for very high loads beyond year 5.
+  - Tight coupling of components increases complexity for large-scale changes.
+- Cost Management:
+  - Snowflake’s pay-per-use model and Fargate scaling may lead to high costs if not optimized.
+  - Lack of real-time cost monitoring dashboards (planned for future iterations).
+- AI Dependency:
+  - NL-to-SQL translation accuracy depends on Snowflake Cortex training quality.
+  - Limited fallback mechanisms if AI fails to interpret complex queries.
+- Geographic Restriction Overhead:
+  - IP whitelisting via AWS WAF may complicate access for legitimate users outside Costa Rica like remote workers.
+- Onboarding Complexity:
+  - Tripartite key system and custodian approvals may slow down dataset sharing for new users.
+
+#### Proposals for Future Improvements  
+
+- Cost Optimization:
+  - Implement AWS Cost Explorer dashboards and Snowflake resource monitors to track usage and optimize spending.
+  - Introduce query cost estimation before execution to prevent expensive operations.
+- AI Enhancements:
+  - Integrate AWS SageMaker for custom ML models as a fallback for Cortex failures.
+  - Develop a feedback loop for users to refine NL-to-SQL translations.
+- Simplified Onboarding:
+  - Streamline custodian approval workflows with automated reminders and pre-approved IP ranges.
+  - Provide guided UI wizards for dataset sharing and permission configuration.
+- Global Access with Compliance:
+  - Explore secure VPN solutions or proxy services for non-Costa Rica users while maintaining geographic compliance.
+  - Implement dynamic IP registration for trusted institutions.
+
+#### Evolution Roadmap
+
+| Phase | Timeline | Objectives |
+|-------|----------|------------|
+| Short-Term (0-6 months) | Q3-Q4 2025 | Implement cost monitoring dashboards, optimize Snowflake query performance |
+| Mid-Term (6-18 months) | Q1 2026 - Q2 2027 | Transition to microservices for high-traffic services |
+| Long-Term (18+ months) | Q3 2027 + | Integrate advanced AI models (SageMaker), support global access with VPN |
