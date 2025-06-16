@@ -1503,10 +1503,6 @@ The system translates natural language queries into SQL, validates both the quer
 
 ![image](https://github.com/user-attachments/assets/9440c17d-f9d8-438f-87ea-667b7f0cac30)
 
-### 4. Geographic Access Control
-
-![image](https://github.com/user-attachments/assets/7a49013a-36e5-46e2-a19b-cce6265764c0)
-
 ## Data Layer Design
 
 This document defines the architecture, configuration, and access patterns for the Data Layer of the system. It provides implementation-level guidance for developers and architects working on the core data flows, including the stage (raw) and production (refined) environments. The system is deployed in AWS Fargate, with integrations to several AWS-native services and Snowflake as the primary data engine.
