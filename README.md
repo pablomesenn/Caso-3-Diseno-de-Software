@@ -1986,6 +1986,110 @@ The testing strategy for Data Pura Vida ensures system reliability, performance,
 
 ### Gestión de Código
 
+The DevOps and deployment strategy for Data Pura Vida leverages modern cloud-native practices to ensure reliable, scalable, and secure deployments. It builds on the existing Git Flow branching model, CI/CD pipelines, and Blue-Green deployment strategy, integrating AWS services, Snowflake, and robust monitoring.
+
+### Code Management
+
+- Version Control:
+  - Repository: Hosted on GitHub, using Git as the version control system.
+  - Branching Strategy: Follows Git Flow (see provided table: `main`, `develop`, `feature/*`, `release/*`, `hotfix/*`).
+  - Commit Standards: Adhere to Conventional Commits for traceability and automated changelog generation.
+
+- Code Quality:
+  - Linting:
+    - Frontend: ESLint with Airbnb rules for React.
+    - Backend: Pylint and Black for Python/Flask.
+  - Formatting: Prettier (frontend), Black (backend) enforced via pre-commit hooks.
+  - Code Reviews: Mandatory pull request reviews with at least one approval, enforced via GitHub branch protection rules.
+  - Documentation: API specs, architecture diagrams, and guides versioned in the repository.
+
+### CI/CD Pipeline
+
+#### Continuous Integration
+
+- Tool: GitHub Actions.
+- Triggers: Runs on every push to feature/*, develop, and main branches.
+- Pipeline Steps:
+  - Checkout code and cache dependencies.
+  - Install dependencies (npm for frontend, pip for backend).
+  - Run linters (ESLint, Pylint).
+  - Execute unit and integration tests (Jest, pytest).
+  - Perform security scans (OWASP ZAP).
+  - Build Docker images for Flask API and React Native frontend.
+- Standards:
+  - All checks must pass before PR approval.
+  - Code coverage reports uploaded to GitHub PRs.
+  - Security scan results reviewed by security specialists.
+
+#### Continuous Deployment
+
+- Tool: GitHub Actions with Terraform for infrastructure as code (IaC).
+- Environments:
+  - Staging: Deploys to develop branch automatically, no approval required.
+  - Production: Deploys to main branch with manual approval from the Product Manager.
+- Deployment Strategy: Blue-Green deployment using AWS Fargate and Application Load Balancer (ALB).
+  - Blue Environment: Current production (stable).
+  - Green Environment: New version, validated via health checks and tests.
+  - Traffic shifts to Green via ALB after validation; Blue retained for 24 hours for rollback.
+- Steps:
+  - Provision infrastructure (Fargate, S3, Snowflake, VPC) using Terraform.
+  - Deploy Flask API and React Native frontend as Docker containers on Fargate.
+  - Run post-deployment health checks (API endpoints, Snowflake connectivity).
+  - Validate performance metrics (<200ms query latency, <0.1% error rate).
+  - Rollback to Blue environment if checks fail.
+- Standards:
+  - Environment variables injected securely via AWS Secrets Manager.
+  - Deployments logged in CloudWatch with SNS alerts for failures.
+  - Rollback mechanism automated via Terraform scripts.
+
+### Infrastructure as Code
+
+- Tool: Terraform.
+- Scope:
+  - AWS Resources: Fargate, S3, KMS, Cognito, WAF, CloudWatch, QuickSight, Step Functions, Glue, Lambda.
+  - Snowflake: Warehouses, schemas, roles, and network policies.
+- Standards:
+  - Modular Terraform modules for each service.
+  - Versioned in GitHub, with separate state files for staging and production.
+  - Infrastructure changes require PR review and approval.
+- Benefits:
+  - Reproducible environments.
+  - Automated recovery playbooks for disaster scenarios (<2-hour recovery time).
+
+### Monitoring and Operations
+
+- Tools:
+  - AWS CloudWatch: Captures logs, metrics, and alerts for Fargate, S3, and Lambda.
+  - Snowflake Query History: Tracks query performance and data access.
+  - Amazon QuickSight: Real-time dashboards for system health, dataset usage, and billing.
+  - AWS CloudTrail: Audits all API calls and configuration changes.
+- Metrics (see KPIs in Strategy and Planning):
+  - System Availability: ≥99.9%.
+  - Query Latency: <200ms (P95).
+  - Error Rate: <0.1%.
+  - Data Ingestion: <2 minutes for 1GB files.
+-Alerts:
+  - SNS notifications for downtime, errors, or security incidents.
+  - Threshold-based alerts for usage limits and performance degradation.
+- High Availability:
+  - Fargate auto-scaling for API traffic spikes.
+  - Snowflake multi-cluster architecture for query load balancing.
+  - S3 versioning and Snowflake Time Travel for data recovery.
+
+### Disaster Recovery
+
+- Backup Strategy:
+  - S3: Daily full backups, 4-hour incremental backups with versioning.
+  - Snowflake: Daily snapshots with Time Travel (7-day retention).
+  - Metadata: Stored in AWS Secrets Manager and backed up daily.
+- Recovery Playbooks:
+  - Automated via Terraform and AWS Step Functions.
+  - Recovery time: <2 hours for critical failures.
+  - Tested quarterly to validate 99.9% SLA.
+- Failover:
+  - Multi-AZ deployment for S3 and Fargate.
+  - Snowflake replication across regions for fault tolerance.
+
 ## EVALUACIÓN Y MEJORA
 
 ### Architecture Compliance Matrix
