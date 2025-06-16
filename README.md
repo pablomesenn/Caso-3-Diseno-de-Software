@@ -1862,25 +1862,138 @@ https://www.snowflake.com/wp-content/uploads/2023/12/The-Simple-Guide-to-Snowfla
 ```
 
 ## QUALITY AND TESTING
-### Estrategia de Pruebas
-```
-Qué hacer:
-Definir pruebas unitarias, integración y e2e
-Crear casos de prueba por componente
-Implementar pruebas de seguridad
-Diseñar pruebas de carga y performance
-```
+
+### Test Strategy
+
+The testing strategy for Data Pura Vida ensures system reliability, performance, security, and compliance with functional and non-functional requirements. It encompasses unit tests, integration tests, end-to-end (E2E) tests, security tests, and load/performance tests, covering all components (frontend, backend, data layer, and AI services). The strategy aligns with the system’s 99.9% SLA, <200ms query latency.
+
+#### Unit Tests
+
+**Objective**: Validate individual components in isolation to ensure correct functionality of business logic, security mechanisms, and data operations.
+
+- Scope:
+  - Frontend: React components, hooks, and utilities (e.g., authentication flows, dashboard rendering).
+  - Backend: Flask services (e.g., DatasetService, AccessControlService, AIChatService), middleware (e.g., SecurityContextMiddleware, GeoRestrictionMiddleware), and repository methods (e.g., SFRepository, S3Repository).
+  - AI Layer: MLModel for NL-to-SQL translation, StimulusSelector for data classification, and transformation agents (UnionAgent, SplitAgent).
+  - Security: TripartiteKeyManager key splitting/reconstruction, CustodianManager approval workflows.
+  - Data Layer: Snowflake query execution, S3 file handling, and ETL transformations.
+
+- Tools:
+  - Frontend: React Testing Library, Jest.
+  - Backend: pytest, unittest (Python).
+  - AI: Custom test harnesses for ML model validation using pytest.
+  - Data: Snowflake’s TEST functions for data quality checks (e.g., uniqueness, not_null constraints).
+
+- Standards:
+  - Minimum 90% code coverage for business logic and services (enforced via CI/CD).
+  - Mock external dependencies (e.g., AWS SDK, Snowflake Connector) using moto and unittest.mock.
+  - Test cases must cover edge cases (e.g., invalid inputs, expired tokens, unauthorized access).
+
+#### Integration Testing
+
+**Objective**: Validate interactions between system components, including APIs, services, middleware, and external services (AWS, Snowflake).
+
+- Scope:
+  - API endpoints: Test `/auth/login`, `/datasets/upload`, `/queries/execute`, `/ai/chat`, and `/sharing/datasets/{id}/share`.
+  - Middleware: Ensure `SecurityContextMiddleware`, `GeoRestrictionMiddleware`, and `UsageLimitMiddleware` correctly process requests.
+  - Data Layer: Validate S3-to-Snowflake ETL pipelines via AWS Glue and Snowpipe.
+  - Security: Test RBAC/RLS enforcement and tripartite key workflows.
+  - AI: Verify NL query translation, execution, and result formatting.
+
+- Tools:
+  - Postman/Newman for API testing.
+  - pytest with Snowflake Connector for data layer tests.
+  - AWS SDK (Boto3) for testing S3, KMS, and Cognito integrations.
+  - Snowflake Query History for validating query execution outcomes.
+
+- Standards:
+  - Tests must simulate real-world scenarios.
+  - Use temporary Snowflake warehouses and S3 staging buckets for isolated test environments.
+  - Validate error handling.
+
+#### End-to-End (E2E) Testing
+
+**Objective**: Validate complete user journeys, ensuring all components work together as expected, from frontend interactions to backend processing and data retrieval.
+
+- Scope:
+  - User registration and authentication with MFA and biometrics.
+  - Dataset upload, encryption, and sharing with custodian approval.
+  - AI-powered query submission and dashboard visualization.
+  - Backoffice operations (e.g., user management, audit log review).
+  - Monetization workflows (e.g., dataset purchase, usage tracking).
+
+- Tools:
+  - Cypress for frontend E2E testing (React Native UI).
+  - Selenium for backoffice interface testing.
+  - Custom scripts for simulating multi-user workflows.
+  - AWS Step Functions for orchestrating E2E test scenarios.
+
+- Standards:
+  - Tests must cover all UX journeys (see provided diagrams).
+  - Simulate production-like environments using AWS Fargate and Snowflake staging warehouses.
+  - Validate compliance with accessibility standards (e.g., screen reader support, keyboard navigation).
+
+#### Security Testing
+
+**Objective**: Identify vulnerabilities, ensure data protection, and validate compliance with security policies.
+
+- Scope:
+  - Penetration testing for API endpoints, focusing on authentication, authorization, and data access.
+  - Static code analysis for security vulnerabilities (e.g., OWASP Top 10).
+  - Dynamic analysis of AI models to detect biases or data leakage.
+  - Security audits of AWS services (IAM roles, KMS keys, S3 bucket policies).
+
+- Tools:
+  - OWASP ZAP for dynamic security testing.
+  - Bandit for static code analysis (Python).
+  - Custom scripts for testing tripartite key workflows and custodian approvals.
+  - AWS Inspector for infrastructure security assessments.
+
+- Standards:
+  - All security tests must be automated and integrated into the CI/CD pipeline.
+  - Vulnerabilities must be categorized (e.g., critical, high, medium, low) and remediated based on risk.
+  - Regular security audits every 6 months or after major changes.
+
+#### Load and Performance Testing
+
+**Objective**: Validate system performance under expected load, ensuring SLA compliance and identifying bottlenecks.
+
+- Scope:
+  - API performance under concurrent user load (e.g., 1000+ users).
+  - Snowflake query execution performance (e.g., sub-200ms latency for 95% of queries).
+  - Data ingestion and transformation throughput (e.g., S3 to Snowflake ETL jobs).
+
+- Tools:
+  - Apache JMeter for API load testing.
+  - Locust for simulating user traffic and measuring response times.
+  - Snowflake Query Profiling for analyzing query performance.
+  - AWS CloudWatch for monitoring resource utilization (CPU, memory, I/O).
+
+- Standards:
+  - Load tests must simulate peak usage scenarios (e.g., end-of-month reporting).
+  - Performance metrics must be collected and analyzed for trends.
+  - Bottlenecks must be identified and addressed (e.g., scaling Snowflake warehouses, optimizing queries).
+
+#### Implementation Guidelines
+
+- CI/CD Integration: All tests are integrated into GitHub Actions pipelines, running on every pull request to develop and main.
+- Test Environments: Use separate AWS accounts and Snowflake warehouses for staging and testing to avoid production data contamination.
+- Test Data: Use synthetic datasets mimicking real-world scenarios (e.g., electoral data, health records) with PII redacted.
+- Monitoring: Test results are logged in CloudWatch, with failures triggering SNS alerts.
+- Compliance: Security tests align with Law 8968 and GDPR, ensuring auditability and data protection.
 
 ## DEVOPS AND DEPLOYMENT
+
 ### Gestión de Código
 
 ## EVALUACIÓN Y MEJORA
+
 ### Architecture Compliance Matrix
+
 ### Análisis de Ventajas/Desventajas
-```
+
 Qué hacer:
 Identificar fortalezas del diseño
 Documentar limitaciones conocidas
 Proponer mejoras futuras
 Crear roadmap de evolución
-```
