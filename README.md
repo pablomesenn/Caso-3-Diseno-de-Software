@@ -1978,7 +1978,7 @@ The testing strategy for Data Pura Vida ensures system reliability, performance,
 
 - CI/CD Integration: All tests are integrated into GitHub Actions pipelines, running on every pull request to develop and main.
 - Test Environments: Use separate AWS accounts and Snowflake warehouses for staging and testing to avoid production data contamination.
-- Test Data: Use synthetic datasets mimicking real-world scenarios (e.g., electoral data, health records) with PII redacted.
+- Test Data: Use synthetic datasets mimicking real-world scenarios with PII redacted.
 - Monitoring: Test results are logged in CloudWatch, with failures triggering SNS alerts.
 - Compliance: Security tests align with Law 8968 and GDPR, ensuring auditability and data protection.
 
