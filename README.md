@@ -515,6 +515,12 @@ AI & Machine Learning:
     Snowflake can be integrated with LLM's, in relation with the choosen model of the LLM a training for ETDL flow management is required. This AI will be used as well for documents revision.
     Reference Link: https://www.youtube.com/watch?app=desktop&v=9FejjGVZrPg&t=0s
 
+    **AI Processing with SageMaker**
+    	1. **S3-Native Processing**: SageMaker can directly read from and write to S3 without data movement
+	2. **Scalable Infrastructure**: Automatically provisions ML instances (from ml.t3.medium to ml.p3.16xlarge)
+	3. **Cost Efficiency**: Spot instances for training, serverless inference for sporadic workloads
+	4. **Integration**: Native Step Functions integration for orchestration
+
 Cloud & Hosting:   
  
     Amazon Web Services: Ensures good communication and compatbility with Snowflake and multiple useful services. 
