@@ -548,7 +548,7 @@ The design will consist of four layers:
 - Storybook for component testing
   
 **Class and Components**
-`LoginPage`, `BiometricPrompt`, `DashboardLayout`, `TaskCard`, `LiveTranscriptionPanel`, `AssistantContainer`, `TaskGuideOverlay`, `NavigationBar`, 
+`LoginPage`, `BiometricPrompt`, `DashboardLayout`, `TaskCard`, `AssistantContainer`, `TaskGuideOverlay`, `NavigationBar`, 
 
 **Design Patterns**
 - MVVM (React View + Redux ViewModel)
