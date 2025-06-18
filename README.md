@@ -21,7 +21,7 @@ Members: Pablo Mesén, Alonso Durán Muñoz, Ana Hernández Muñoz, Jesus Valver
    	- [SECURITY LAYER DESIGN](#Security-Layer-Design)
    	- [AUDIT & LOGGING](#Audit-&-Logging)
    	- [THIRDPARTY SERVICES](#THIRDPARTY-SERVICES)
-   	- [KEY WORKFLOW](#Key-Workflows)
+   	- [KEY WORKFLOWs](#Key-Workflows)
    	- [DATA LAYER DESIGN](#Data-Layer-Design)
 
 
