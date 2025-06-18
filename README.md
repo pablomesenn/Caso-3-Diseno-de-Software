@@ -1231,284 +1231,14 @@ Monitoring & Compliance:
 #### Cortex
 
 ## Key Workflows
-
-### 1. Dataset Upload & Encryption
-
-The flow for an upload at a API level of a dataset in my system is this: 
-
-- Client POST/dataset/upload/init
-- Handler layer sends to validade user permissions and initialize upload session. 
-- The service layer generates encrytion keys with the security layer, then creates a s3 upload session, then storage returns presigned URL's
-- Service layer returns upload session then the handler returns uploard URL's. 
-- For each chunk PUT chunk to s3
-- Then POST/upload/{session}/finalize form the client to the handler layer
-- The handler layer tells the service layer to finalize the upload
-- Service layer use the security layer to encrypt the dataset, then service layer tells the storage/repsitory layer to move to final location
-- Service layer extracts metadata says upload is complete to the handler and lastly th
-- Handlers say to the client Dataset is ready.
-
-The flow for an upload at a more general level of a dataset in my system is this: 
-
-- Client send full payload or pointer, flask API split into chunks, returns pre-signed URL's for each chunk, client then uploads chuck via pre-signed URL in a loop for each chuck into s3.
-- CLient notify upload complete sending list of chunk references, Flask API starts step function (pass chunk references), step functions trigger ETL job to AWS Glue. 
-- Glue reads each chunck from s3, then merges, transform and validates data.
-- Glue writes processed data to staging area, and glue finally load processed data into Snowflake.
-
-The flow for an upload at a more specific level of a dataset in my system including the AI agent interaction: 
-
-- user uploads raw data (CSV/JSON/parquet) to s3 Bucket.
-- s3 bucket triggers Glue Crawler (Metadata Discovery)
-- AWS GLue (ETL) classifies Schema and patitions data, stores processed data (parquet/delta) to Data lake (s3 processed), and finally triggers Glue Job (transformation)
-- Glue notifies completition (EventBridge/SNS) to lambda (AI agent)
-- The AI agent reads processed data from the datalake, AI model processes data (pandas/pyspark), then updates Schema/Model (SQL Alquemy/snowpark)
-- Finally snowflake confirms update.
-
-
-The AI Layer handles large-scale data and metadata processing to determine and apply intelligent system transformations. It leverages machine learning techniques, both supervised and unsupervised, to identify patterns, classify relevant stimuli, and delegate transformation actions. These actions are executed by a coordinated set of agents, each designed for specific data operations such as merging, splitting, or appending. To ensure transformation integrity, proposed actions undergo a review process using a compensating transactions mechanism. This approach validates each action and ensures reversibility, enabling consistent rollback in case of errors or partial execution. For operations involving significant data volumes, the claim check pattern is used to temporarily externalize payloads and replace them with lightweight references within the processing flow.
-
-After validation, transformations are committed to the production environment through a high-throughput, cloud-native data warehousing solution, ensuring durable and performant integration.
-
-Design Patterns: Learning based patttern for AI, claim check pattern, compensating transaction pattern Principles Applied: Single Responsability Principle, DRY
-Core Components
-
-    Stimuli
-    Represent contextualized input elements within the system. Each instance holds associated metadata and runtime values, providing interfaces to access descriptors, verify content integrity, and extract meaningful signals.
-        get_metadata() -> Dict
-        is_valid() -> bool
-
-    StimulusSelector
-    Defines classification strategies to isolate meaningful input candidates. It maintains a registry of rules and supports dynamic updates.
-        classifyAction(inputs: List[Stimuli]) -> List[Stimuli]
-        add_rule(rule: Rule) -> void
-        clear_rules() -> void
-
-    Executor
-    Orchestrates the full lifecycle of transformation. It evaluates stimuli, determines the required transformation type, and delegates execution to the appropriate agent.
-        execute(inputs: List[Stimuli]) -> Output
-        detect_action(inputs: List[Stimuli]) -> str
-        select_agent(action: str) -> Agent
-
-    Agent
-    Encapsulates operational intelligence for a specific transformation. These units consume selected stimuli and apply a bounded action informed by a learning model.
-        action(data: List[Stimuli]) -> Output
-
-    UnionAgent / AppendAgent / SplitAgent / ...
-    Specializations of Agent, each tailored to a defined category of transformation logic.
-
-    MLModel
-    Abstracts the learning engine used within agents. It specifies the learning approach and model configuration.
-
-    SupervisedLearning
-    Supports labeled data processing to detect recurring patterns and correlate inputs to known outcomes.
-
-    UnsupervisedLearning
-    Explores unlabeled inputs to reveal latent clusters and infer relationships through similarity analysis.
-
-    DataProcessor
-    Intermediates between the AI Layer and the broader system. It extracts structured metadata and operational data required for contextual learning and transformation.
-
-
-Learning-Based Pattern
-
-When the patterns are identified, machine learning methods come into play to train systems to recognize them in new or unseen data. Each learning paradigm offers different strengths depending on the use case, data structure, and availability of labeled examples.
-Supervised learning
-
-Models are trained on labeled datasets, which pair each input with a right output. This is the most common approach in pattern recognition when historical data with known outcomes is available.
-
-    Based on labeled historical data, banks classify transactions as fraudulent or legitimate using supervised learning.
-
-Unsupervised learning
-
-Patterns or structures are found in unlabeled data. It is often used to identify clusters, detect anomalies, or reveal hidden relationships.
-
-    Cybersecurity platforms use unsupervised learning to detect unusual login patterns that may signal a breach, even when no previous examples exist.
-
-AI Powered data model transformator
-
-Stimuli
--  id: UUID
-- type: StimulusType (ENUM)
-- metadata: Dict
-- value: Any
-+ get_metadata(): Dict
-+ is_valid(): bool 
-
-StimulusSelector
-- selection_strategy: StrategyType (ENUM)
-- filter_rules: List[Rule]
-+classifyAction(inputs: List[Stimulus]): List[Stimulus]
-+add_rule(rule: Rule): void
-+clear_rules(): void 
-
-Agent
-- id: UUID
-- name: str
-- model: MLModel
-+action(data: List[Stimulus]): Output
-
-MLModel
-- model_type: str
-- LearningStrategy:
-+predict(input: Any): Any
-+fit(X: Any, y: Any): void
-+save(path: str): void
-+load(path: str): void
-
-UnsupervisedLearning
-+lookForPattern()
-+findSimilarDocs()
-
-SupervisedLearning
-+lookForPattern()
-+findSimilarDocs()
-
-<< abstract >> LearningEngine
-+ train(Dataset)
-
-DataProccesor
--isActive: bool
-+pullMetadata(): List[Dataset]
-
-
-Compensating Transaction Pattern
-
-Once you have completed the structural changes to the data model resolved in Exercise #9, you now want to ensure that these model definition changes are made under the "all or nothing" principle. If this fails, you must transfer the process to a human, a data architect, who will be in charge of manually making the transformational adjustments and loading rules. If this is successful, then you will now proceed to load the data into the already restructured model. If and only if this transfer is successful, the transformation of the model and its data will be published and made official. Otherwise, everything will be undone and the process will be reengineered manually.
-
-DataModelPublisherStep
-DataModelUpdaterStep
-DataLoaderStep
-DataTransformationStep
-
-ModelTransformationStep
-- strategy: CompensationStrategy
-+compensator: Compensator
-+ execute() 
-+ logState()
-
-DataModelTransformationPipeline
-- steps: List<ModelTransformationStep>
-- log: DurableLog
-+ execute()  
-
-<<Interface>> Compensator
-Compensate()
-
-RetryPolicy
-+ maxAttempts
-+ backoffDelay
-
-CompensatingTransactionEngine
-- log: DurableLog
--lockManager: LockManager
-+compensate(process: DataModelTransformationPipeline)
-+optimizeOrder(steps: List<ModelTransformationStep>)
-+runStepCompensation(step: ModelTransformationStep)
-
-LockManager
-+acquire(resourse):boolean
-+realese:void
-
-DurableLog
-+ writeEntry()
-+readIncompleteSteps(): List
-
-RecoveryService
--log: DurableLog
--alertSystem: AlertSystem
-+checkInterrupted()
-+resumeCompensation()
-
-AlertSystem
-+notify()
-
-
-Claim Check Pattern
-
-When uploading a dataset, it can come from a variety of sources. When it comes to large files, such as 500MB, 4GB, or 10GB, or table reads with millions of records, there's a high likelihood of multiple disconnections during the data transfer. It's essential that all data is uploaded to the data lake intact and without duplication, without requiring rework.
-
-UploadManager
-+handleUpload(file)
-+validateChuncks()
-+isComplete()
-
-RetryHandler
-+retry(chunck: Chunck)
-+logFailure(chunk: Chunck)
-
-<<AWS>> 
-S3Repository
-+putObject(key, data)
-+getObject(key): byte[]
-
-ClaimCheckToken
-+id: UUID
-+chunckMetadataList: List<ChunckMetadata>
-+createdAt: DateTime
-
-MetadataStore
-+storeClaimCheck(token: ClaimCheckToken)
-+getClaimCheck(tokenId: UUID): ClaimCheckToken
-
-ChunckUploader
-+upload(chunck: Chunck, token: ClaimCheckToken)
-+retryFailedChuncks(token: ClaimCheckToken)
-
-DatasetUploader
--Repository: IRepository      
-+uploadsDataset(file)
-+slitIntoChunks(file):List<Chunck>   
-
-Chunck
--data: byte[]
--checksum: string
-+getMetadata(): ChunckMetadata
-
-ChunkMetadata
-+checksum: string
-+sequenceId: int
-+size: int
-+status: string
-
-AirflowDAG
-+tiggerWorkflow(tokenId: UUID)
-+monitorStatus()
-
-<<AWS>>
-LambdaFunction
-+pracessChunck(chunck: Chunck)
-
-<<AWS>>
-GlueJob
-+runETL(tokenID: UUID)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## Key Workflows
-### 1. Dataset Upload & Encryption
+### 1. Dataset Upload
+![image](https://github.com/user-attachments/assets/d5839f90-2cfd-4438-82fb-278102f37f5d)
 
 #### **Phase 1: Upload Initialization**
 
-#### *1.1 Initialize Upload Session*
 ```
 POST /datasets/upload/init
 ```
-
-**Process:**
-
-![image](https://github.com/user-attachments/assets/d5839f90-2cfd-4438-82fb-278102f37f5d)
 
 1. **Handler Layer** receives request and validates user permissions
 2. **Service Layer** (`DatasetService`) performs:
@@ -1525,12 +1255,10 @@ POST /datasets/upload/init
 
 #### **Phase 2: Chunk Upload**
 
-#### *2.1 Upload Data Chunks*
 ```
 PUT [presigned_url]
 ```
 
-**Process:**
 1. **Client** splits file into chunks
 2. **Direct Upload** to S3 using presigned URLs
 3. **Parallel Processing** enabled for multiple chunks
@@ -1540,7 +1268,6 @@ PUT [presigned_url]
 
 #### **Phase 3: Upload Finalization**
 
-#### *3.1 Finalize Upload*
 ```
 POST /datasets/upload/{session}/finalize
 ```
@@ -1554,8 +1281,6 @@ POST /datasets/upload/{session}/finalize
   ]
 }
 ```
-
-**Process Flow:**
 
 1. **Validation Phase**
    - Handler layer validates all chunks are present
