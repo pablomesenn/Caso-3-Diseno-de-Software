@@ -1234,7 +1234,1058 @@ Monitoring & Compliance:
 
 ### 1. Dataset Upload & Encryption
 
-Example workflow for a simple file upload
+The flow for an upload at a API level of a dataset in my system is this: 
+
+- Client POST/dataset/upload/init
+- Handler layer sends to validade user permissions and initialize upload session. 
+- The service layer generates encrytion keys with the security layer, then creates a s3 upload session, then storage returns presigned URL's
+- Service layer returns upload session then the handler returns uploard URL's. 
+- For each chunk PUT chunk to s3
+- Then POST/upload/{session}/finalize form the client to the handler layer
+- The handler layer tells the service layer to finalize the upload
+- Service layer use the security layer to encrypt the dataset, then service layer tells the storage/repsitory layer to move to final location
+- Service layer extracts metadata says upload is complete to the handler and lastly th
+- Handlers say to the client Dataset is ready.
+
+The flow for an upload at a more general level of a dataset in my system is this: 
+
+- Client send full payload or pointer, flask API split into chunks, returns pre-signed URL's for each chunk, client then uploads chuck via pre-signed URL in a loop for each chuck into s3.
+- CLient notify upload complete sending list of chunk references, Flask API starts step function (pass chunk references), step functions trigger ETL job to AWS Glue. 
+- Glue reads each chunck from s3, then merges, transform and validates data.
+- Glue writes processed data to staging area, and glue finally load processed data into Snowflake.
+
+The flow for an upload at a more specific level of a dataset in my system including the AI agent interaction: 
+
+- user uploads raw data (CSV/JSON/parquet) to s3 Bucket.
+- s3 bucket triggers Glue Crawler (Metadata Discovery)
+- AWS GLue (ETL) classifies Schema and patitions data, stores processed data (parquet/delta) to Data lake (s3 processed), and finally triggers Glue Job (transformation)
+- Glue notifies completition (EventBridge/SNS) to lambda (AI agent)
+- The AI agent reads processed data from the datalake, AI model processes data (pandas/pyspark), then updates Schema/Model (SQL Alquemy/snowpark)
+- Finally snowflake confirms update.
+
+
+The AI Layer handles large-scale data and metadata processing to determine and apply intelligent system transformations. It leverages machine learning techniques, both supervised and unsupervised, to identify patterns, classify relevant stimuli, and delegate transformation actions. These actions are executed by a coordinated set of agents, each designed for specific data operations such as merging, splitting, or appending. To ensure transformation integrity, proposed actions undergo a review process using a compensating transactions mechanism. This approach validates each action and ensures reversibility, enabling consistent rollback in case of errors or partial execution. For operations involving significant data volumes, the claim check pattern is used to temporarily externalize payloads and replace them with lightweight references within the processing flow.
+
+After validation, transformations are committed to the production environment through a high-throughput, cloud-native data warehousing solution, ensuring durable and performant integration.
+
+Design Patterns: Learning based patttern for AI, claim check pattern, compensating transaction pattern Principles Applied: Single Responsability Principle, DRY
+Core Components
+
+    Stimuli
+    Represent contextualized input elements within the system. Each instance holds associated metadata and runtime values, providing interfaces to access descriptors, verify content integrity, and extract meaningful signals.
+        get_metadata() -> Dict
+        is_valid() -> bool
+
+    StimulusSelector
+    Defines classification strategies to isolate meaningful input candidates. It maintains a registry of rules and supports dynamic updates.
+        classifyAction(inputs: List[Stimuli]) -> List[Stimuli]
+        add_rule(rule: Rule) -> void
+        clear_rules() -> void
+
+    Executor
+    Orchestrates the full lifecycle of transformation. It evaluates stimuli, determines the required transformation type, and delegates execution to the appropriate agent.
+        execute(inputs: List[Stimuli]) -> Output
+        detect_action(inputs: List[Stimuli]) -> str
+        select_agent(action: str) -> Agent
+
+    Agent
+    Encapsulates operational intelligence for a specific transformation. These units consume selected stimuli and apply a bounded action informed by a learning model.
+        action(data: List[Stimuli]) -> Output
+
+    UnionAgent / AppendAgent / SplitAgent / ...
+    Specializations of Agent, each tailored to a defined category of transformation logic.
+
+    MLModel
+    Abstracts the learning engine used within agents. It specifies the learning approach and model configuration.
+
+    SupervisedLearning
+    Supports labeled data processing to detect recurring patterns and correlate inputs to known outcomes.
+
+    UnsupervisedLearning
+    Explores unlabeled inputs to reveal latent clusters and infer relationships through similarity analysis.
+
+    DataProcessor
+    Intermediates between the AI Layer and the broader system. It extracts structured metadata and operational data required for contextual learning and transformation.
+
+
+Learning-Based Pattern
+
+When the patterns are identified, machine learning methods come into play to train systems to recognize them in new or unseen data. Each learning paradigm offers different strengths depending on the use case, data structure, and availability of labeled examples.
+Supervised learning
+
+Models are trained on labeled datasets, which pair each input with a right output. This is the most common approach in pattern recognition when historical data with known outcomes is available.
+
+    Based on labeled historical data, banks classify transactions as fraudulent or legitimate using supervised learning.
+
+Unsupervised learning
+
+Patterns or structures are found in unlabeled data. It is often used to identify clusters, detect anomalies, or reveal hidden relationships.
+
+    Cybersecurity platforms use unsupervised learning to detect unusual login patterns that may signal a breach, even when no previous examples exist.
+
+AI Powered data model transformator
+
+Stimuli
+-  id: UUID
+- type: StimulusType (ENUM)
+- metadata: Dict
+- value: Any
++ get_metadata(): Dict
++ is_valid(): bool 
+
+StimulusSelector
+- selection_strategy: StrategyType (ENUM)
+- filter_rules: List[Rule]
++classifyAction(inputs: List[Stimulus]): List[Stimulus]
++add_rule(rule: Rule): void
++clear_rules(): void 
+
+Agent
+- id: UUID
+- name: str
+- model: MLModel
++action(data: List[Stimulus]): Output
+
+MLModel
+- model_type: str
+- LearningStrategy:
++predict(input: Any): Any
++fit(X: Any, y: Any): void
++save(path: str): void
++load(path: str): void
+
+UnsupervisedLearning
++lookForPattern()
++findSimilarDocs()
+
+SupervisedLearning
++lookForPattern()
++findSimilarDocs()
+
+<< abstract >> LearningEngine
++ train(Dataset)
+
+DataProccesor
+-isActive: bool
++pullMetadata(): List[Dataset]
+
+
+Compensating Transaction Pattern
+
+Once you have completed the structural changes to the data model resolved in Exercise #9, you now want to ensure that these model definition changes are made under the "all or nothing" principle. If this fails, you must transfer the process to a human, a data architect, who will be in charge of manually making the transformational adjustments and loading rules. If this is successful, then you will now proceed to load the data into the already restructured model. If and only if this transfer is successful, the transformation of the model and its data will be published and made official. Otherwise, everything will be undone and the process will be reengineered manually.
+
+DataModelPublisherStep
+DataModelUpdaterStep
+DataLoaderStep
+DataTransformationStep
+
+ModelTransformationStep
+- strategy: CompensationStrategy
++compensator: Compensator
++ execute() 
++ logState()
+
+DataModelTransformationPipeline
+- steps: List<ModelTransformationStep>
+- log: DurableLog
++ execute()  
+
+<<Interface>> Compensator
+Compensate()
+
+RetryPolicy
++ maxAttempts
++ backoffDelay
+
+CompensatingTransactionEngine
+- log: DurableLog
+-lockManager: LockManager
++compensate(process: DataModelTransformationPipeline)
++optimizeOrder(steps: List<ModelTransformationStep>)
++runStepCompensation(step: ModelTransformationStep)
+
+LockManager
++acquire(resourse):boolean
++realese:void
+
+DurableLog
++ writeEntry()
++readIncompleteSteps(): List
+
+RecoveryService
+-log: DurableLog
+-alertSystem: AlertSystem
++checkInterrupted()
++resumeCompensation()
+
+AlertSystem
++notify()
+
+
+Claim Check Pattern
+
+When uploading a dataset, it can come from a variety of sources. When it comes to large files, such as 500MB, 4GB, or 10GB, or table reads with millions of records, there's a high likelihood of multiple disconnections during the data transfer. It's essential that all data is uploaded to the data lake intact and without duplication, without requiring rework.
+
+UploadManager
++handleUpload(file)
++validateChuncks()
++isComplete()
+
+RetryHandler
++retry(chunck: Chunck)
++logFailure(chunk: Chunck)
+
+<<AWS>> 
+S3Repository
++putObject(key, data)
++getObject(key): byte[]
+
+ClaimCheckToken
++id: UUID
++chunckMetadataList: List<ChunckMetadata>
++createdAt: DateTime
+
+MetadataStore
++storeClaimCheck(token: ClaimCheckToken)
++getClaimCheck(tokenId: UUID): ClaimCheckToken
+
+ChunckUploader
++upload(chunck: Chunck, token: ClaimCheckToken)
++retryFailedChuncks(token: ClaimCheckToken)
+
+DatasetUploader
+-Repository: IRepository      
++uploadsDataset(file)
++slitIntoChunks(file):List<Chunck>   
+
+Chunck
+-data: byte[]
+-checksum: string
++getMetadata(): ChunckMetadata
+
+ChunkMetadata
++checksum: string
++sequenceId: int
++size: int
++status: string
+
+AirflowDAG
++tiggerWorkflow(tokenId: UUID)
++monitorStatus()
+
+<<AWS>>
+LambdaFunction
++pracessChunck(chunck: Chunck)
+
+<<AWS>>
+GlueJob
++runETL(tokenID: UUID)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Key Workflows
+### 1. Dataset Upload & Encryption
+
+#### **Phase 1: Upload Initialization**
+
+#### *1.1 Initialize Upload Session*
+```
+POST /datasets/upload/init
+```
+
+**Process:**
+
+![image](https://github.com/user-attachments/assets/d5839f90-2cfd-4438-82fb-278102f37f5d)
+
+1. **Handler Layer** receives request and validates user permissions
+2. **Service Layer** (`DatasetService`) performs:
+   - Security context validation via `SecurityManager`
+   - Geographic restriction check via `GeoAccessValidator`
+   - Session initialization with unique session ID
+3. **Security Layer** generates encryption keys:
+   - `TripartiteKeyManager` creates three key shares
+   - One share stored with Data Pura Vida
+   - Two shares distributed to designated custodians
+4. **Storage Layer** (`S3Repository`) creates:
+   - S3 upload session with multipart configuration
+   - Presigned URLs for each chunk (valid for 1 hour)
+
+#### **Phase 2: Chunk Upload**
+
+#### *2.1 Upload Data Chunks*
+```
+PUT [presigned_url]
+```
+
+**Process:**
+1. **Client** splits file into chunks
+2. **Direct Upload** to S3 using presigned URLs
+3. **Parallel Processing** enabled for multiple chunks
+4. **Automatic Retry** for failed chunks via `RetryHandler`
+5. **Checksum Validation** ensures data integrity
+
+
+#### **Phase 3: Upload Finalization**
+
+#### *3.1 Finalize Upload*
+```
+POST /datasets/upload/{session}/finalize
+```
+
+**Request Body Example:**
+```json
+{
+  "chunk_references": [
+    {"chunk_id": 1, "checksum": "md5:def456..."},
+    {"chunk_id": 2, "checksum": "md5:ghi789..."}
+  ]
+}
+```
+
+**Process Flow:**
+
+1. **Validation Phase**
+   - Handler layer validates all chunks are present
+   - Service layer verifies checksums match
+   - Ensures no missing or duplicate chunks
+
+2. **Encryption Phase**
+   - Security layer reconstructs tripartite keys
+   - `DataCipherService` encrypts sensitive columns
+   - Keys immediately purged from memory
+
+3. **ETL Trigger Phase**
+   - Service layer initiates AWS Step Function
+   - Passes chunk references and metadata
+   - Triggers AWS Glue job for processing
+
+4. **Storage Migration**
+   - Repository layer moves data from staging to final S3 location
+   - Updates metadata in tracking system
+   - Prepares for Snowflake ingestion
+
+### Technical Components
+
+#### DatasetService
+Central orchestrator for dataset lifecycle
+- **Key Methods**:
+  - `initializeUpload()`: Creates upload session and security context
+  - `processChunk()`: Validates and tracks chunk uploads
+  - `finalizeUpload()`: Coordinates encryption and ETL trigger
+- **Dependencies**: StorageService, ValidationService, SecurityManager
+
+#### UploadManager
+Handles chunked upload logic
+- **Responsibilities**:
+  - Chunk validation and ordering
+  - Retry logic for failed uploads
+  - Progress tracking and reporting
+
+#### SecurityManager
+Enforces security policies during upload
+- **Operations**:
+  - Creates security context for upload session
+  - Validates geographic and permission requirements
+  - Coordinates key generation and encryption
+
+#### S3Repository
+  - `initiateMultipartUpload()`: Creates S3 multipart session
+  - `generatePresignedUrl()`: Creates secure upload URLs
+  - `completeMultipartUpload()`: Finalizes S3 upload
+
+#### SFRepository (Snowflake)
+  - `createExternalStage()`: Links S3 data to Snowflake
+  - `copyIntoTable()`: Bulk loads data from S3
+  - `validateDataQuality()`: Runs quality checks
+
+### Security Measures
+
+#### 1. Authentication & Authorization
+- JWT validation via AWS Cognito
+- Role-based access control (RBAC)
+- Organization-level permissions
+
+#### 2. Encryption
+- **At Rest**: AES-256-GCM in S3 and Snowflake
+- **In Transit**: TLS 1.3 for all communications
+- **Key Management**: AWS KMS with tripartite system
+
+#### 3. Access Control
+- IP whitelisting (Costa Rica only + approved institutions)
+- Row-level security (RLS) in Snowflake
+- Audit logging of all operations
+
+#### 4. Data Protection
+- Sensitive field encryption before storage
+- Automated PII detection and masking
+- Secure key reconstruction only during operations
+
+### Data Transformation and AI Processing
+
+![alt text](image.png)
+
+#### **ETL Pipeline (AWS Glue)**
+1. **Data Reading**
+   - Glue reads chunks from S3 staging area
+   - Detects file format (CSV, JSON, Parquet)
+   - Applies schema inference
+
+2. **Initial Processing**
+   - **Merge**: Combines all chunks into unified dataset
+   - **Basic Clean**: Removes obvious duplicates, handles nulls
+   - **Format**: Converts to Parquet for efficient processing
+   - **Output**: Stores cleaned data in S3 for AI processing
+
+3. **Handoff to AI**
+   - Glue job completes and triggers Step Function
+   - Passes S3 location of processed data
+   - Includes metadata about dataset characteristics
+
+![image](https://github.com/user-attachments/assets/751408d1-674d-457b-b176-c10d02f73df6)
+
+#### **AI Processing with SageMaker**
+
+**AI Processing Flow:**
+
+![image](https://github.com/user-attachments/assets/102f5e7b-8904-43d8-8c21-770ed9119730)
+
+#### AI Components
+
+**AI Agent Selection: AWS SageMaker with Snowflake Schema Integration**
+- **Native S3 Integration**: Can directly process data from S3 without moving it
+- **Scalability**: Handles datasets from MB to TB scale
+- **Step Functions Integration**: Seamlessly fits into your existing orchestration
+- **Cost-Effective**: Pay only for processing time, auto-scales down when idle
+- **Model Flexibility**: Supports both custom models and pre-built algorithms
+
+However SageMaker must communicate bi-directionally with Snowflake to propose schema changes.
+
+![image](https://github.com/user-attachments/assets/744e1d01-967f-48da-b7d5-6b7c4b5c790a)
+
+#### SageMaker and Snowflake Integration
+
+```python
+# Location: AI Processing Layer - Between Glue ETL and Snowflake Load
+class SageMakerDataProcessor:
+    """AI agent for pattern detection and schema evolution"""
+    
+    def __init__(self):
+        self.sagemaker_client = boto3.client('sagemaker')
+        self.snowflake_connector = SnowflakeConnection()
+        self.schema_analyzer = SchemaEvolutionAnalyzer()
+        
+    def process_dataset(self, glue_output_path: str, dataset_metadata: dict):
+        """Main entry point with schema awareness"""
+        
+        # Step 1: Get current Snowflake schema
+        current_schema = self.get_snowflake_schema(dataset_metadata['target_table'])
+        
+        # Step 2: Analyze data AND existing schema together
+        analysis_job = self.create_schema_aware_processing_job(
+            data_path=glue_output_path,
+            current_schema=current_schema,
+            dataset_metadata=dataset_metadata
+        )
+        
+        # Step 3: Get AI recommendations
+        recommendations = self.wait_and_get_results(analysis_job)
+        
+        # Step 4: Process recommendations
+        if recommendations['schema_changes_needed']:
+            schema_evolution_plan = self.plan_schema_evolution(
+                current_schema=current_schema,
+                recommendations=recommendations,
+                data_path=glue_output_path
+            )
+            
+            # Step 5: Apply using Compensating Transaction Pattern
+            self.apply_schema_evolution(schema_evolution_plan)
+        
+        # Step 6: Transform data to match new/existing schema
+        transformed_path = self.transform_data_for_schema(
+            glue_output_path,
+            recommendations['data_transformations']
+        )
+        
+        return transformed_path
+    
+    def get_snowflake_schema(self, table_name: str) -> dict:
+        """Retrieves current schema from Snowflake"""
+        query = f"""
+        SELECT 
+            column_name,
+            data_type,
+            is_nullable,
+            column_default,
+            comment
+        FROM information_schema.columns
+        WHERE table_name = '{table_name}'
+        ORDER BY ordinal_position
+        """
+        
+        current_schema = self.snowflake_connector.execute(query)
+        
+        # Also get relationships and constraints
+        constraints = self.get_table_constraints(table_name)
+        indexes = self.get_table_indexes(table_name)
+        
+        return {
+            'columns': current_schema,
+            'constraints': constraints,
+            'indexes': indexes,
+            'row_count': self.get_row_count(table_name)
+        }
+```
+
+#### Schema Evolution Analyzer (Runs in SageMaker)
+
+```python
+class SchemaEvolutionAnalyzer:
+    """Analyzes data patterns and proposes schema changes"""
+    
+    def analyze(self, data_sample: pd.DataFrame, current_schema: dict) -> dict:
+        recommendations = {
+            'schema_changes_needed': False,
+            'changes': [],
+            'data_transformations': []
+        }
+        
+        # 1. Detect new columns in data not in schema
+        new_columns = self.detect_new_columns(data_sample, current_schema)
+        if new_columns:
+            recommendations['schema_changes_needed'] = True
+            recommendations['changes'].extend([
+                {
+                    'type': 'ADD_COLUMN',
+                    'ddl': f"ALTER TABLE {{table}} ADD COLUMN {col['name']} {col['type']}",
+                    'column': col
+                } for col in new_columns
+            ])
+        
+        # 2. Detect data type mismatches
+        type_changes = self.detect_type_changes(data_sample, current_schema)
+        for change in type_changes:
+            recommendations['schema_changes_needed'] = True
+            recommendations['changes'].append({
+                'type': 'MODIFY_COLUMN',
+                'ddl': f"ALTER TABLE {{table}} MODIFY COLUMN {change['column']} {change['new_type']}",
+                'risk_level': 'HIGH' if change['requires_conversion'] else 'LOW'
+            })
+        
+        # 3. Detect relationship opportunities
+        relationships = self.detect_relationships(data_sample, current_schema)
+        for rel in relationships:
+            recommendations['changes'].append({
+                'type': 'ADD_CONSTRAINT',
+                'ddl': f"ALTER TABLE {{table}} ADD FOREIGN KEY ({rel['column']}) REFERENCES {rel['ref_table']}({rel['ref_column']})",
+                'confidence': rel['confidence']
+            })
+        
+        # 4. Detect optimization opportunities
+        optimizations = self.detect_optimizations(data_sample, current_schema)
+        recommendations['changes'].extend(optimizations)
+        
+        return recommendations
+```
+
+#### Compensating Transaction for Schema Evolution
+
+```python
+class SchemaEvolutionPipeline(DataModelTransformationPipeline):
+    """Safely applies schema changes with rollback capability"""
+    
+    def __init__(self, snowflake_conn):
+        super().__init__()
+        self.sf = snowflake_conn
+        self.staging_schema = 'STAGING_SCHEMA_CHANGES'
+        
+    def apply_schema_evolution(self, evolution_plan: dict):
+        """Apply schema changes with full rollback capability"""
+        
+        # Step 1: Create staging schema with proposed changes
+        staging_table = f"{self.staging_schema}.{evolution_plan['table']}_proposed"
+        
+        try:
+            # Create copy of production table in staging
+            self.sf.execute(f"""
+                CREATE TABLE {staging_table} 
+                CLONE {evolution_plan['table']}
+            """)
+            
+            # Apply each proposed change to staging
+            for change in evolution_plan['changes']:
+                if change['type'] == 'ADD_COLUMN':
+                    self.apply_add_column(staging_table, change)
+                elif change['type'] == 'MODIFY_COLUMN':
+                    self.apply_modify_column(staging_table, change)
+                elif change['type'] == 'ADD_CONSTRAINT':
+                    self.apply_add_constraint(staging_table, change)
+            
+            # Test data load into new schema
+            test_success = self.test_data_load(
+                staging_table, 
+                evolution_plan['sample_data_path']
+            )
+            
+            if test_success:
+                # Validate data quality in new schema
+                quality_check = self.validate_data_quality(staging_table)
+                
+                if quality_check['passed']:
+                    # Apply to production
+                    self.promote_to_production(staging_table, evolution_plan['table'])
+                else:
+                    # Rollback and alert
+                    raise DataQualityException(quality_check['issues'])
+            else:
+                raise SchemaIncompatibilityException()
+                
+        except Exception as e:
+            # Compensate: Clean up staging and alert human
+            self.compensate(staging_table)
+            self.alert_data_architect({
+                'error': str(e),
+                'plan': evolution_plan,
+                'recommendation': 'Manual schema evolution required'
+            })
+            
+            # Fallback: Transform data to fit existing schema
+            return self.transform_to_existing_schema(evolution_plan)
+        
+        finally:
+            # Always clean up staging
+            self.cleanup_staging(staging_table)
+```
+
+#### Integration with Snowflake via Lambda
+
+```python
+# Lambda function that bridges SageMaker and Snowflake
+def coordinate_schema_evolution(event, context):
+    """Orchestrates schema evolution between SageMaker and Snowflake"""
+    
+    # Get SageMaker recommendations
+    recommendations = event['sagemaker_output']
+    
+    if recommendations['schema_changes_needed']:
+        # Connect to Snowflake
+        conn = get_snowflake_connection()
+        
+        # Prepare evolution plan
+        evolution_plan = {
+            'table': event['target_table'],
+            'changes': recommendations['changes'],
+            'sample_data_path': event['data_path'],
+            'approval_required': any(
+                c['risk_level'] == 'HIGH' 
+                for c in recommendations['changes']
+            )
+        }
+        
+        # High-risk changes need custodian approval
+        if evolution_plan['approval_required']:
+            approval_request_id = request_custodian_approval(evolution_plan)
+            return {
+                'status': 'PENDING_APPROVAL',
+                'request_id': approval_request_id
+            }
+        
+        # Apply schema evolution
+        pipeline = SchemaEvolutionPipeline(conn)
+        result = pipeline.apply_schema_evolution(evolution_plan)
+        
+        return {
+            'status': 'SCHEMA_UPDATED',
+            'changes_applied': result['applied_changes']
+        }
+    
+    return {
+        'status': 'NO_SCHEMA_CHANGES',
+        'data_ready_for_load': True
+    }
+```
+
+#### Pattern Detection Container
+
+```python
+# /opt/ml/code/pattern_detector.py - Runs inside SageMaker container
+class PatternDetector:
+    """Detects data patterns using trained ML models"""
+    
+    def __init__(self):
+        self.models = {
+            'duplicate_detector': self.load_model('duplicate_detection.pkl'),
+            'relationship_finder': self.load_model('relationship_detection.pkl'),
+            'anomaly_detector': self.load_model('anomaly_detection.pkl')
+        }
+        
+    def detect_patterns(self, data_path: str) -> List[Pattern]:
+        # Read sample of data (SageMaker provides high-memory instances)
+        df = self.read_data_sample(data_path, sample_size='500MB')
+        
+        patterns = []
+        
+        # Detect duplicate columns
+        duplicates = self.detect_duplicates(df)
+        if duplicates:
+            patterns.append(Pattern(
+                type='DUPLICATE_COLUMNS',
+                confidence=duplicates['confidence'],
+                metadata={'columns': duplicates['column_pairs']}
+            ))
+        
+        # Find relationships between datasets
+        relationships = self.find_relationships(df)
+        patterns.extend(relationships)
+        
+        # Detect anomalies and quality issues
+        anomalies = self.detect_anomalies(df)
+        patterns.extend(anomalies)
+        
+        return patterns
+```
+
+#### Integration with Step Functions
+
+```json
+{
+  "Comment": "Dataset processing workflow with AI",
+  "StartAt": "GlueETL",
+  "States": {
+    "GlueETL": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Parameters": {
+        "JobName": "initial-etl-job"
+      },
+      "Next": "InvokeSageMaker"
+    },
+    "InvokeSageMaker": {
+      "Type": "Task", 
+      "Resource": "arn:aws:states:::sagemaker:createProcessingJob.sync",
+      "Parameters": {
+        "ProcessingJobName.$": "$.dataset_id",
+        "ProcessingInputs": [{
+          "InputName": "input",
+          "S3Input": {
+            "S3Uri.$": "$.glue_output_path"
+          }
+        }]
+      },
+      "Next": "ApplyTransformations"
+    },
+    "ApplyTransformations": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:region:account:function:apply-transformations",
+      "Next": "LoadToSnowflake"
+    }
+  }
+}
+```
+
+#### Stimulus Processing Components
+- **StimulusSelector**: Identifies relevant data patterns using SageMaker
+- **MLModel**: Deployed as SageMaker endpoints for real-time inference
+- **Transformation Agents**:
+  - UnionAgent: Merges related columns detected by ML
+  - SplitAgent: Separates nested data structures
+  - AppendAgent: Handles incremental updates
+
+### Design Patterns
+
+![image](https://github.com/user-attachments/assets/b827b2b2-3a83-466f-bc37-be2e547b9079)
+
+#### 1. Claim Check Pattern
+
+**Purpose**: Handles large file uploads (500MB - 10GB+) by separating the actual data payload from the control flow, preventing memory overload and network timeouts.
+
+**When It's Used**:
+- Triggered immediately when `POST /datasets/upload/init` is called
+- Active throughout the entire chunk upload phase
+- Remains in use until `POST /datasets/upload/{session}/finalize` completes
+
+**Where It's Implemented**:
+
+```python
+# Location: Service Layer - UploadManager & ChunkUploader
+class ClaimCheckToken:
+    """Token that travels through the system while data stays in S3"""
+    def __init__(self):
+        self.id = generate_uuid()
+        self.chunk_metadata_list = []  # Only references, not data
+        self.created_at = datetime.now()
+        self.dataset_metadata = {}      # Size, format, schema info
+
+class ChunkUploader:
+    def upload(self, chunk: Chunk, token: ClaimCheckToken):
+        # 1. Heavy data goes directly to S3
+        s3_key = self.s3_repository.put_object(chunk.data)
+        
+        # 2. Only lightweight reference stored in token
+        metadata = ChunkMetadata(
+            checksum=chunk.checksum,
+            sequence_id=chunk.sequence_id,
+            s3_key=s3_key,              # Reference to S3 location
+            size=chunk.size
+        )
+        token.chunk_metadata_list.append(metadata)
+        
+        # 3. Token passes through services, not the data
+        return token  # Lightweight object
+```
+
+**How It Works**:
+1. **Initial Request**: Client provides file metadata, not the file itself
+2. **Token Creation**: System creates a ClaimCheckToken with unique ID
+3. **Chunk Upload**: Each chunk uploaded directly to S3 via presigned URLs
+4. **Reference Storage**: Only S3 keys and metadata stored in the token
+5. **Processing**: ETL jobs retrieve data from S3 using references in token
+6. **Memory Efficiency**: Services pass around 1KB tokens instead of GB of data
+
+**Integration Points**:
+- `DatasetHandler` → Creates initial token
+- `S3Repository` → Stores actual data chunks
+- `MetadataStore` → Persists token information
+- `AWS Step Functions` → Passes token through ETL pipeline
+- `AWS Glue` → Retrieves data using token references
+
+#### 2. Compensating Transaction Pattern
+
+**Purpose**: Ensures data transformations and model changes follow an "all or nothing" principle, with automatic rollback on failure and human escalation for complex issues.
+
+**When It's Used**:
+- Activated during the ETL phase after all chunks are uploaded
+- Specifically when AI suggests structural changes to the data model
+- Before data is committed to production Snowflake tables
+- During any multi-step transformation that could partially fail
+
+**Where It's Implemented**:
+
+```python
+# Location: AI Data Transformation Layer - After AWS Glue processes raw data
+class DataModelTransformationPipeline:
+    """Manages reversible transformations with compensation logic"""
+    
+    def __init__(self):
+        self.steps = []
+        self.compensation_log = DurableLog()  # AWS DynamoDB
+        self.lock_manager = LockManager()      # Distributed locks
+        
+    def execute(self):
+        # Phase 1: Acquire locks on affected datasets
+        resources = self.identify_resources()
+        for resource in resources:
+            if not self.lock_manager.acquire(resource):
+                raise ConcurrentModificationError()
+        
+        # Phase 2: Execute transformation steps
+        completed_steps = []
+        try:
+            for step in self.steps:
+                # Log state before execution
+                self.compensation_log.write_entry(step.get_state())
+                
+                # Execute with timeout
+                step.execute(timeout=300)  # 5 minutes max
+                completed_steps.append(step)
+                
+        except Exception as e:
+            # Phase 3: Compensate in reverse order
+            self.compensate(completed_steps)
+            
+            # Phase 4: Human escalation
+            self.alert_data_architect(e, self.compensation_log)
+            raise
+            
+    def compensate(self, completed_steps):
+        """Rollback completed steps in reverse order"""
+        for step in reversed(completed_steps):
+            compensator = step.get_compensator()
+            compensator.compensate()
+
+# Example transformation steps:
+class ModelTransformationStep:
+    """Base class for reversible transformations"""
+    
+    def execute(self):
+        # Save current state
+        self.original_schema = self.sf_repository.get_schema()
+        # Apply transformation
+        self.sf_repository.alter_table(self.new_schema)
+        
+    def get_compensator(self):
+        return SchemaRollback(self.original_schema)
+```
+
+**How It Works**:
+1. **Planning Phase**: AI analyzes data and suggests transformations
+2. **Validation Phase**: Each transformation creates a compensation strategy
+3. **Execution Phase**: Steps executed with state logging
+4. **Success Path**: All steps complete → Commit to production
+5. **Failure Path**: Any step fails → Automatic rollback → Human intervention
+
+**Integration Points**:
+- `AWS Glue Jobs` → Triggers pipeline after data validation
+- `Snowflake` → Applies schema changes in staging environment
+- `AWS Step Functions` → Orchestrates the pipeline
+- `DynamoDB` → Stores durable compensation log
+- `SNS` → Alerts data architects on failure
+
+#### 3. Learning-Based Pattern
+
+**Purpose**: Enables AI to automatically detect data patterns, classify content types, and apply intelligent transformations without explicit programming.
+
+**When It's Used**:
+- During ETL processing after chunks are merged
+- When system encounters new data formats or structures
+- For detecting relationships between datasets
+- During data quality improvement and normalization
+
+**Where It's Implemented**:
+
+```python
+# Location: AI Layer - Integrated with AWS Glue and SageMaker
+class LearningBasedDataProcessor:
+    """AI-driven pattern detection and transformation system"""
+    
+    def __init__(self):
+        self.stimulus_selector = StimulusSelector()
+        self.ml_models = {
+            'supervised': SupervisedLearning(),    # For known patterns
+            'unsupervised': UnsupervisedLearning() # For discovery
+        }
+        self.executor = TransformationExecutor()
+        
+    def process_dataset(self, dataset_id: str, raw_data_path: str):
+        # Phase 1: Create stimuli from raw data
+        stimuli = self.create_stimuli(dataset_id, raw_data_path)
+        
+        # Phase 2: Pattern detection
+        patterns = self.detect_patterns(stimuli)
+        
+        # Phase 3: Agent selection and execution
+        transformations = self.execute_transformations(stimuli, patterns)
+        
+        return transformations
+    
+    def create_stimuli(self, dataset_id: str, path: str):
+        """Convert raw data into analyzable stimuli"""
+        data_sample = self.s3_repository.read_sample(path, size='10MB')
+        metadata = self.metadata_service.get(dataset_id)
+        
+        stimuli = []
+        for column in data_sample.columns:
+            stimulus = Stimulus(
+                id=generate_uuid(),
+                type=self.infer_type(column),
+                metadata={
+                    'column_name': column.name,
+                    'data_types': column.detected_types,
+                    'null_ratio': column.null_percentage,
+                    'cardinality': column.unique_count
+                },
+                value=column.sample_values
+            )
+            stimuli.append(stimulus)
+        return stimuli
+    
+    def detect_patterns(self, stimuli: List[Stimulus]):
+        """AI detects patterns using both supervised and unsupervised learning"""
+        patterns = []
+        
+        # Supervised: Match against known patterns
+        known_patterns = self.ml_models['supervised'].classify(stimuli)
+        patterns.extend(known_patterns)
+        
+        # Unsupervised: Discover new patterns
+        discovered = self.ml_models['unsupervised'].find_clusters(stimuli)
+        patterns.extend(discovered)
+        
+        return patterns
+    
+    def execute_transformations(self, stimuli, patterns):
+        """Select and apply appropriate transformation agents"""
+        results = []
+        
+        for pattern in patterns:
+            # Select appropriate agent based on pattern type
+            if pattern.type == 'DUPLICATE_COLUMNS':
+                agent = UnionAgent()  # Merges similar columns
+            elif pattern.type == 'NESTED_JSON':
+                agent = SplitAgent()  # Flattens nested structures
+            elif pattern.type == 'INCREMENTAL_DATA':
+                agent = AppendAgent() # Handles delta updates
+            else:
+                agent = DefaultAgent()
+                
+            # Apply transformation
+            result = agent.action(stimuli, pattern)
+            results.append(result)
+            
+        return results
+
+# Example Agent Implementation:
+class UnionAgent(Agent):
+    """Merges columns with similar data patterns"""
+    
+    def action(self, stimuli: List[Stimulus], pattern: Pattern) -> Output:
+        # Identify columns to merge
+        merge_candidates = pattern.metadata['similar_columns']
+        
+        # Create transformation plan
+        transformation = {
+            'operation': 'UNION_COLUMNS',
+            'source_columns': merge_candidates,
+            'target_column': self.generate_column_name(merge_candidates),
+            'transformation_rules': self.create_merge_rules(stimuli)
+        }
+        
+        # Execute via Snowflake
+        sql = self.generate_merge_sql(transformation)
+        self.sf_repository.execute(sql)
+        
+        return Output(
+            status='SUCCESS',
+            transformation=transformation,
+            affected_rows=self.get_affected_rows()
+        )
+```
+
+**How It Works**:
+1. **Data Ingestion**: Raw data arrives in S3
+2. **Stimuli Creation**: System samples data and creates analytical objects
+3. **Pattern Detection**: AI models analyze stimuli for patterns
+4. **Agent Selection**: System chooses appropriate transformation agents
+5. **Transformation**: Agents apply changes in Snowflake staging
+6. **Validation**: Results checked before production deployment
+
+**Integration Points**:
+- `AWS Glue` → Triggers AI processing after initial ETL
+- `AWS SageMaker` → Provides ML capabilities for pattern detection and transformation
+- `S3` → Source data location and intermediate storage
+- `Step Functions` → Orchestrates the learning pipeline
+- `Lambda` → Applies final transformations before Snowflake load
+
+#### Monitoring
+
+All upload operations are monitored via:
+- AWS CloudWatch metrics
+- Custom dashboards in Amazon QuickSight
+- Real-time alerts for failures or slowdowns
+- Usage tracking for billing and quotas
 
 ![alt text](image.png)
 
@@ -1246,51 +2297,7 @@ Example workflow for a simple file upload
 ![image](https://github.com/user-attachments/assets/751408d1-674d-457b-b176-c10d02f73df6)
 
 
-The AI Layer handles large-scale data and metadata processing to determine and apply intelligent system transformations. It leverages machine learning techniques, both supervised and unsupervised, to identify patterns, classify relevant stimuli, and delegate transformation actions. These actions are executed by a coordinated set of agents, each designed for specific data operations such as merging, splitting, or appending. To ensure transformation integrity, proposed actions undergo a review process using a compensating transactions mechanism. This approach validates each action and ensures reversibility, enabling consistent rollback in case of errors or partial execution. For operations involving significant data volumes, the claim check pattern is used to temporarily externalize payloads and replace them with lightweight references within the processing flow.
 
-After validation, transformations are committed to the production environment through a high-throughput, cloud-native data warehousing solution, ensuring durable and performant integration.
- 
-**Design Patterns:** Learning based patttern for AI, claim check pattern, compensating transaction pattern
-**Principles Applied:** Single Responsability Principle, DRY
-
-##### Core Components
-
-- **Stimuli**  
-  Represent contextualized input elements within the system. Each instance holds associated metadata and runtime values, providing interfaces to access descriptors, verify content integrity, and extract meaningful signals.  
-  - `get_metadata() -> Dict`  
-  - `is_valid() -> bool`
-
-- **StimulusSelector**  
-  Defines classification strategies to isolate meaningful input candidates. It maintains a registry of rules and supports dynamic updates.  
-  - `classifyAction(inputs: List[Stimuli]) -> List[Stimuli]`  
-  - `add_rule(rule: Rule) -> void`  
-  - `clear_rules() -> void`
-
-- **Executor**  
-  Orchestrates the full lifecycle of transformation. It evaluates stimuli, determines the required transformation type, and delegates execution to the appropriate agent.  
-  - `execute(inputs: List[Stimuli]) -> Output`  
-  - `detect_action(inputs: List[Stimuli]) -> str`  
-  - `select_agent(action: str) -> Agent`
-
-- **Agent**  
-  Encapsulates operational intelligence for a specific transformation. These units consume selected stimuli and apply a bounded action informed by a learning model.  
-  - `action(data: List[Stimuli]) -> Output`
-
-- **UnionAgent / AppendAgent / SplitAgent / ...**  
-  Specializations of `Agent`, each tailored to a defined category of transformation logic.
-
-- **MLModel**  
-  Abstracts the learning engine used within agents. It specifies the learning approach and model configuration.
-
-- **SupervisedLearning**  
-  Supports labeled data processing to detect recurring patterns and correlate inputs to known outcomes.
-
-- **UnsupervisedLearning**  
-  Explores unlabeled inputs to reveal latent clusters and infer relationships through similarity analysis.
-
-- **DataProcessor**  
-  Intermediates between the AI Layer and the broader system. It extracts structured metadata and operational data required for contextual learning and transformation.
-  
 ### 2. Secure Data Sharing with Custodian Approval
 
 #### Overview
