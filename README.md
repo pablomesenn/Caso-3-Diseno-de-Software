@@ -2251,234 +2251,544 @@ This document defines the architecture, configuration, and access patterns for t
 
 1. **Cloud Service Technology:**
 
-  - The data layer is composed of two primary environments: a Staging environment hosted in Amazon S3, and a Production environment hosted in Snowflake. The system uses AWS Glue and Step Functions for data orchestration and transformation.
+    - The data layer is composed of two primary environments: a Staging environment hosted in Amazon S3, and a Production environment hosted in Snowflake. The system uses AWS Glue and Step Functions for data orchestration and transformation.
 
-  - Data ingestion from external sources is staged in S3, then ETL jobs transform and load this data into Snowflake for production use.
+    - Data ingestion from external sources is staged in S3, then ETL jobs transform and load this data into Snowflake for production use.
 
 2. **Object-Oriented Design Patterns:**
 
-  PENDIENTE
+  Facade 
 
 3. **Class Layers for Data Access:**
 
-- **Repository Layer:** Classes with S3 for staging and Snowflake for production. Repositories are accesed by the main repositorie class and implemented using cloud-specific SDKs (Boto3, Snowflake Connector). Classes involved are `SFRepository`, `S3Repository` and `MainRepository`.
+  - **Repository Layer:** Classes with S3 for staging and Snowflake for production. Repositories are accesed by the main repositorie class and implemented using cloud-specific SDKs (Boto3, Snowflake Connector). Classes involved are `SFRepository`, `S3Repository` and `MainRepository`.
 
-- **Service Layer:** Handles transformation logic, orchestration triggers, and data preparation.
+  - **Service Layer:** Handles transformation logic, orchestration triggers, and data preparation.
 
 4. **Configuration Policies/Rules:**
 
-- Clear separation between staging and production environments
+  - Clear separation between staging and production environments
 
-- Versioned S3 buckets with lifecycle policies
+  - Versioned S3 buckets with lifecycle policies
 
-- Snowflake environment with separate schemas for staged, and curated data
+  - Snowflake environment with separate schemas for staged, and curated data
 
-- Automated ETL pipelines via AWS Glue
+  - Automated ETL pipelines via AWS Glue
 
-- Data transformation process to production data with AI
+  - Data transformation process to production data with AI
 
-- Handle congested data access with Snowflake multi-cluster architecture with data blocks.
+  - Handle congested data access with Snowflake multi-cluster architecture with data blocks.
 
 5. **Expected Benefits:**
 
-Decoupling of ingestion and processing layers
+  - Decoupling of ingestion and processing layers
 
-Scalable architecture with clean separation of environments
+  - Scalable architecture with clean separation of environments
 
-Simplified rollback and audit through versioning and schema separation
+  - Simplified rollback and audit through versioning and schema separation
 
 6. Data Topology Classification:
 
-- The data topology follows a **Distributed and Replicated Model**:
+  - The data topology follows a **Distributed and Replicated Model**:
 
-  - **Distributed:** Data is ingested from diverse sources and processed in parallel through AWS Step Functions and Glue jobs. The architecture scales horizontally across services.
+    - **Distributed:** Data is ingested from diverse sources and processed in parallel through AWS Step Functions and Glue jobs. The architecture scales horizontally across services.
 
-  - **Replicated:** Staging data in S3 is versioned and often replicated across availability zones for durability, while Snowflake supports replication and Time Travel for high availability and fault tolerance.
+    - **Replicated:** Staging data in S3 is versioned and often replicated across availability zones for durability, while Snowflake supports replication and Time Travel for high availability and fault tolerance.
 
 #### b) Big Data Repository - Data Lake
 
 1. **Cloud Service Technology:**
 
-- Amazon S3 functions as the raw data lake, optimized for scale and throughput
+  - Amazon S3 functions as the raw data lake, optimized for scale and throughput
 
-- Snowflake acts as the enterprise data warehouse/data mart for curated and production data
+  - Snowflake acts as the enterprise data warehouse/data mart for curated and production data
 
-- AWS Glue provides cataloging and ETL capabilities
+  - AWS Glue provides cataloging and ETL capabilities
 
 2. **Cloud Design Patterns:**
 
-- **Claim-check pattern:** Used to upload chunks of big payloads given by the client to S3. More information about the pattern in the following link: https://learn.microsoft.com/en-us/azure/architecture/patterns/claim-check
+  - **Claim-check pattern:** Used to upload chunks of big payloads given by the client to S3. More information about the pattern in the following link: https://learn.microsoft.com/en-us/azure/architecture/patterns/claim-check
 
-- **Compensating transaction patterm** Use to validate the steps the data transformation AI suggested. More information about the pattern un the following link: https://learn.microsoft.com/en-us/azure/architecture/patterns/compensating-transaction
+  - **Compensating transaction patterm** Use to validate the steps the data transformation AI suggested. More information about the pattern un the following link: https://learn.microsoft.com/en-us/azure/architecture/patterns/compensating-transaction
 
 3. **Class Layers for Data Access:**
 
-- Ingestion Handlers: Manage data arrival in S3 and trigger pipelines
+  - Ingestion Handlers: Manage data arrival in S3 and trigger pipelines
 
-- Glue Jobs / Services: Transform raw data into structured formats
+  - Glue Jobs / Services: Transform raw data into structured formats
 
-- Snowflake Writers: Insert transformed data into appropriate schemas
+  - Snowflake Writers: Insert transformed data into appropriate schemas
 
 4. **Configuration Policies/Rules:**
 
-- Defined S3 folder hierarchy: /raw/, /staged/, /processed/
+  - Defined S3 folder hierarchy: /raw/, /staged/, /processed/
 
-- Glue Data Catalogs and Crawlers auto-register schemas
+  - Glue Data Catalogs and Crawlers auto-register schemas
 
-- Snowflake Time Travel and Fail-safe features enabled
+  - Snowflake Time Travel and Fail-safe features enabled
 
-- Row-level access policies for sensitive datasets
+  - Row-level access policies for sensitive datasets
 
 5. **Expected Benefits:**
 
-- Unified and centralized repository for all enterprise data
+  - Unified and centralized repository for all enterprise data
 
-- Automated metadata management via Glue Catalog
+  - Automated metadata management via Glue Catalog
 
-- Flexible query engine through Snowflake for analytics and reporting
+  - Flexible query engine through Snowflake for analytics and reporting
 
 #### c) Database Engine
 
 1. **Cloud Service Technology:**
 
-- Snowflake as the primary production engine (relational, columnar storage, SQL-based analytics)
+  - Snowflake as the primary production engine (relational, columnar storage, SQL-based analytics)
 
-- Amazon S3 with Parquet/ORC formats for semi-structured or unstructured data
+  - Amazon S3 with Parquet/ORC formats for semi-structured or unstructured data
 
 2. **Configuration Policies/Rules:**
 
-- Snowflake auto-scaling policies configured
+  - Snowflake auto-scaling policies configured
 
-- Query tagging and warehouse monitoring enabled
+  - Query tagging and warehouse monitoring enabled
 
-- Schema versioning policies in place
+  - Schema versioning policies in place
 
 3. **Expected Benefits:**
 
-- High-performance analytics with Snowflake’s MPP engine
+  - High-performance analytics with Snowflake’s MPP engine
 
-- Cost-effective storage and flexible data formats in S3
+  - Cost-effective storage and flexible data formats in S3
 
-- Pluggable design to support new data engines
+  - Pluggable design to support new data engines
 
 #### d) Tenancy and Data Security
 
 1. **Cloud Service Technology:**
 
-- AWS Cognito for user identity and federated access
+  - AWS Cognito for user identity and federated access
 
-- AWS KMS for key management and encryption of S3 buckets
+  - AWS KMS for key management and encryption of S3 buckets
 
-- AWS Secrets Manager for storing Snowflake credentials
+  - AWS Secrets Manager for storing Snowflake credentials
 
-- Snowflake RBAC and Network Policies
+  - Snowflake RBAC, RLS and Network Policies
 
 2. **Object-Oriented Design Patterns:**
 
-  SECURITY LAYER
+  Dependency injection
 
 3. **Class Layers for Data Access:**
 
-  SECURITY LAYER
+  Security layer en general
 
 4. **Configuration Policies/Rules:**
 
-- S3 encryption at rest and in transit
-
-- Snowflake role-based access and row-level security
-
-- Fine-grained IAM roles per microservice and Lambda function
-
-- Access audits and alerts integrated with CloudWatch
+| **Policy**                                | **Description**                                                                                                                                      |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **IP Whitelisting for Snowflake**         | Snowflake network policies are configured to allow traffic only from approved static IP ranges (e.g., Fargate task IPs, VPC NAT Gateway).            |
+| **MFA Enforcement (Snowflake UI Access)** | All users accessing Snowflake through the web interface must authenticate using Multi-Factor Authentication (MFA).                                   |
+| **Token-based Programmatic Access**       | Services authenticate to Snowflake via tokenized credentials retrieved securely from AWS Secrets Manager or Vault.                                   |
+| **Per-Entity Role Mapping**               | Each tenant/user role is dynamically mapped to a Snowflake role, enabling strict data-level permissions via RBAC and RLS enforcement.                |
+| **S3 Encryption at Rest and In Transit**  | All objects in S3 buckets are encrypted using AWS KMS-managed keys. HTTPS is enforced for data transfer, ensuring full encryption in transit.        |
+| **Snowflake Role-Based Access Control**   | Access to Snowflake objects (schemas, tables, views) is governed via roles. Each user/service is assigned the minimum necessary privileges.          |
+| **Row-Level Security in Snowflake**       | Sensitive datasets implement row access policies to limit visibility based on user role, entity affiliation, or organizational context.              |
+| **Fine-Grained IAM Roles (AWS)**          | Each AWS Lambda function and ECS microservice uses scoped IAM roles that limit access only to necessary resources (S3, Glue, Secrets Manager, etc.). |
+| **Access Audits and Alerts (CloudWatch)** | All access attempts, API calls, and data interactions are logged. Security anomalies (e.g., failed logins, privilege escalations) trigger alerts.    |
 
 5. **Expected Benefits:**
 
-- Centralized and enforceable access control
+  - Centralized and enforceable access control
 
-- Granular permission model for multi-tenant architecture
+  - Granular permission model for multi-tenant architecture
 
-- Encryption and auditability as standard features. Audit system with help of AWS Cloudwatch 
+  - Encryption and auditability as standard features. Audit system with help of AWS Cloudwatch 
 
-- Prevent any data engineer, DevOps personnel, or technical staff with privileges from accessing data in plain text or without proper authorization.
+  - Prevent any data engineer, DevOps personnel, or technical staff with privileges from accessing data in plain text or without proper authorization.
 
-- Allow multiple levels of access with logical control, based on user, entity, or data type.
+  - Allow multiple levels of access with logical control, based on user, entity, or data type.
 
 #### e) Recovery and Fault Tolerance
 
 1. **Cloud Service Technology:**
 
-- S3 Versioning & Replication for backup and disaster recovery
+  - S3 Versioning & Replication for backup and disaster recovery
 
-- Snowflake Time Travel and Fail-safe features
+  - Snowflake Time Travel and Fail-safe features
 
-- CloudWatch Alarms, Step Functions Retries, and DLQs (Dead Letter Queues)
+  - CloudWatch Alarms, Step Functions Retries, and DLQs (Dead Letter Queues)
 
-3. **Class Layers for Data Access:**
+2. **Configuration Policies/Rules:**
 
-  AUDIT SYSTEM
+  - S3 Lifecycle Rules with Glacier for archival
 
-4. **Configuration Policies/Rules:**
+  - Snowflake recovery window configured per schema
 
-S3 Lifecycle Rules with Glacier for archival
+  - Circuit breakers for long-running queries
 
-Snowflake recovery window configured per schema
+3. **Expected Benefits:**
 
-Circuit breakers for long-running queries
+  - High availability and resilience across data layers
 
-5. **Expected Benefits:**
+  - Minimal data loss with versioned and replicated backups
 
-- High availability and resilience across data layers
-
-- Minimal data loss with versioned and replicated backups
-
-- Cost-efficient long-term archival and legal compliance
+  - Cost-efficient long-term archival and legal compliance
 
 ### Object-Oriented Design - Programming
 
 #### a) Transactionality
 
+1. **Cloud Service Technology:**
+
+Snowflake supports ACID-compliant transactions. All operations affecting data consistency (e.g., inserts into curated datasets) are performed within transactions.
+
+AWS Glue jobs perform batch ETL with fail-and-retry behavior to ensure data consistency across stages.
+
+2. **Configuration Policies:**
+
+Use of BEGIN, COMMIT, and ROLLBACK for Snowflake.
+
+Custom retry logic in ETL jobs for partial failures.
+
+3. **Expected Benefits:**
+
+Guarantees of data consistency and rollback capability.
+
+Reduced risk of partial writes in pipelines.
+
+##### Transactional Support by Component
+
+**Snowflake**
+
+Snowflake supports full ACID-compliant transactions, which ensures that:
+
+- Atomicity: All operations in a transaction are either fully completed or fully rolled back.
+
+- Consistency: The database remains in a valid state before and after the transaction.
+
+- Isolation: Parallel transactions do not interfere with each other.
+
+- Durability: Committed data remains stored, even in case of system failure.
+
+Transactional syntax to use: 
+
+```sql
+BEGIN;
+-- insert/update/delete operations
+COMMIT;
+-- or ROLLBACK in case of error
+```
+
+All critical operations affecting curated datasets (production tables) are executed within explicit transactions.
+
+**AWS Glue**
+
+Glue jobs execute batch-based ETL, which is not ACID by default. (For datasets upload for example)
+
+Helps achiving transactional-like behaviour: 
+
+- Custom fail-and-retry logic is implemented for job steps.
+
+- Each stage of the pipeline (raw → staged → processed) includes upload of data via Claim Check pattern to secure correct data transportation. 
+
+- Data is only promoted to the next stage if the previous transformation completes successfully.
+
+##### Transactional Support by Component
+
+| Component     | Policy Description                                                                  |
+| ------------- | ----------------------------------------------------------------------------------- |
+| **Snowflake** | Use of `BEGIN`, `COMMIT`, and `ROLLBACK` to wrap multi-step data operations.        |
+| **AWS Glue**  | Built-in job retries + custom logic to skip reprocessing of completed stages.       |
+|               | Idempotent job design ensures re-runs do not produce duplicate or corrupted output. |
+
+##### Expected benefits
+
+- Data Consistency: Transactions in Snowflake prevent partial updates and ensure referential integrity.
+
+- Rollback Support: Developers can safely revert failed operations without data loss.
+
+- Reduced Risk of Corruption: ETL pipelines are designed to avoid dirty writes or duplicated rows due to job retries.
+
+- Traceable Failures: Logging and checkpointing allow teams to resume processing without losing the pipeline context.
+
 #### b) Use of ORM
+
+##### Tecnology strategy
+
+- ORMs are generally avoided in this project due to the nature of analytical workloads and the architectural choice of using Snowflake as the primary data warehouse.
+
+- Snowflake is optimized for SQL-based analytical queries and large-scale data transformations.
+
+- Lightweight ORMs like SQlAlchemy can be implemented if needed for specific operations like user data configuration.
+
+##### Configuration Policies
+
+| Context                          | Policy                                                            |
+| -------------------------------- | ----------------------------------------------------------------- |
+| **Data Warehousing (Snowflake)** | Prefer **raw SQL** for all queries and transformations.           |
+| **ETL Jobs**                     | Use direct SQL or query builder patterns for clarity and control. |
+| **Transactional Services**       | If needed, use lightweight ORMs with strict conventions.          |
+| **Metadata Access**              | Consider query builders or low-abstraction tools over full ORMs.  |
+
+##### Expected Benefits
+
+- Reduced Complexity: Eliminates the overhead of ORM configuration and debugging in analytical workloads.
+
+- Better Performance Insights: Developers have direct control and visibility over the SQL being executed.
+
+- Maintainability: Raw SQL or query builders offer cleaner integration with tools like Snowflake, Glue, and other ETL frameworks.
+
+- Optional ORM Use: Flexibility remains for cases requiring relational transactional processing outside the data lake (e.g., user auth, configs).
 
 #### c) Connection Pooling
 
+##### Technology Overview
+
+Snowlfake does not use traditional connection pooling mechanims. Its cloud-native, stateless architecture makes persistent connection pools less critical.
+
+**Key concepts to take in consideration for the design**
+
+| Concept                         | Description                                                                                                |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **Stateless Connections**       | Each Snowflake connection is lightweight and does **not** reserve physical resources.                      |
+| **Decoupled Compute & Storage** | Connections do not tie up warehouses or lock resources when idle.                                          |
+| **Elastic Scaling**             | Compute scales independently from connections, enabling **high concurrency**.                              |
+| **Automatic Session Lifecycle** | Idle timeouts, session expiration, and auto-suspend behavior are **managed by Snowflake**, not the client. |
+
+Additionally, when connecting programmatically (via Python for instance), developers will use the **Snowflake Connector SDK**, which handles session creation an teardown efficiently behind the scenes.
+
+##### Configuration Policies
+
+Although connection pools are unnecesarry in the current case, responsible connection usage is still enforced at the service level.
+
+| Policy                                                  | Purpose                                          |
+| ------------------------------------------------------- | ------------------------------------------------ |
+| **Limit max concurrent connections per service** | Prevent runaway connections during high load.    |
+| **Configure idle session timeout**                    | Align session lifecycle with expected workloads. |
+| **Monitor session lifespan and usage**                | Use Snowflake logs and telemetry for visibility. |
+
+In edge cases (metadata services using relational databases for example), use connection pooling libraries with caution, and always respect idle timeout configurations.
+
+##### Best Practices for Developers
+
+1- Do not implement traditional connection pooling against Snowflake
+
+2- Use the official Snowflake Connector (Python in the case of this design) to leverage native session handling
+
+3- Ensure each request or job creates and cleanly closes its own connection/session.
+
+4- For long-running pipelines like AWS Glue pipelines, allow the job runtime to manage connection lifecycles natively.
+
+##### Expected Benefits
+
+| Benefit                       | Description                                                                   |
+| ----------------------------- | ----------------------------------------------------------------------------- |
+| **Reduced Latency**         | Stateless sessions open quickly and execute without contention.               |
+| **Improved Throughput**    | Horizontal scaling enables concurrent query execution without bottlenecks.    |
+| **Resource Protection**   | Avoids exhausting Snowflake virtual warehouses or hitting concurrency limits. |
+| **Operational Simplicity** | No need to manage pool lifecycles, idle timeouts, or stale sessions.          |
+
 #### d) Use of Cache
+
+##### Technology Overview 
+
+**Snowflake Native Caching**
+
+- Result Cache is automatically maganed by Snowflake and sotres the results of executed queries.
+
+- If the same query is submitted and the underlying data has not changed, Snowflake serves the results directly from cache, without executing again the query.
+
+- This cache is session-independent and persist for 24 hours, unless invalidated by data change or DML (Data manipulation language) operation.
+
+##### Design Patterns Used
+
+| Pattern          | Description                                                                            |
+| ---------------- | -------------------------------------------------------------------------------------- |
+| **Cache-Aside**  | Application checks cache first; if a miss, loads from Snowflake and stores the result. |
+| **Read-Through** | Cache transparently handles read and fetches data from Snowflake if needed.            |
+
+##### Configuration Policies
+
+| Policy                                   | Description                                                                                                            |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| **TTL Per Cache Key**                    | Cache keys are assigned time-to-live values depending on data freshness needs.                                         |
+| **Cache Invalidation on ETL Completion** | After ETL jobs complete (via AWS Glue or Step Functions), relevant cache entries are invalidated to avoid stale reads. |
+| **Manual Invalidation Hooks**            | Exposed via internal tools or APIs for cache clearing in edge cases.                                                   |
+
+
+##### Expected Benefits 
+
+| Benefit                          | Description                                                                      |
+| -------------------------------- | -------------------------------------------------------------------------------- |
+| **Reduced Load on Snowflake** | Cached results reduce the frequency and cost of repeated queries.                |
+| **Faster Data Access**         | End users and microservices experience improved performance for common requests. |
+| **Improved Responsiveness**   | Application endpoints are more responsive for read-heavy operations.             |
+| **Cost Optimization**         | Fewer compute resources are used in Snowflake due to cache hits.                 |
 
 #### e) Drivers
 
+##### Tecnology Overview 
+
+**Snowflake Drivers**
+
+- Primary connection to Snowflake needs to be made using the **Snowflake Connector for Python** in ETL jobs and data services.
+
+- The use of Snowflake native connector support: 
+
+  - Secure authentication for RBAC and RLS
+  - Query execution
+  - Streaming large result sets
+  - Bulk inserts for datasets into the production database
+
+**AWS SDK**
+
+- Boto3 is the official SDK used for interacting with AWS S3 in Python-based services and is the one chosen for this project.
+
+- Important aspects to consider and Boto3 supports:
+
+  - File uploads/downloads
+  - Bucket versioning
+  - Object tagging
+  - Lifecycle management
+
+##### Class Layer Integration
+
+| Layer                                    | Responsibility                                                                                |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------- |
+| **Repository Layer**                     | Encapsulates all direct interactions with Snowflake and AWS S3 using the appropriate drivers. |
+| **Service Layer**                        | Calls repository interfaces without awareness of driver implementation.                       |
+
+This infrastructe needs to be developed promoting loose coupling and supporting mocking or substitution for testing purposes.
+
+##### Configuration Policies
+
+| Policy                               | Description                                                                                                       |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| **Version-Pinned Dependencies**      | All drivers and SDKs are explicitly versioned in `requirements.txt`, `pyproject.toml`, or `package.json`.         |
+| **Retry Logic for Transient Errors** | Repositories implement retries (with exponential backoff) for known transient errors like timeouts or throttling. |
+| **Secure Credential Handling**       | Credentials are never hardcoded; they are pulled from **AWS Secrets Manager** or **Vault**.                       |
+| **Connection Lifecycle Management**  | Sessions are opened and closed per transaction or request to avoid stale connections.                             |
+
+##### Expected Benefits
+
+| Benefit                             | Description                                                                        |
+| ----------------------------------- | ---------------------------------------------------------------------------------- |
+| **Stable & Secure Connectivity** | Using official, versioned drivers ensures compatibility and vendor support.        |
+| **Codebase Abstraction**         | Developers interact with high-level repository methods, not low-level driver APIs. |
+| **Resilient Integration**        | Retry logic and decoupling reduce the likelihood of runtime failures.              |
+| **Maintainability**              | Centralized driver management simplifies updates and testing.                      |
+
 #### f) Data Design
 
-```
-Qué hacer:
-Diseñar arquitectura de almacenamiento masivo
-BatchLoad
-Implementar IA para normalización de datos
-Crear sistema de detección de duplicados
-Diseñar gestión de cargas delta
-Implementar cifrado en reposo y en tránsito
-Crear sistema de trazabilidad de datos
-Anotaciones del profesor:
-Batch o stream
-Evitar repetir datos con LLM? 
-Con contexto, se puede dar contexto para crear el modelo dinámico de datos. (Ver patrones de diseno de agentes para AI [Ejercicio 9])
-Alteracion de diseno de tablas inteligentemente.
-ETL = Extract-Transform-Design-Load
-Unificación de datos
-Merge de datos
-Actualización parcial y deltas
-Temas a investigar:
-Identidad Digital
-DID: Decentralized Identificaction
-Diseno de procesos
-Diseno de servicios
-Tipos de registro: 
-Diferente documentación
-Diferente proceso de registro
-Validaciones diferente: 
-Validacion por AI 
-Validacion de formatos de datos
-Scanners de documentos (Naciona, extrangeros, 3rd party services)
-Diseno de DB: Cada cloud tiene al menos una maquina de workflows
-```
+##### Tecnology Overview 
+
+**Amazon S3 - Data Lake (Staging Enviroment)**
+
+- Uses a zone-based directory structure to support progressive refinement of data: 
+
+  - /raw/: Unprocessed, ingested data from external systems.
+  - /staged/: Cleaned and standardized data, awaiting transformation.
+  - /curated/: Finalized datasets ready for warehouse loading or analytics.
+
+- Implements a Schema-on-Read approach:
+
+  - Files are stored in open formats (Parquet, JSON).
+  - Structure is inferred via AWS Glue Crawlers and manually validated when needed (Adminitrators).
+  - Flexible ingestion supports semi-structured and evolving schemas. Helpful for different use cases of data.
+
+**Snowflake - Data Warehouse (Production Enviroment)
+
+- Organized into schemas by subject area (institution, marketing, operations, users).
+- Follows a hybrid modeling strategy:
+
+  - Normalized models for transactional and reference data (with use of foreign keys and strict typing).
+  - Denormalized models (fact tables for instance) for analytics and BI use cases. Fact tables stores quatitive data and are linked to dimension table (contains descriptive information).
+  - Star Schema and Snowflake Schema patterns are applied where appropriate. Star Schema consist of a central fact table linked to dimension tables for BI purposes. Snowflake Schema is more normalized with dimension tables split into sub-dimensions.
+
+##### Design Patterns 
+
+| Pattern              | Context                                                                               |
+| -------------------- | ------------------------------------------------------------------------------------- |
+| **Schema-on-Read**   | Used in S3 to allow flexible ingestion from multiple upstream sources.                |
+| **Star Schema**      | Applied in Snowflake to support dimensional modeling and performance in OLAP queries. |
+| **Snowflake Schema** | Used when normalized relationships are required across subject domains.               |
+
+##### Class layer responsabilities 
+
+| Layer                | Role                                                                                            |
+| -------------------- | ----------------------------------------------------------------------------------------------- |
+| **Service Layer**    | Responsible for validating schema compliance, managing metadata, and enforcing typing rules.    |
+| **Repository Layer** | Executes data model-specific queries and ensures relationships between entities are maintained. |
+| **ETL Layer (Mainly AWS Glue)**        | Transforms and reshapes data to fit target schemas, performing validation and enrichment.       |
+
+##### Configuration Policies
+
+| Policy                        | Description                                                                                                                 |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **Data Versioning**           | Raw and staged data in S3 are versioned by timestamp or batch ID.                                                           |
+| **Naming Conventions**        | All tables, columns, and schemas follow snake\_case conventions, with semantic prefixes/suffixes (`dim_`, `fact_`, `tmp_`). |
+| **Primary/Foreign Key Usage** | Enforced where referential integrity is important, especially in curated zones and Snowflake.                               |
+| **Schema Evolution Handling** | Backward-compatible schema changes only; incompatible changes require versioned tables.                                     |
+| **Semantic Metadata Layer**   | Each dataset is accompanied by descriptive metadata, including:                                                             |
+
+- Natural language description (used by AI for transformation or context inference)
+
+- Schema definitions (columns, types, formats)
+
+- Tags for subject area, sensitivity level, ownership, lineage, and usage frequency
+
+- Suggested feature mappings for ML pipelines |
+
+Metadata is stored and managed using AWS Glue Data Catalog and augmented with custom metadata in JSON format where needed.
+
+#### g) Delta Load Management 
+
+##### Tecnology Overview
+
+In this system, delta loads are used to process only new or changed records between pipeline runs, reducing unnecessary compute and preventing data duplication. Snowflake, in combination with metadata-enriched ETL logic supports delta processing through snapshotting, incremental models, and comparison operations.
+
+Data flow is controlled across the raw → staged → curated layers, with delta-aware logic at each transition.
+
+**Supoported Strategies**
+
+| Strategy                         | Description                                                                                    |
+| -------------------------------- | ---------------------------------------------------------------------------------------------- |
+| **Timestamps / Watermarks**      | Track `last_updated_at` or `ingestion_timestamp` columns to identify new or modified records.  |
+| **Hash Comparison**              | Compute row-level hashes to compare datasets (raw vs staged) and detect content-level changes. |
+| **DBT Incremental Models**       | Use DBT with `is_incremental()` blocks to only process changes when tables are materialized.   |
+
+##### Configuration Policies
+
+| **Policy**                    | **Detailed Explanation**                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Delta Key Enforcement**     | Every source dataset must include a **unique identifier** (such as a primary key) and a **reliable timestamp** field (e.g., `updated_at`, `ingestion_timestamp`). These two fields form the basis for detecting **what has changed** since the last load. Without a proper delta key, the system cannot determine which records are new, updated, or unchanged. Enforcing this at the schema level ensures consistent delta logic and prevents unnecessary full loads.                |
+| **Incremental Load Metadata** | The system maintains a **metadata control table** that logs the following for each batch run: the **timestamp of the last successfully processed delta**, the **number of records loaded**, and other identifiers like **source file name** or **ETL job ID**. This allows for monitoring anomalies (e.g., unusually large deltas), troubleshooting failed loads, and avoiding duplicate processing. Metadata is also used to **resume failed loads** from the last known good state. |
+| **Upsert Logic in Snowflake** | Instead of blindly inserting new rows, delta data is loaded using **`MERGE INTO` statements**, which check if a matching record (based on primary key or hash) already exists. If it does, it is **updated**; if not, it is **inserted**. This logic ensures **idempotency**, prevents duplicates, and guarantees that **existing records remain consistent** even when updated by new batches. The repository layer encapsulates this logic in reusable `merge_records()` methods.   |
+| **Versioned Storage**         | Previous batches or versions of datasets (especially in S3 staging) are **retained** for a fixed period, using **time-based folder structures** or **bucket versioning**. This allows teams to compare current vs. previous loads, support rollback of bad data, and enable reprocessing in case of corrupted runs. In Snowflake, this is complemented by **Time Travel**, which allows querying past states of a table up to a configured retention window.                          |
+
+##### Class Layer Responsabilities 
+
+| Layer                | Role                                                                                   |
+| -------------------- | -------------------------------------------------------------------------------------- |
+| **ETL Layer**        | Detect and extract delta sets from S3 → perform transformations and load to Snowflake. |
+| **Service Layer**    | Orchestrates metadata reads and delta rules.                                           |
+| **Repository Layer** | Executes `MERGE`, `INSERT`, or `UPDATE` statements in Snowflake.                       |
+
+##### Expected Benefits
+
+| Benefit                      | Description                                                               |
+| ---------------------------- | ------------------------------------------------------------------------- |
+| **Performance Optimization** | Only relevant changes are processed, reducing pipeline runtimes and cost. |
+| **Improved Data Accuracy**   | Prevents duplicate rows or inconsistent updates between pipeline runs.    |
+| **Historical Integrity**     | Past snapshots and batch metadata ensure auditability and rollback.       |
+| **Scalability**              | Delta design supports large volumes and time-partitioned ingestion.       |
+
+##### Delta Load Process Diagram
+
+![alt text](image-1.png)
+
+**Clarification**
+
+The term **"staging schema"** within Snowflake refers to a logical subdivision of the production database where data is loaded and validated before being merged into final curated tables. Snowflake is the production database and AWS S3 still maintains the purposes of being the **staging** database.
 
 ### Datalake
 
@@ -2523,7 +2833,7 @@ Snowflake, warehouse mas grande = crecimiento vertical, mas clusters = crecimien
 
 Snowflake for AI. https://www.snowflake.com/en/product/ai/
 
-- Detectar y evitar duplicidad de datos durante cargas y transferencias
++- Detectar y evitar duplicidad de datos durante cargas y transferencias
 
 bronce layer (Data raw), silver layer (Para los devs, ing de datos para manipular), gold layer (para el end user). Duplicidad en el silver layer tener un master antes de echar los datos al master del silver layer se verifica si ese dato ya existe y asi no se duplica. AI es una alternativa, pero tambien estan los orquestadores como Apache Airflow (recomendado porque es agnostica que sirve con snowflake), AWS tambien tiene.
 
@@ -2532,11 +2842,11 @@ bronce layer (Data raw), silver layer (Para los devs, ing de datos para manipula
 Snowflake y tablas incrementales. Si se actualiza/manipula datos como manter la informacion intacta y no duplicada. Load data that hasn't been loaded yet. Snapshots anteriores, cargas las que van entrando. No es el orquestador. Snapshot de snowflake: https://docs.snowflake.com/en/sql-reference/sql/create-snapshot
 dbt cargas delta: https://docs.getdbt.com/docs/build/incremental-models
 
-- Ser eficiente en operaciones de merge de datos, sin perder integridad ni contexto
++- Ser eficiente en operaciones de merge de datos, sin perder integridad ni contexto
 
 De nuevo, Bronce, silver y gold layer. Es conservar informacion relevante del goldlayer basicamente. Nulos, ceros, casos atipicos, incongruentes. Esto se maneja con reglas de negocios definidas entre nosotros y las instituciones, pero basicamente definidas anteriormente.
 
-- Llevar trazabilidad continua de datos usados, no usados, descartados y archivados
++- Llevar trazabilidad continua de datos usados, no usados, descartados y archivados
 
 Trazabilidad de las capas. De la gold toma tablas de la silver y asi, por medio de nodos se puede ver cuales son usados, no usados, descartados y archivados. Gobernanza las las personas deben documentar bien que es lo que hacen. Es como un arbol con nodos e hijos.
 DBT gestor de datos, sirve para esto con gobernanza
@@ -2564,36 +2874,6 @@ Limitacion o restricciones a nivel de rol.
 
 - Por ultimo cifrado, encriptado, hashes, etc.
   https://docs.snowflake.com/en/sql-reference/functions/encrypt 
-
-
-
-Buenas noches compañeros y 
-@vsurak
-.  A continuación voy a hacer una breve explicación de la investigación/análisis que he realizado en relación al diseño solución del caso 3 y algunas sugerencias hechas anteriormente por el profesor. A manera de aclaración la investigación tiene vinculo principalmente con la parte de "Pura Vida DataLake".
-Primeramente, proporcionar dos videos que me parecieron de mucha utilidad para entender mejor Snowflake y como integrarlo a nuestro diseño:
-1 - Getting Started - Architecture & Key Concepts: https://youtu.be/GtVwChmxdpw?si=4B9XBEY1BkyU4yK4
-2- Getting Started: Introduction To Snowflake Virtual Warehouses: https://youtu.be/TeD5zshkdjY?si=9Vz-Y4WBu6H82gci
-El segundo video se adentra en uno de los conceptos principales de SF, y el cual se describe en el primer video como una parte fundamental de su arquitectura. Ahora se presentarán algunas ideas para un par de puntos del diseño.
-
-- Debe soportar millones de registros, miles de usuarios concurrentes, y un crecimiento dinámico de la información
-Como se mencionó en observaciones pasadas SF solamente ofrece algoritmos y un diseño efectivo, por esto hay diferentes servicios de AWS que podrían servir. Se contempla AWS Lake Formation para construir, asegurar y administrar un data lake centralizado sobre Amazon S3 (Simple Storage Service), el cuál es sumamente escalable y no necesita predefinir limites de espacio.
-Lo anterior se basa en separar responsabilidades para que el almacenamiento principal esté en cloud y SF se pueda centrar en otras cosas como análisis y procesamiento de datos a gran escala.
-- El sistema estará basado inicialmente en servicios monolíticos con posibilidad de migrar a una arquitectura de microservicios en el futuro
-Se tienen dos propuestas para este aspecto:
-	1- Utilizar patrones como el "Modular Monolith", donde cada dominio (autenticación, compartición, 	visualización) se desarrolla como un módulo autónomo dentro del mismo despliegue.
-	2- Implementar una arquitectura por capas separando handlers, servicios y repositorios.
-- Se debe implementar versionamiento en los endpoints de la API y mantener compatibilidad hacia atrás en la medida posible
-Hay diferentes prácticas como opciones en esté aspecto. Tanto el versionamiento en URL ó el versionamiento en headers son buenas prácticas pero se ven relacionadas a como se trabajará el backend, se debe de discutir más esto último con el equipo de trabajo.
-Una referencia de versionamiento en URL (Norma en API´s REST): https://medium.com/@espinozajge/versionamiento-de-apis-rest-mejores-prácticas-y-consideraciones-4b5021dd0a11
-Por último por el momento, para el tema del pricing de Snowflake se ha investigado también. Snowflake utiliza un modelo de pago por consumo, lo que significa que solamente se paga por lo que se usa. Entre las consideraciones de costos están los siguientes:
-Almacenamiento de datos -> Se cobra por terabyte (TB) al mes, dependiendo de la región y proveedor de nube.
-Fuerza de computación -> Se paga por uso mediante créditos Snowflake. Las unidades principales de cómputo son los "virtual warehouses", agrupados por tamaño.
-Funciones Serverless
-Servicios en la nubes -> Snowflake coordina autenticación, seguridad y compilación de consultas.
-Es importante mencionar que hay diferentes ediciones que corresponden a diferentes perfiles de clientes, los créditos en cada edición cambian en su precio por ejemplo.
-Toda la información viene de la guía oficial de SF sobre su pricing, a continuación el link:
-https://www.snowflake.com/wp-content/uploads/2023/12/The-Simple-Guide-to-Snowflake-Pricing.pdf
-```
 
 ## QUALITY AND TESTING
 
