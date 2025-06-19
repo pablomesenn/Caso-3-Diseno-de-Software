@@ -12,8 +12,10 @@ Members: Pablo Mesén, Alonso Durán Muñoz, Ana Hernández Muñoz, Jesus Valver
 - [LEGAL AND REGULATORY FRAMEWORK](#LEGAL-AND-REGULATORY-FRAMEWORK)
 - [STACK](#STACK)
 - [FRONTEND](#FRONTEND)
-	-[AUTHENTICATION PLATFORM](#Authentication-platform)
-	-[POC MFA](#POC-MFA)
+
+  	-[AUTHENTICATION PLATFORM](#Authentication-platform)
+
+  	-[POC MFA](#POC-MFA)
 - [BACKEND](#BACKEND)
 	- [API ENDPOINTS](#API-Endpoints)
    	- [IMPORTANT CLASSES & COMPONENTS](#Important-Classes-&-Components)
@@ -1230,15 +1232,21 @@ Monitoring & Compliance:
 
 #### Cortex
 
-## Key Workflows
-### 1. Dataset Upload
+## **1. Dataset Upload**
 ![image](https://github.com/user-attachments/assets/d5839f90-2cfd-4438-82fb-278102f37f5d)
 
-#### **Phase 1: Upload Initialization**
+#### Monitoring
 
-```
-POST /datasets/upload/init
-```
+All upload operations are monitored via:
+- AWS CloudWatch metrics
+- Custom dashboards in Amazon QuickSight
+- Real-time alerts for failures or slowdowns
+- Usage tracking for billing and quotas
+
+### **Phase 1: Upload Initialization**
+
+
+Endpoint: `POST /datasets/upload/init`
 
 1. **Handler Layer** receives request and validates user permissions
 2. **Service Layer** (`DatasetService`) performs:
@@ -1253,11 +1261,9 @@ POST /datasets/upload/init
    - S3 upload session with multipart configuration
    - Presigned URLs for each chunk (valid for 1 hour)
 
-#### **Phase 2: Chunk Upload**
+### **Phase 2: Chunk Upload**
 
-```
-PUT [presigned_url]
-```
+Endpoint: `PUT [presigned_url]`
 
 1. **Client** splits file into chunks
 2. **Direct Upload** to S3 using presigned URLs
@@ -1266,21 +1272,9 @@ PUT [presigned_url]
 5. **Checksum Validation** ensures data integrity
 
 
-#### **Phase 3: Upload Finalization**
+### **Phase 3: Upload Finalization**
 
-```
-POST /datasets/upload/{session}/finalize
-```
-
-**Request Body Example:**
-```json
-{
-  "chunk_references": [
-    {"chunk_id": 1, "checksum": "md5:def456..."},
-    {"chunk_id": 2, "checksum": "md5:ghi789..."}
-  ]
-}
-```
+Endpoint: `POST /datasets/upload/{session}/finalize`
 
 1. **Validation Phase**
    - Handler layer validates all chunks are present
@@ -1302,9 +1296,9 @@ POST /datasets/upload/{session}/finalize
    - Updates metadata in tracking system
    - Prepares for Snowflake ingestion
 
-### Technical Components
+#### **Core Components**
 
-#### DatasetService
+**`DatasetService`**
 Central orchestrator for dataset lifecycle
 - **Key Methods**:
   - `initializeUpload()`: Creates upload session and security context
@@ -1312,682 +1306,373 @@ Central orchestrator for dataset lifecycle
   - `finalizeUpload()`: Coordinates encryption and ETL trigger
 - **Dependencies**: StorageService, ValidationService, SecurityManager
 
-#### UploadManager
+**`UploadManager`**
 Handles chunked upload logic
-- **Responsibilities**:
+- **`Responsibilities`**:
   - Chunk validation and ordering
   - Retry logic for failed uploads
   - Progress tracking and reporting
 
-#### SecurityManager
+**`SecurityManager`**
 Enforces security policies during upload
 - **Operations**:
   - Creates security context for upload session
   - Validates geographic and permission requirements
   - Coordinates key generation and encryption
 
-#### S3Repository
+**`S3Repository`**
   - `initiateMultipartUpload()`: Creates S3 multipart session
   - `generatePresignedUrl()`: Creates secure upload URLs
   - `completeMultipartUpload()`: Finalizes S3 upload
 
-#### SFRepository (Snowflake)
+**`SFRepository`** (Snowflake)
   - `createExternalStage()`: Links S3 data to Snowflake
   - `copyIntoTable()`: Bulk loads data from S3
   - `validateDataQuality()`: Runs quality checks
 
-### Security Measures
+#### **Security Measures**
 
-#### 1. Authentication & Authorization
+**1. Authentication & Authorization**
 - JWT validation via AWS Cognito
 - Role-based access control (RBAC)
 - Organization-level permissions
 
-#### 2. Encryption
+**2. Encryption**
 - **At Rest**: AES-256-GCM in S3 and Snowflake
 - **In Transit**: TLS 1.3 for all communications
 - **Key Management**: AWS KMS with tripartite system
 
-#### 3. Access Control
+**3. Access Control**
 - IP whitelisting (Costa Rica only + approved institutions)
 - Row-level security (RLS) in Snowflake
 - Audit logging of all operations
 
-#### 4. Data Protection
+**4. Data Protection**
 - Sensitive field encryption before storage
 - Automated PII detection and masking
 - Secure key reconstruction only during operations
 
-### Data Transformation and AI Processing
+#### **ETL and AI Processing**
 
 ![alt text](image.png)
 
-#### **ETL Pipeline (AWS Glue)**
-1. **Data Reading**
-   - Glue reads chunks from S3 staging area
-   - Detects file format (CSV, JSON, Parquet)
-   - Applies schema inference
+**ETL Pipeline (AWS Glue)**
+*Key Operations*:
+- **Chunk Consolidation**: Merges uploaded chunks into a single dataset
+- **Format Detection**: Automatically identifies CSV, JSON, or Parquet formats
+- **Basic Cleaning**: Removes duplicates, handles null values, standardizes formats
+- **Schema Inference**: Generates initial schema from data patterns
+- **Output Preparation**: Converts to Parquet format for efficient AI processing
 
-2. **Initial Processing**
-   - **Merge**: Combines all chunks into unified dataset
-   - **Basic Clean**: Removes obvious duplicates, handles nulls
-   - **Format**: Converts to Parquet for efficient processing
-   - **Output**: Stores cleaned data in S3 for AI processing
-
-3. **Handoff to AI**
-   - Glue job completes and triggers Step Function
-   - Passes S3 location of processed data
-   - Includes metadata about dataset characteristics
+**Configuration**:
+```json
+{
+  "job_name": "initial-etl-job",
+  "transformations": [
+    "merge_chunks",
+    "basic_cleaning", 
+    "format_conversion",
+    "schema_inference"
+  ]
+}
+```
 
 ![image](https://github.com/user-attachments/assets/751408d1-674d-457b-b176-c10d02f73df6)
 
-#### **AI Processing with SageMaker**
+#### **AI-Powered Analysis (SageMaker)**
 
-**AI Processing Flow:**
+AI Processing Flow:
 
 ![image](https://github.com/user-attachments/assets/102f5e7b-8904-43d8-8c21-770ed9119730)
 
-#### AI Components
+<br><br>
 
-**AI Agent Selection: AWS SageMaker with Snowflake Schema Integration**
-- **Native S3 Integration**: Can directly process data from S3 without moving it
-- **Scalability**: Handles datasets from MB to TB scale
-- **Step Functions Integration**: Seamlessly fits into your existing orchestration
-- **Cost-Effective**: Pay only for processing time, auto-scales down when idle
-- **Model Flexibility**: Supports both custom models and pre-built algorithms
-
-However SageMaker must communicate bi-directionally with Snowflake to propose schema changes.
+AI Components:
 
 ![image](https://github.com/user-attachments/assets/744e1d01-967f-48da-b7d5-6b7c4b5c790a)
 
-#### SageMaker and Snowflake Integration
+#### AI Analysis Process
+1. **Production Database Discovery**: AI analyzes current Snowflake architecture
+2. **Data Sampling**: SageMaker reads processed data from S3
+3. **Architectural Comparison**: Compares new data against existing database structure
+4. **Pattern Analysis**: ML models detect integration opportunities and conflicts
+5. **Recommendation Generation**: AI produces actionable suggestions with confidence scores
 
+#### **Database Architecture Discovery**
+AI must understand the current production database to make informed schema evolution decisions
+
+**Database Structure Analysis**:
 ```python
-# Location: AI Processing Layer - Between Glue ETL and Snowflake Load
-class SageMakerDataProcessor:
-    """AI agent for pattern detection and schema evolution"""
+class SFArchitectureAnalyzer:
+    def discover_production_architecture(self, target_database: str) -> dict:
+        """Comprehensive analysis of existing Snowflake database structure"""
+        
+        architecture = {
+            'schemas': self.get_schema_structure(target_database),
+            'tables': self.get_table_metadata(target_database),
+            'relationships': self.discover_relationships(target_database),
+            'constraints': self.get_constraints(target_database),
+            'indexes': self.get_performance_structures(target_database),
+            'data_patterns': self.analyze_data_patterns(target_database)
+        }
+        
+        return architecture
     
-    def __init__(self):
-        self.sagemaker_client = boto3.client('sagemaker')
-        self.snowflake_connector = SnowflakeConnection()
-        self.schema_analyzer = SchemaEvolutionAnalyzer()
-        
-    def process_dataset(self, glue_output_path: str, dataset_metadata: dict):
-        """Main entry point with schema awareness"""
-        
-        # Step 1: Get current Snowflake schema
-        current_schema = self.get_snowflake_schema(dataset_metadata['target_table'])
-        
-        # Step 2: Analyze data AND existing schema together
-        analysis_job = self.create_schema_aware_processing_job(
-            data_path=glue_output_path,
-            current_schema=current_schema,
-            dataset_metadata=dataset_metadata
-        )
-        
-        # Step 3: Get AI recommendations
-        recommendations = self.wait_and_get_results(analysis_job)
-        
-        # Step 4: Process recommendations
-        if recommendations['schema_changes_needed']:
-            schema_evolution_plan = self.plan_schema_evolution(
-                current_schema=current_schema,
-                recommendations=recommendations,
-                data_path=glue_output_path
-            )
-            
-            # Step 5: Apply using Compensating Transaction Pattern
-            self.apply_schema_evolution(schema_evolution_plan)
-        
-        # Step 6: Transform data to match new/existing schema
-        transformed_path = self.transform_data_for_schema(
-            glue_output_path,
-            recommendations['data_transformations']
-        )
-        
-        return transformed_path
-    
-    def get_snowflake_schema(self, table_name: str) -> dict:
-        """Retrieves current schema from Snowflake"""
-        query = f"""
+    def get_table_metadata(self, database: str) -> dict:
+        """Extract detailed table structure and statistics"""
+        query = """
         SELECT 
-            column_name,
-            data_type,
-            is_nullable,
-            column_default,
-            comment
-        FROM information_schema.columns
-        WHERE table_name = '{table_name}'
-        ORDER BY ordinal_position
+            t.table_schema,
+            t.table_name,
+            t.table_type,
+            t.row_count,
+            t.bytes,
+            c.column_name,
+            c.data_type,
+            c.is_nullable,
+            c.column_default,
+            c.comment,
+            c.ordinal_position
+        FROM information_schema.tables t
+        JOIN information_schema.columns c ON t.table_name = c.table_name
+        WHERE t.table_catalog = '{database}'
+        ORDER BY t.table_name, c.ordinal_position
         """
         
-        current_schema = self.snowflake_connector.execute(query)
+        return self.snowflake_conn.execute(query)
+    
+    def discover_relationships(self, database: str) -> list:
+        """Detect foreign key relationships and data dependencies"""
         
-        # Also get relationships and constraints
-        constraints = self.get_table_constraints(table_name)
-        indexes = self.get_table_indexes(table_name)
+        # Explicit foreign keys
+        fk_query = """
+        SELECT 
+            fk.table_name as child_table,
+            fk.column_name as child_column,
+            fk.referenced_table_name as parent_table,
+            fk.referenced_column_name as parent_column,
+            'EXPLICIT' as relationship_type
+        FROM information_schema.referential_constraints rc
+        JOIN information_schema.key_column_usage fk ON rc.constraint_name = fk.constraint_name
+        """
+        
+        # Implicit relationships (detected through data analysis)
+        implicit_relationships = self.detect_implicit_relationships(database)
         
         return {
-            'columns': current_schema,
-            'constraints': constraints,
-            'indexes': indexes,
-            'row_count': self.get_row_count(table_name)
+            'explicit': self.snowflake_conn.execute(fk_query),
+            'implicit': implicit_relationships
         }
 ```
+#### **Architectural Context Building**
 
-#### Schema Evolution Analyzer (Runs in SageMaker)
+Production Database Profile:
+| Analysis Type | Information Gathered | Purpose |
+|---------------|---------------------|---------|
+| **Schema Structure** | Database → Schema → Table hierarchy | Understand organizational patterns |
+| **Table Relationships** | Foreign keys, junction tables, dependencies | Identify integration points for new data |
+| **Data Types & Constraints** | Column types, nullability, defaults | Ensure compatibility with new dataset |
+| **Performance Structures** | Indexes, clustering keys, partitions | Optimize new data integration |
+| **Data Patterns** | Naming conventions, business rules | Maintain consistency |
+| **Usage Statistics** | Query patterns, access frequency | Inform optimization decisions |
+**Snowflake Metadata Extraction**
+
+<br><br><br> Integration Context Analysis:
+```python
+def analyze_integration_context(self, new_dataset_metadata: dict, production_architecture: dict):
+    """Determines how new dataset fits into existing architecture"""
+    
+    context = {
+        'target_schema': self.determine_target_schema(new_dataset_metadata, production_architecture),
+        'relationship_opportunities': self.find_relationship_opportunities(new_dataset_metadata, production_architecture),
+        'naming_alignment': self.check_naming_conventions(new_dataset_metadata, production_architecture),
+        'data_type_compatibility': self.assess_type_compatibility(new_dataset_metadata, production_architecture),
+        'performance_impact': self.assess_performance_impact(new_dataset_metadata, production_architecture)
+    }
+    
+    return context
+
+def find_relationship_opportunities(self, new_data: dict, existing_arch: dict) -> list:
+    """Identifies potential relationships between new data and existing tables""" 
+    return 
+```
+
+Schema Analysis Integration:
 
 ```python
+# AI decision-making based on production architecture understanding
 class SchemaEvolutionAnalyzer:
-    """Analyzes data patterns and proposes schema changes"""
-    
-    def analyze(self, data_sample: pd.DataFrame, current_schema: dict) -> dict:
-        recommendations = {
-            'schema_changes_needed': False,
-            'changes': [],
-            'data_transformations': []
-        }
+    def analyze(self, data_sample: pd.DataFrame, production_architecture: dict) -> dict:
+        """Makes schema decisions based on comprehensive architecture understanding"""
         
-        # 1. Detect new columns in data not in schema
-        new_columns = self.detect_new_columns(data_sample, current_schema)
-        if new_columns:
-            recommendations['schema_changes_needed'] = True
-            recommendations['changes'].extend([
-                {
-                    'type': 'ADD_COLUMN',
-                    'ddl': f"ALTER TABLE {{table}} ADD COLUMN {col['name']} {col['type']}",
-                    'column': col
-                } for col in new_columns
-            ])
+        recommendations = {'schema_changes_needed': False, 'changes': []}
         
-        # 2. Detect data type mismatches
-        type_changes = self.detect_type_changes(data_sample, current_schema)
-        for change in type_changes:
-            recommendations['schema_changes_needed'] = True
-            recommendations['changes'].append({
-                'type': 'MODIFY_COLUMN',
-                'ddl': f"ALTER TABLE {{table}} MODIFY COLUMN {change['column']} {change['new_type']}",
-                'risk_level': 'HIGH' if change['requires_conversion'] else 'LOW'
-            })
+        # Context-aware analysis using production database knowledge
+
+        # Intelligent schema evolution based on existing patterns
         
-        # 3. Detect relationship opportunities
-        relationships = self.detect_relationships(data_sample, current_schema)
-        for rel in relationships:
-            recommendations['changes'].append({
-                'type': 'ADD_CONSTRAINT',
-                'ddl': f"ALTER TABLE {{table}} ADD FOREIGN KEY ({rel['column']}) REFERENCES {rel['ref_table']}({rel['ref_column']})",
-                'confidence': rel['confidence']
-            })
-        
-        # 4. Detect optimization opportunities
-        optimizations = self.detect_optimizations(data_sample, current_schema)
-        recommendations['changes'].extend(optimizations)
-        
-        return recommendations
+        # Relationship recommendations based on architectural analysis
+            
+        return 
 ```
 
-#### Compensating Transaction for Schema Evolution
+#### Architecture-Aware Decision Making
 
+The AI uses production database knowledge to make intelligent decisions:
+
+**Decision Factors**:
+- **Existing Table Compatibility**: Can new data extend existing tables or requires new ones?
+- **Relationship Patterns**: How does new data relate to existing entities?
+- **Naming Conventions**: Does the system follow specific naming standards?
+- **Performance Considerations**: Will integration impact existing query performance?
+- **Business Logic Alignment**: Does new data fit existing business domain models?
+
+**Example Decision Process**:
+1. **New Customer Data Upload**:
+   - AI discovers existing `CUSTOMERS` table with standard structure
+   - Detects new data has compatible customer information + new attributes
+   - **Decision**: Extend existing `CUSTOMERS` table with new columns
+   - **Justification**: Maintains referential integrity, follows existing patterns
+
+2. **New Product Categories Upload**:
+   - AI discovers existing `PRODUCTS` table with `category_id` foreign key
+   - Detects new data represents category master data
+   - **Decision**: Create new `PRODUCT_CATEGORIES` table and establish FK relationship
+   - **Justification**: Normalizes data structure, improves referential integrity
+
+#### Key AI Capabilities
+
+**Schema Evolution Detection**:
+- Identifies when new data requires schema changes
+- Calculates risk levels for proposed modifications
+- Suggests backward-compatible evolution strategies
+
+**Relationship Discovery**:
+- Detects foreign key relationships across datasets
+- Identifies potential duplicate or redundant columns
+- Recommends data normalization opportunities
+
+**Quality Enhancement**:
+- Flags anomalies and outliers
+- Suggests data validation rules
+- Recommends performance optimizations
+
+#### Intelligent Schema Evolution
+Safely apply AI recommendations to the database schema
+
+The system uses a **staging-first approach** with automatic rollback using the Compensating Transaction Pattern:
+
+1. **Risk Assessment**: Categorizes changes as LOW, MEDIUM, or HIGH risk
+2. **Staging Environment**: Creates a copy of production schema for testing
+3. **Change Application**: Applies AI recommendations to staging schema
+4. **Validation Testing**: Loads sample data to verify compatibility
+5. **Quality Verification**: Runs data quality checks on transformed data
+6. **Production Promotion**: Applies successful changes to production
+
+**Change Types and Risk Levels**
+
+| Change Type | Risk Level | Approval Required | Example |
+|-------------|------------|-------------------|---------|
+| Add new column | LOW | No | Adding optional metadata field |
+| Modify data type | HIGH | Yes | VARCHAR(50) → VARCHAR(200) |
+| Add constraints | MEDIUM | Conditional | Foreign key relationships |
+| Index optimization | LOW | No | Performance improvements |
+
+### Phase 4: Data Loading (Snowflake Integration)
+Load transformed data into optimized Snowflake tables
+
+**Loading Strategy**
+1. **Schema Validation**: Ensures data matches final schema
+2. **Staging Load**: Loads data into Snowflake staging tables
+3. **Quality Checks**: Validates data integrity and business rules
+4. **Production Merge**: Merges staging data into production tables
+5. **Metadata Update**: Records processing completion and metrics
+
+Integration Architecture
+
+```
+SageMaker ←→ Lambda ←→ Snowflake
+    ↓           ↓         ↓
+Pattern     Schema    Data
+Analysis   Evolution  Loading
+```
+**Key Integration Points**:
+
+**SageMaker Processing Job Configuration**:
 ```python
-class SchemaEvolutionPipeline(DataModelTransformationPipeline):
-    """Safely applies schema changes with rollback capability"""
-    
-    def __init__(self, snowflake_conn):
-        super().__init__()
-        self.sf = snowflake_conn
-        self.staging_schema = 'STAGING_SCHEMA_CHANGES'
+# Entry point for AI analysis
+class SageMakerDataProcessor:
+    def process_dataset(self, glue_output_path: str, dataset_metadata: dict):
+        # Get current Snowflake schema
+        current_schema = self.get_snowflake_schema(dataset_metadata['target_table'])
         
-    def apply_schema_evolution(self, evolution_plan: dict):
-        """Apply schema changes with full rollback capability"""
+        # Analyze data patterns with schema awareness
+        recommendations = self.analyze_patterns(glue_output_path, current_schema)
         
-        # Step 1: Create staging schema with proposed changes
-        staging_table = f"{self.staging_schema}.{evolution_plan['table']}_proposed"
-        
-        try:
-            # Create copy of production table in staging
-            self.sf.execute(f"""
-                CREATE TABLE {staging_table} 
-                CLONE {evolution_plan['table']}
-            """)
-            
-            # Apply each proposed change to staging
-            for change in evolution_plan['changes']:
-                if change['type'] == 'ADD_COLUMN':
-                    self.apply_add_column(staging_table, change)
-                elif change['type'] == 'MODIFY_COLUMN':
-                    self.apply_modify_column(staging_table, change)
-                elif change['type'] == 'ADD_CONSTRAINT':
-                    self.apply_add_constraint(staging_table, change)
-            
-            # Test data load into new schema
-            test_success = self.test_data_load(
-                staging_table, 
-                evolution_plan['sample_data_path']
-            )
-            
-            if test_success:
-                # Validate data quality in new schema
-                quality_check = self.validate_data_quality(staging_table)
-                
-                if quality_check['passed']:
-                    # Apply to production
-                    self.promote_to_production(staging_table, evolution_plan['table'])
-                else:
-                    # Rollback and alert
-                    raise DataQualityException(quality_check['issues'])
-            else:
-                raise SchemaIncompatibilityException()
-                
-        except Exception as e:
-            # Compensate: Clean up staging and alert human
-            self.compensate(staging_table)
-            self.alert_data_architect({
-                'error': str(e),
-                'plan': evolution_plan,
-                'recommendation': 'Manual schema evolution required'
-            })
-            
-            # Fallback: Transform data to fit existing schema
-            return self.transform_to_existing_schema(evolution_plan)
-        
-        finally:
-            # Always clean up staging
-            self.cleanup_staging(staging_table)
+        # Return transformation plan
+        return self.create_transformation_plan(recommendations)
 ```
 
-#### Integration with Snowflake via Lambda
-
+**Lambda Orchestration**:
 ```python
-# Lambda function that bridges SageMaker and Snowflake
+# Coordinates schema evolution between services
 def coordinate_schema_evolution(event, context):
-    """Orchestrates schema evolution between SageMaker and Snowflake"""
-    
-    # Get SageMaker recommendations
     recommendations = event['sagemaker_output']
     
     if recommendations['schema_changes_needed']:
-        # Connect to Snowflake
-        conn = get_snowflake_connection()
+        # High-risk changes need approval
+        if any(c['risk_level'] == 'HIGH' for c in recommendations['changes']):
+            return request_custodian_approval(recommendations)
         
-        # Prepare evolution plan
-        evolution_plan = {
-            'table': event['target_table'],
-            'changes': recommendations['changes'],
-            'sample_data_path': event['data_path'],
-            'approval_required': any(
-                c['risk_level'] == 'HIGH' 
-                for c in recommendations['changes']
-            )
-        }
-        
-        # High-risk changes need custodian approval
-        if evolution_plan['approval_required']:
-            approval_request_id = request_custodian_approval(evolution_plan)
-            return {
-                'status': 'PENDING_APPROVAL',
-                'request_id': approval_request_id
-            }
-        
-        # Apply schema evolution
-        pipeline = SchemaEvolutionPipeline(conn)
-        result = pipeline.apply_schema_evolution(evolution_plan)
-        
-        return {
-            'status': 'SCHEMA_UPDATED',
-            'changes_applied': result['applied_changes']
-        }
-    
-    return {
-        'status': 'NO_SCHEMA_CHANGES',
-        'data_ready_for_load': True
-    }
+        # Apply safe changes automatically
+        return apply_schema_evolution(recommendations)
 ```
 
-#### Pattern Detection Container
-
-```python
-# /opt/ml/code/pattern_detector.py - Runs inside SageMaker container
-class PatternDetector:
-    """Detects data patterns using trained ML models"""
-    
-    def __init__(self):
-        self.models = {
-            'duplicate_detector': self.load_model('duplicate_detection.pkl'),
-            'relationship_finder': self.load_model('relationship_detection.pkl'),
-            'anomaly_detector': self.load_model('anomaly_detection.pkl')
-        }
-        
-    def detect_patterns(self, data_path: str) -> List[Pattern]:
-        # Read sample of data (SageMaker provides high-memory instances)
-        df = self.read_data_sample(data_path, sample_size='500MB')
-        
-        patterns = []
-        
-        # Detect duplicate columns
-        duplicates = self.detect_duplicates(df)
-        if duplicates:
-            patterns.append(Pattern(
-                type='DUPLICATE_COLUMNS',
-                confidence=duplicates['confidence'],
-                metadata={'columns': duplicates['column_pairs']}
-            ))
-        
-        # Find relationships between datasets
-        relationships = self.find_relationships(df)
-        patterns.extend(relationships)
-        
-        # Detect anomalies and quality issues
-        anomalies = self.detect_anomalies(df)
-        patterns.extend(anomalies)
-        
-        return patterns
-```
-
-#### Integration with Step Functions
-
+**Step Functions Workflow**:
 ```json
 {
-  "Comment": "Dataset processing workflow with AI",
   "StartAt": "GlueETL",
   "States": {
-    "GlueETL": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-      "Parameters": {
-        "JobName": "initial-etl-job"
-      },
-      "Next": "InvokeSageMaker"
-    },
-    "InvokeSageMaker": {
-      "Type": "Task", 
-      "Resource": "arn:aws:states:::sagemaker:createProcessingJob.sync",
-      "Parameters": {
-        "ProcessingJobName.$": "$.dataset_id",
-        "ProcessingInputs": [{
-          "InputName": "input",
-          "S3Input": {
-            "S3Uri.$": "$.glue_output_path"
-          }
-        }]
-      },
-      "Next": "ApplyTransformations"
-    },
-    "ApplyTransformations": {
-      "Type": "Task",
-      "Resource": "arn:aws:lambda:region:account:function:apply-transformations",
-      "Next": "LoadToSnowflake"
-    }
+    "GlueETL": { "Next": "InvokeSageMaker" },
+    "InvokeSageMaker": { "Next": "ApplyTransformations" },
+    "ApplyTransformations": { "Next": "LoadToSnowflake" }
   }
 }
 ```
 
-#### Stimulus Processing Components
-- **StimulusSelector**: Identifies relevant data patterns using SageMaker
-- **MLModel**: Deployed as SageMaker endpoints for real-time inference
-- **Transformation Agents**:
-  - UnionAgent: Merges related columns detected by ML
-  - SplitAgent: Separates nested data structures
-  - AppendAgent: Handles incremental updates
-
 ### Design Patterns
 
 ![image](https://github.com/user-attachments/assets/b827b2b2-3a83-466f-bc37-be2e547b9079)
+#### 1. Learning-Based Pattern
 
-#### 1. Claim Check Pattern
+Enables AI to automatically detect data patterns, classify content types, and apply intelligent transformations without explicit programming. The system follows a sequential process where extracted and transformed data is analyzed by AI agents to identify optimization opportunities in the database structure.
 
-**Purpose**: Handles large file uploads (500MB - 10GB+) by separating the actual data payload from the control flow, preventing memory overload and network timeouts.
-
-**When It's Used**:
-- Triggered immediately when `POST /datasets/upload/init` is called
-- Active throughout the entire chunk upload phase
-- Remains in use until `POST /datasets/upload/{session}/finalize` completes
-
-**Where It's Implemented**:
-
-```python
-# Location: Service Layer - UploadManager & ChunkUploader
-class ClaimCheckToken:
-    """Token that travels through the system while data stays in S3"""
-    def __init__(self):
-        self.id = generate_uuid()
-        self.chunk_metadata_list = []  # Only references, not data
-        self.created_at = datetime.now()
-        self.dataset_metadata = {}      # Size, format, schema info
-
-class ChunkUploader:
-    def upload(self, chunk: Chunk, token: ClaimCheckToken):
-        # 1. Heavy data goes directly to S3
-        s3_key = self.s3_repository.put_object(chunk.data)
-        
-        # 2. Only lightweight reference stored in token
-        metadata = ChunkMetadata(
-            checksum=chunk.checksum,
-            sequence_id=chunk.sequence_id,
-            s3_key=s3_key,              # Reference to S3 location
-            size=chunk.size
-        )
-        token.chunk_metadata_list.append(metadata)
-        
-        # 3. Token passes through services, not the data
-        return token  # Lightweight object
-```
-
-**How It Works**:
-1. **Initial Request**: Client provides file metadata, not the file itself
-2. **Token Creation**: System creates a ClaimCheckToken with unique ID
-3. **Chunk Upload**: Each chunk uploaded directly to S3 via presigned URLs
-4. **Reference Storage**: Only S3 keys and metadata stored in the token
-5. **Processing**: ETL jobs retrieve data from S3 using references in token
-6. **Memory Efficiency**: Services pass around 1KB tokens instead of GB of data
-
-**Integration Points**:
-- `DatasetHandler` → Creates initial token
-- `S3Repository` → Stores actual data chunks
-- `MetadataStore` → Persists token information
-- `AWS Step Functions` → Passes token through ETL pipeline
-- `AWS Glue` → Retrieves data using token references
-
-#### 2. Compensating Transaction Pattern
-
-**Purpose**: Ensures data transformations and model changes follow an "all or nothing" principle, with automatic rollback on failure and human escalation for complex issues.
-
-**When It's Used**:
-- Activated during the ETL phase after all chunks are uploaded
-- Specifically when AI suggests structural changes to the data model
-- Before data is committed to production Snowflake tables
-- During any multi-step transformation that could partially fail
-
-**Where It's Implemented**:
-
-```python
-# Location: AI Data Transformation Layer - After AWS Glue processes raw data
-class DataModelTransformationPipeline:
-    """Manages reversible transformations with compensation logic"""
-    
-    def __init__(self):
-        self.steps = []
-        self.compensation_log = DurableLog()  # AWS DynamoDB
-        self.lock_manager = LockManager()      # Distributed locks
-        
-    def execute(self):
-        # Phase 1: Acquire locks on affected datasets
-        resources = self.identify_resources()
-        for resource in resources:
-            if not self.lock_manager.acquire(resource):
-                raise ConcurrentModificationError()
-        
-        # Phase 2: Execute transformation steps
-        completed_steps = []
-        try:
-            for step in self.steps:
-                # Log state before execution
-                self.compensation_log.write_entry(step.get_state())
-                
-                # Execute with timeout
-                step.execute(timeout=300)  # 5 minutes max
-                completed_steps.append(step)
-                
-        except Exception as e:
-            # Phase 3: Compensate in reverse order
-            self.compensate(completed_steps)
-            
-            # Phase 4: Human escalation
-            self.alert_data_architect(e, self.compensation_log)
-            raise
-            
-    def compensate(self, completed_steps):
-        """Rollback completed steps in reverse order"""
-        for step in reversed(completed_steps):
-            compensator = step.get_compensator()
-            compensator.compensate()
-
-# Example transformation steps:
-class ModelTransformationStep:
-    """Base class for reversible transformations"""
-    
-    def execute(self):
-        # Save current state
-        self.original_schema = self.sf_repository.get_schema()
-        # Apply transformation
-        self.sf_repository.alter_table(self.new_schema)
-        
-    def get_compensator(self):
-        return SchemaRollback(self.original_schema)
-```
-
-**How It Works**:
-1. **Planning Phase**: AI analyzes data and suggests transformations
-2. **Validation Phase**: Each transformation creates a compensation strategy
-3. **Execution Phase**: Steps executed with state logging
-4. **Success Path**: All steps complete → Commit to production
-5. **Failure Path**: Any step fails → Automatic rollback → Human intervention
-
-**Integration Points**:
-- `AWS Glue Jobs` → Triggers pipeline after data validation
-- `Snowflake` → Applies schema changes in staging environment
-- `AWS Step Functions` → Orchestrates the pipeline
-- `DynamoDB` → Stores durable compensation log
-- `SNS` → Alerts data architects on failure
-
-#### 3. Learning-Based Pattern
-
-**Purpose**: Enables AI to automatically detect data patterns, classify content types, and apply intelligent transformations without explicit programming.
-
-**When It's Used**:
 - During ETL processing after chunks are merged
 - When system encounters new data formats or structures
 - For detecting relationships between datasets
 - During data quality improvement and normalization
 
-**Where It's Implemented**:
+**Key Components**
 
-```python
-# Location: AI Layer - Integrated with AWS Glue and SageMaker
-class LearningBasedDataProcessor:
-    """AI-driven pattern detection and transformation system"""
-    
-    def __init__(self):
-        self.stimulus_selector = StimulusSelector()
-        self.ml_models = {
-            'supervised': SupervisedLearning(),    # For known patterns
-            'unsupervised': UnsupervisedLearning() # For discovery
-        }
-        self.executor = TransformationExecutor()
-        
-    def process_dataset(self, dataset_id: str, raw_data_path: str):
-        # Phase 1: Create stimuli from raw data
-        stimuli = self.create_stimuli(dataset_id, raw_data_path)
-        
-        # Phase 2: Pattern detection
-        patterns = self.detect_patterns(stimuli)
-        
-        # Phase 3: Agent selection and execution
-        transformations = self.execute_transformations(stimuli, patterns)
-        
-        return transformations
-    
-    def create_stimuli(self, dataset_id: str, path: str):
-        """Convert raw data into analyzable stimuli"""
-        data_sample = self.s3_repository.read_sample(path, size='10MB')
-        metadata = self.metadata_service.get(dataset_id)
-        
-        stimuli = []
-        for column in data_sample.columns:
-            stimulus = Stimulus(
-                id=generate_uuid(),
-                type=self.infer_type(column),
-                metadata={
-                    'column_name': column.name,
-                    'data_types': column.detected_types,
-                    'null_ratio': column.null_percentage,
-                    'cardinality': column.unique_count
-                },
-                value=column.sample_values
-            )
-            stimuli.append(stimulus)
-        return stimuli
-    
-    def detect_patterns(self, stimuli: List[Stimulus]):
-        """AI detects patterns using both supervised and unsupervised learning"""
-        patterns = []
-        
-        # Supervised: Match against known patterns
-        known_patterns = self.ml_models['supervised'].classify(stimuli)
-        patterns.extend(known_patterns)
-        
-        # Unsupervised: Discover new patterns
-        discovered = self.ml_models['unsupervised'].find_clusters(stimuli)
-        patterns.extend(discovered)
-        
-        return patterns
-    
-    def execute_transformations(self, stimuli, patterns):
-        """Select and apply appropriate transformation agents"""
-        results = []
-        
-        for pattern in patterns:
-            # Select appropriate agent based on pattern type
-            if pattern.type == 'DUPLICATE_COLUMNS':
-                agent = UnionAgent()  # Merges similar columns
-            elif pattern.type == 'NESTED_JSON':
-                agent = SplitAgent()  # Flattens nested structures
-            elif pattern.type == 'INCREMENTAL_DATA':
-                agent = AppendAgent() # Handles delta updates
-            else:
-                agent = DefaultAgent()
-                
-            # Apply transformation
-            result = agent.action(stimuli, pattern)
-            results.append(result)
-            
-        return results
+| Component | Purpose | Key Features |
+|-----------|---------|--------------|
+| **`Stimulus`** | Individual data events/triggers | Contains metadata, values, and validation methods |
+| **`StimulusSelector`** | Filters and classifies stimuli | Configurable rules and selection strategies |
+| **`Agent`** | Orchestrates ML model execution | Processes filtered stimuli through ML models |
+| **`MLModel`** | Abstract ML interface | Supports predict, fit, save/load operations |
+| **`LearningEngine`** | Training capabilities | Abstract base for different learning approaches |
+| **`SupervisedLearning`** | Pattern recognition with labels | Uses historical data for classification |
+| **`UnsupervisedLearning`** | Pattern discovery without labels | Finds hidden structures and anomalies |
+| **`DataProcessor`** | Metadata extraction and coordination | Manages system state and ETL integration |
 
-# Example Agent Implementation:
-class UnionAgent(Agent):
-    """Merges columns with similar data patterns"""
-    
-    def action(self, stimuli: List[Stimulus], pattern: Pattern) -> Output:
-        # Identify columns to merge
-        merge_candidates = pattern.metadata['similar_columns']
-        
-        # Create transformation plan
-        transformation = {
-            'operation': 'UNION_COLUMNS',
-            'source_columns': merge_candidates,
-            'target_column': self.generate_column_name(merge_candidates),
-            'transformation_rules': self.create_merge_rules(stimuli)
-        }
-        
-        # Execute via Snowflake
-        sql = self.generate_merge_sql(transformation)
-        self.sf_repository.execute(sql)
-        
-        return Output(
-            status='SUCCESS',
-            transformation=transformation,
-            affected_rows=self.get_affected_rows()
-        )
-```
+**Implementation Benefits**
+
+| Benefit | Description | Impact |
+|---------|-------------|--------|
+| **Adaptive Architecture** | System learns from data patterns to suggest/implement schema changes | Reduces manual optimization overhead |
+| **Pattern-Driven Optimization** | Uses both supervised and unsupervised learning for optimization discovery | Covers known and unknown optimization scenarios |
+| **Modular Design** | Component separation allows independent scaling and modification | Enables flexible system evolution without core ETL changes |
+| **Automated Decision Making** | AI-driven suggestions reduce human intervention requirements | Faster response to changing data characteristics |
 
 **How It Works**:
 1. **Data Ingestion**: Raw data arrives in S3
@@ -2004,24 +1689,98 @@ class UnionAgent(Agent):
 - `Step Functions` → Orchestrates the learning pipeline
 - `Lambda` → Applies final transformations before Snowflake load
 
-#### Monitoring
 
-All upload operations are monitored via:
-- AWS CloudWatch metrics
-- Custom dashboards in Amazon QuickSight
-- Real-time alerts for failures or slowdowns
-- Usage tracking for billing and quotas
+#### 2. Compensating Transaction Pattern
 
-![alt text](image.png)
+Ensures data transformations and model changes follow an "all or nothing" principle, with automatic rollback on failure and human escalation for complex issues. The system executes transformations in discrete, reversible steps with comprehensive logging for potential compensation workflows.
 
-![image](https://github.com/user-attachments/assets/d5839f90-2cfd-4438-82fb-278102f37f5d)
+- Activated during the ETL phase after all chunks are uploaded
+- Specifically when AI suggests structural changes to the data model
+- Before data is committed to production Snowflake tables
+- During any multi-step transformation that could partially fail
+
+**Key Components**
+
+| Component | Purpose | Key Features |
+|-----------|---------|--------------|
+| **`ModelTransformationStep`** | Base transformation unit | Contains compensation strategy and reversible execution logic |
+| **`DataModelTransformationPipeline`** | Orchestrates transformation steps | Manages step sequence and durable logging |
+| **`CompensatingTransactionEngine`** | Handles failure scenarios | Optimizes compensation order and manages step rollbacks |
+| **`Compensator`** | Defines undo operations | Interface for implementing step-specific reversal logic |
+| **`DurableLog`** | Persistent state tracking | Records execution state for recovery purposes |
+| **`RecoveryService`** | Monitors and resumes processes | Detects interruptions and continues compensation workflows |
+| **`LockManager`** | Resource coordination | Prevents concurrent access during critical operations |
+| **`AlertSystem`** | Human notification | Alerts data architects when manual intervention required |
+
+**Transformation Steps**
+
+| Step | Responsibility | Compensation Strategy |
+|------|---------------|----------------------|
+| **`DataModelPublisherStep`** | Makes changes official | Unpublishes and reverts to previous version |
+| **`DataModelUpdaterStep`** | Updates model structure | Restores original schema definitions |
+| **`DataLoaderStep`** | Loads data into new model | Removes loaded data and restores backups |
+| **`DataTransformationStep`** | Applies data transformations | Reverts data to pre-transformation state |
+
+**Implementation Benefits**
+
+| Benefit | Description | Impact |
+|---------|-------------|--------|
+| **Guaranteed Consistency** | All-or-nothing execution ensures data integrity | Prevents partial transformations that corrupt data models |
+| **Human Fallback** | Automatic escalation to data architects on failure | Ensures complex failures receive expert attention |
+| **Intelligent Rollback** | Compensation considers business rules and dependencies | More sophisticated than simple reverse operations |
+| **Resumable Operations** | Recovery service handles interruptions gracefully | Reduces wasted work from system failures |
+
+**Integration Points**:
+- `AWS Glue Jobs` → Triggers pipeline after data validation
+- `Snowflake` → Applies schema changes in staging environment
+- `AWS Step Functions` → Orchestrates the pipeline
+- `DynamoDB` → Stores durable compensation log
+- `SNS` → Alerts data architects on failure
 
 
-![image](https://github.com/user-attachments/assets/102f5e7b-8904-43d8-8c21-770ed9119730)
+#### 3. Claim Check Pattern
 
-![image](https://github.com/user-attachments/assets/751408d1-674d-457b-b176-c10d02f73df6)
+Handles large dataset uploads (500MB to 10GB+) by separating payload storage from processing coordination. It prevents data loss and duplication during unreliable network transfers by using chunked uploads with unique reference tokens. Large files are split into manageable chunks, uploaded with retry logic, and referenced through claim check tokens for downstream processing.
 
+- Triggered immediately when `POST /datasets/upload/init` is called
+- Active throughout the entire chunk upload phase
+- Remains in use until `POST /datasets/upload/{session}/finalize` completes
 
+**Key Components**
+
+| Component | Purpose | Key Features |
+|-----------|---------|--------------|
+| **`DatasetUploader`** | Orchestrates file upload process | Splits files into chunks and coordinates upload |
+| **`ChunkUploader`** | Handles individual chunk uploads | Manages retry logic for failed chunk transfers |
+| **`ClaimCheckToken`** | References complete dataset | Contains chunk metadata and creation timestamp |
+| **`S3Repository`** | Cloud storage interface | Provides reliable object storage for chunks |
+| **`MetadataStore`** | Token persistence | Stores and retrieves claim check tokens |
+| **`UploadManager`** | Validates upload completion | Ensures all chunks uploaded successfully |
+| **`RetryHandler`** | Failure recovery | Implements exponential backoff for failed uploads |
+
+**Data Structures**
+
+| Structure | Purpose | Key Attributes |
+|-----------|---------|----------------|
+| **`Chunk`** | Individual file segment | Data payload, checksum, metadata |
+| **`ChunkMetadata`** | Chunk tracking information | Checksum, sequence ID, size, status |
+| **`ClaimCheckToken`** | Dataset reference | Unique ID, chunk list, creation timestamp |
+
+**Implementation Benefits**
+
+| Benefit | Description | Impact |
+|---------|-------------|--------|
+| **Reliable Large File Transfers** | Chunked uploads with retry logic | Handles network interruptions gracefully |
+| **Deduplication Prevention** | Token-based processing prevents reprocessing | Ensures data integrity across system restarts |
+| **Scalable Architecture** | Separates storage from processing concerns | Enables independent scaling of upload and processing |
+| **Cloud Integration** | Native AWS service integration | Leverages managed services for reliability |
+
+**Integration Points**:
+- `DatasetHandler` → Creates initial token
+- `S3Repository` → Stores actual data chunks
+- `MetadataStore` → Persists token information
+- `AWS Step Functions` → Passes token through ETL pipeline
+- `AWS Glue` → Retrieves data using token references
 
 ### 2. Secure Data Sharing with Custodian Approval
 
