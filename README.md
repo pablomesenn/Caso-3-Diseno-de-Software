@@ -12,10 +12,8 @@ Members: Pablo Mesén, Alonso Durán Muñoz, Ana Hernández Muñoz, Jesus Valver
 - [LEGAL AND REGULATORY FRAMEWORK](#LEGAL-AND-REGULATORY-FRAMEWORK)
 - [STACK](#STACK)
 - [FRONTEND](#FRONTEND)
-
-  	-[AUTHENTICATION PLATFORM](#Authentication-platform)
-
-  	-[POC MFA](#POC-MFA)
+	- [AUTHENTICATION PLATFORM](#Authentication-platform)
+	- [POC MFA](#POC-MFA)
 - [BACKEND](#BACKEND)
 	- [API ENDPOINTS](#API-Endpoints)
    	- [IMPORTANT CLASSES & COMPONENTS](#Important-Classes-&-Components)
