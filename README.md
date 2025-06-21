@@ -1160,7 +1160,7 @@ audit-logs-bucket/
 ```
 
 
-## THIRDPARTY SERVICES
+## Third Party Services
 
 ### AWS services used to complement the design
 
@@ -1201,32 +1201,238 @@ Monitoring & Compliance:
 - AWS CloudWatch - Real-time monitoring
 - AWS Config - Compliance validation
 
+#### **CloudWatch + Quicksight integration**
 
-#### AWS Secrets
+##### End-to-End Monitoring and Analytics Design
 
-#### AWS KMS
+A robust design for end-to-end monitoring and analytics is essential to meet several of the project’s most critical requirements. The architecture centralizes system observability using Amazon CloudWatch, which serves as the unified layer for collecting metrics, logs, and traces across all components. Log analytics and data visualization are handled through Amazon QuickSight, providing stakeholders with real-time insights and dashboards.
 
-#### AWS CloudWatch
+This design is a core pillar of the overall system architecture, enabling full visibility, operational awareness, and regulatory compliance. It also underpins key functionalities of the backoffice portal, ensuring that system health, performance trends, and audit trails are accessible and actionable for administrative users.
 
-#### AWS Vault 
- 
-#### AWS Fargate
- 
-#### AWS QuickSight
+##### System-Wide Monitoring Strategy
 
-#### AWS EventBridge
+**Centralized Logging with CloudWatch**
 
-#### AWS StepFunctions
+- All AWS services in the architecture (Lambda, Fargate, Step Functions, Cognito, Vault, KMS, etc.) are natively integrated with Amazon CloudWatch.
 
-#### AWS Lambda
+- CloudWatch Logs are configured to automatically receive logs and metrics from each of these components.
 
-#### AWS Glue
+- Snowflake logs (query history, access logs, execution errors) are ingested by CloudWatch via Snowflake External Functions or API integration. This creates a single pane of glass for monitoring application, infrastructure, and data warehouse components.
 
-#### AWS S3
+**Snowflake Integration with CloudWatch**
 
-#### AWS Cognito
+- Using custom AWS Lambda functions or scheduled Glue Jobs, Snowflake logs are exported (via Snowflake query APIs or JDBC) into CloudWatch Log Groups.
 
-### Snowflake Integration
+- Typical Snowflake monitoring includes:
+
+  - Login attempts
+  - Role/session changes
+  - Query execution times
+  - Query errors and timeouts
+
+##### Observability Visualization with QuickSight
+
+QuickSight provides dynamic dashboards and reporting capabilities over processed log data. Key functionalities that are indispensable for the adminitrators intended to acces the Backoffice portal. Some of the designed use cases that QuickSight + Cloudwatch integration will allow are: 
+
+- Visualize errors and system performance over time
+- Track user actions
+- Identify bottlenecks
+- Build compliance and audit dashboards
+
+**Data Flow Overview**
+
+See the CloudWatch Logs to Quicksight Data Flow diagram:
+
+![alt text](image-2.png)
+
+**Breakdown of the steps**
+
+1. CloudWatch receives logs from all services and Snowflake.
+
+2. Lambda function triggers log export to S3 in JSON format.
+
+3. Logs are stored in a structured format in S3 (raw zone).
+
+4. AWS Glue Crawler detects schema and updates Glue Data Catalog.
+
+5. Glue ETL Jobs transform JSON logs to columnar Parquet format.
+
+6. Transformed data is stored in a Parquet zone in S3.
+
+7. QuickSight uses Glue Catalog to query and visualize the logs.
+
+##### Implementation Guide
+
+**IAM and Logging Prerequisites**
+
+- All services must have the appropiate IAM roles to write logs to CloudWatch
+- Lambda functions and GlueJobs need S3 PutObject, CloudWatch Logs, and Glue Catalog permissions.
+
+**Lambda Exampple (Export to S3)**
+
+```
+import boto3
+import json
+import os
+from botocore.exceptions import ClientError
+
+# Initialize AWS clients for CloudWatch Logs and S3
+logs = boto3.client('logs')
+s3 = boto3.client('s3')
+
+# Constants for the log group and S3 target
+LOG_GROUP = '/aws/lambda/your-log-group'  # Replace with your actual log group name
+S3_BUCKET = 'your-log-bucket'             # Replace with your target S3 bucket name
+S3_PREFIX = 'logs/'                       # Optional prefix for S3 object keys
+
+# Function to retrieve all log stream names for a given log group using pagination
+def get_all_log_streams(log_group):
+    paginator = logs.get_paginator('describe_log_streams')
+    for page in paginator.paginate(logGroupName=log_group):
+        for stream in page['logStreams']:
+            yield stream['logStreamName']
+
+# Function to retrieve all log events from a given log stream using pagination
+def get_all_log_events(log_group, stream_name):
+    events = []
+    next_token = None
+
+    while True:
+        # Build request parameters
+        params = {
+            'logGroupName': log_group,
+            'logStreamName': stream_name,
+            'startFromHead': True  # Start from the oldest logs
+        }
+
+        # If we have a pagination token, include it
+        if next_token:
+            params['nextToken'] = next_token
+
+        # Get log events from CloudWatch Logs
+        response = logs.get_log_events(**params)
+        events.extend(response['events'])  # Append retrieved events
+
+        # Stop if there are no more new events
+        if next_token == response.get('nextForwardToken'):
+            break
+
+        # Update the token for the next iteration
+        next_token = response.get('nextForwardToken')
+
+    return events
+
+# Main Lambda function handler
+def lambda_handler(event, context):
+    try:
+        # Loop through each log stream in the log group
+        for stream_name in get_all_log_streams(LOG_GROUP):
+            print(f"Processing stream: {stream_name}")
+
+            # Get all log events for the current stream
+            events = get_all_log_events(LOG_GROUP, stream_name)
+
+            # Convert events to a JSON-formatted string
+            log_data = json.dumps(events, indent=2)
+
+            # Generate a clean S3 object key
+            key = f"{S3_PREFIX}{stream_name.replace('/', '_')}.json"
+
+            # Upload the log data to the specified S3 bucket
+            s3.put_object(Bucket=S3_BUCKET, Key=key, Body=log_data)
+            print(f"Saved logs to s3://{S3_BUCKET}/{key}")
+
+    # Handle AWS-specific client errors
+    except ClientError as e:
+        print(f"AWS error: {e}")
+
+    # Handle any unexpected errors
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+```
+
+**Lambda Function Breakdown: Log Export to S3**
+
+Below is a breakdown of the core Python functions used in the Lambda responsible for exporting CloudWatch Logs to S3.
+
+`get_all_log_streams(log_group)`
+
+Retrieves all log stream names for a given CloudWatch log group using a paginator to handle multiple pages of results.
+
+- Ensures no log stream is missed due to pagination
+- Typically, each Lambda or Fargate task execution generates a new log stream
+
+`get_all_log_events(log_group, stream_name)`
+
+Fetches all log events from a specific log stream, paginating through all available events.
+
+- Starts from the beginning (startFromHead=True) to capture the full history.
+- Aggregates all events into a single list for later export.
+
+`lambda_handler(event, context)`
+
+The main entry point of the Lambda function. Orchestrates the process of reading logs and exporting them to S3.
+
+- Iterates over all log streams using get_all_log_streams.
+- For each stream, retrieves the log events using get_all_log_events.
+- Converts the list of events to a JSON structure.
+- Stores the resulting log file in an S3 bucket under a structured path.
+
+This Lambda enables automated log extraction into S3, facilitating schema discovery with Glue and subsequent dashboarding in QuickSight.
+
+**Glue Crawler Configuration**
+
+- Crawler Source: S3 path (e.g., s3://log-bucket/logs/)
+- Output: Glue Database log_analysis, Table raw_logs
+- Schedule: Every 15 minutes or on-demand (On demand for the current implementation)
+
+**Glue ETL Job (PySpark)**
+
+```
+import sys
+from pyspark.context import SparkContext
+from awsglue.context import GlueContext
+from awsglue.job import Job
+from awsglue.utils import getResolvedOptions
+
+args = getResolvedOptions(sys.argv, ['JOB_NAME'])
+sc = SparkContext()
+glueContext = GlueContext(sc)
+spark = glueContext.spark_session
+job = Job(glueContext)
+job.init(args['JOB_NAME'], args)
+
+# Load raw JSON logs
+df = spark.read.json('s3://your-log-bucket/logs/')
+
+# Transform to schema
+df_transformed = df.select('timestamp', 'message', 'logStreamName')
+
+# Write as Parquet
+df_transformed.write.mode('overwrite').parquet('s3://your-log-bucket/parquet/')
+
+job.commit()
+```
+
+**Quicksight SetUp**
+
+- Data source: AWS Athena (linked to the Glue Catalog)
+- Dataset: Use table defined by Glue Crawler / ETL job
+- Dashboards: Define KPIs like:
+
+  - Errors per service
+  - Query durations (Snowflake)
+  - Access anomalies
+  - Usage per IAM role
+
+##### Benefits
+
+| Feature                    | Benefit                                                                 |
+| -------------------------- | ----------------------------------------------------------------------- |
+| Unified Log Pipeline       | Centralized logs for all layers (infra, data, application)              |
+| Self-Service Dashboards    | Enables non-technical users to visualize system health and usage trends |
+| Automated Schema Inference | Reduces manual overhead for developers                                  |
+| Compliance Visibility      | Track sensitive actions and access across services                      |
 
 #### Cortex
 
