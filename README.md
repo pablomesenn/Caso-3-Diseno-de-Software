@@ -1434,6 +1434,153 @@ job.commit()
 | Automated Schema Inference | Reduces manual overhead for developers                                  |
 | Compliance Visibility      | Track sensitive actions and access across services                      |
 
+#### AWS Lambda + Step Functions Integration for Data Processing Workflows
+
+##### Orchestation of task
+
+The integration and implementation strategy for AWS Lambda and AWS Step Functions to orchestrate data-related tasks, enforce transactional safety, and enable AI-assisted processing in the architecture. This subsystem supports scalable, fault-tolerant, and observable data workflows as part of the ETL, data governance, and AI transformation processes.
+
+##### Specific Integration Architecture Overview
+
+###### **Components**
+
+**AWS Lambda**
+
+- Stateless micro-execution units triggered by Step Functions
+
+- Each Lambda encapsulates a single responsibility (e.g., transformation, validation, upload)
+
+**AWS Step Functions**
+
+- Manages execution flow between Lambda functions
+
+- Design utilize Step Function to support retries, parallelism, and failure handling with compensation logic using logic encapsulated in Lambda
+
+**Data Lake (S3)**
+
+- Stores incoming datasets and intermediate transformation states
+
+**Snowflake**
+
+- Final destination for validated and transformed data
+
+###### **Workflow patterns**
+
+
+**Claim-Check Pattern**
+
+- Datasets are uploaded in chunks to S3; only metadata or reference is passed between steps to reduce payload size.
+
+**Compensating Transaction Pattern**
+
+- Each step has a defined rollback mechanism in case of failure; used to reverse partial changes.
+
+**AI-Powered Transformation**
+
+- Lambda functions use AI models (via SageMaker as the main agent) to validate or transform data based on schema rules, stimuli and historical patterns.
+
+##### Core Workflow (Data Ingestion and Transformation)
+
+**Step Functions Workflow (High-level)**
+
+1. Receive Upload Trigger (API / EventBridge / Scheduled Job)
+
+2. Validate Upload Metadata (Lambda)
+
+3. Store Dataset in S3 (Claim-Check Upload)
+
+4. Trigger AI-Assisted Data Transformation (Lambda)
+
+5. Validate Transformed Dataset (Lambda)
+
+6. Commit to Snowflake (Lambda)
+
+7. Notify Success or Rollback (Compensation Chain)
+
+##### Communication Diagram of the workflow
+
+![alt text](image-3.png)
+
+##### General Step Functions Suggested Implementation
+
+| **Function Name**          | **Responsibility**                                                                  |
+| -------------------------- | ----------------------------------------------------------------------------------- |
+| `UploadHandlerLambda`      | Handles initial validation and storage of uploaded file in S3 (Claim-Check pattern) |
+| `MetadataValidationLambda` | Ensures all required metadata is present, structured, and follows naming rules      |
+| `AITransformLambda`        | Applies AI transformations to normalize or enrich the dataset                       |
+| `SchemaValidationLambda`   | Validates that the output fits the Snowflake schema model                           |
+| `SnowflakeLoaderLambda`    | Inserts transformed data into curated schema in Snowflake                           |
+| `RollbackHandlerLambda`    | Handles deletion of temporary objects or reverses operations on failure             |
+
+##### Integration Details
+
+**Step Function Definition** 
+
+This AWS Step Functions state machine orchestrates a data ingestion and processing pipeline using a series of Lambda functions. The workflow is defined as a linear sequence of tasks with error handling at the final stage.
+
+```
+
+{
+  "StartAt": "ValidateMetadata",
+  "States": {
+    "ValidateMetadata": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:region:acct:function:MetadataValidationLambda",
+      "Next": "UploadToS3"
+    },
+    "UploadToS3": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:region:acct:function:UploadHandlerLambda",
+      "Next": "TransformData"
+    },
+    "TransformData": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:region:acct:function:AITransformLambda",
+      "Next": "ValidateSchema"
+    },
+    "ValidateSchema": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:region:acct:function:SchemaValidationLambda",
+      "Next": "CommitToSnowflake"
+    },
+    "CommitToSnowflake": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:region:acct:function:SnowflakeLoaderLambda",
+      "End": true,
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "RollbackHandler"
+        }
+      ]
+    },
+    "RollbackHandler": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:region:acct:function:RollbackHandlerLambda",
+      "End": true
+    }
+  }
+}
+
+```
+
+##### IAM Role Requirements 
+
+ | **Role**                    | **Permission**                                                              |
+| --------------------------- | --------------------------------------------------------------------------- |
+| `LambdaExecutionRole`       | S3 Read/Write, CloudWatch Logs, Secrets Manager, Glue, Snowflake API access |
+| `StepFunctionExecutionRole` | StartExecution, PassRole, Lambda invoke                                     |
+
+##### Benefits
+
+| **Feature**            | **Description**                                                           |
+| ---------------------- | ------------------------------------------------------------------------- |
+| **Modular & Scalable** | Each Lambda encapsulates a clear responsibility, making it easy to extend |
+| **Safe Transactions**  | With compensation logic, partial failures are automatically reversed      |
+| **AI Data Enrichment** | AI-driven transformations ensure quality and standardization of datasets  |
+| **Observability**      | CloudWatch logs every step of the Step Function workflow                  |
+| **Cost Efficiency**    | Pay-per-use execution and zero idle compute                               |
+
 #### Cortex
 
 ## **1. Dataset Upload**
