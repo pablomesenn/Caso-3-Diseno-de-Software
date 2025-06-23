@@ -1,0 +1,29 @@
+name: CI/CD Pipeline
+on:
+  push:
+    branches: [main]
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run tests
+        run: pytest
+      - name: Build Docker image
+        run: docker build -t data-pura-vida .
+      - name: Push to ECR
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin your-ecr-repo
+          docker tag data-pura-vida:latest your-ecr-repo:latest
+          docker push your-ecr-repo:latest
+      - name: Deploy to ECS
+        run: aws ecs update-service --cluster data-pura-vida-cluster --service data-pura-vida-service --force-new-deployment

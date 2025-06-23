@@ -1,0 +1,9 @@
+OKTA_DOMAIN = 'dev-w425j2q1a431gpdw.us.okta.com'
+OKTA_ISSUER = f'https://{OKTA_DOMAIN}/oauth2/default'
+API_AUDIENCE = 'AzrNIzpdapSkqzh4q1zUJRYZUX3KsXlD'
+ALGORITHMS = ['RS256']
+S3_BUCKET = 'data-pura-vida-bucket'
+SNOWFLAKE_ACCOUNT = 'your_account'
+SNOWFLAKE_USER = 'your_user'
+SNOWFLAKE_PASSWORD = 'your_password'
+SNOWFLAKE_WAREHOUSE = 'DATA_PURA_VIDA'

@@ -2838,6 +2838,8 @@ Limitacion o restricciones a nivel de rol.
 - Por ultimo cifrado, encriptado, hashes, etc.
   https://docs.snowflake.com/en/sql-reference/functions/encrypt 
 
+```
+
 ## QUALITY AND TESTING
 
 ### Test Strategy
