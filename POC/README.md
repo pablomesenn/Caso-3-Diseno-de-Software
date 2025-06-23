@@ -1,13 +1,13 @@
-# React + Flask + Okta Authentication Example
+# Data Pura Vida Proof of Concept
 
-This project demonstrates how to implement a secure web application using **React** for the frontend, **Flask** for the backend, and **Okta** for authentication. The backend exposes a protected API endpoint, and the frontend authenticates users via Okta, retrieves an access token, and uses it to call the secure API.
+This project is a simplified and simulated proof of concept (PoC) for Data Pura Vida, demonstrating a secure national data ecosystem. It uses React for the frontend and Flask for the backend, simulating authentication, data queries, dataset access via a tripartite key system, dashboard visualization, and cost monitoring, all in a local environment.
 
 ## Table of Contents
+
 - [Overview](#overview)
 - [Technologies](#technologies)
 - [Prerequisites](#prerequisites)
 - [Setup](#setup)
-  - [Okta Configuration](#okta-configuration)
   - [Backend Setup (Flask)](#backend-setup-flask)
   - [Frontend Setup (React)](#frontend-setup-react)
 - [Running the Application](#running-the-application)
@@ -16,61 +16,47 @@ This project demonstrates how to implement a secure web application using **Reac
   - [Frontend (React)](#frontend-react)
 - [Usage](#usage)
 - [Troubleshooting](#troubleshooting)
-- [License](#license)
 
 ## Overview
 
-This application consists of two main components:
+**Data Pura Vida** simulates a data ecosystem with the following features:
 
-1. **Flask Backend**: A Python-based API server that exposes a single protected endpoint (`/api/secure-data`). The endpoint requires a valid JWT (JSON Web Token) issued by Okta for access.
-2. **React Frontend**: A simple React application that allows users to log in via Okta, obtain an access token, call the protected backend API, and log out.
+1. **Flask Backend**: An API server exposing protected endpoints for:
+   - Simulated authentication (`/api/login`)
+   - Data queries with Row-Level Security (RLS) (`/api/query`)
+   - Dataset access using tripartite keys (`/api/access-dataset`, `/api/generate-shares`)
+   - Simulated dashboard URLs (`/api/dashboard-url`)
+   - Simulated cost monitoring (`/api/cost`)
+2. **React Frontend**: A user interface for authentication, querying data, accessing datasets, viewing simulated dashboards, and monitoring costs, styled with a minimalist design (neutral colors, clean typography, ample whitespace).
 
-Okta handles user authentication and issues JWTs, which are validated by the Flask backend to secure the API.
+Everything runs locally, using in-memory data and simulated authentication.
 
 ## Technologies
 
 - **Backend**:
-  - Flask: Web framework for Python
-  - Flask-CORS: Handles Cross-Origin Resource Sharing
-  - PyJWT: Validates JWTs
-  - PyJWKClient: Fetches public keys from Okta for JWT verification
+  - Flask: Python web framework
+  - Flask-CORS: Cross-Origin Resource Sharing support
+  - PyJWT: JWT generation and validation
+  - python-json-logger: Structured console logging
+  - Custom Shamir’s Secret Sharing implementation (no external dependencies)
 - **Frontend**:
-  - React: JavaScript library for building user interfaces
-  - @okta/okta-auth-js: Okta SDK for JavaScript
-- **Authentication**:
-  - Okta: Identity provider for user authentication and authorization
+  - React: UI library
+  - axios: HTTP client for API calls
+  - CSS: Custom minimalist styling with Inter font (via Google Fonts)
+- **Simulation**:
+  - Authentication: Local JWTs instead of Okta
+  - Storage: In-memory data instead of Snowflake/S3
+  - Dashboards: Mock URLs and images instead of QuickSight
+  - Costs: Mock data instead of AWS Cost Explorer
+  - Logging: Console instead of CloudWatch
 
 ## Prerequisites
 
-- Python 3.8+ (for the Flask backend)
-- Node.js 16+ and npm (for the React frontend)
-- An Okta developer account (free tier available at [developer.okta.com](https://developer.okta.com/))
-- Basic knowledge of Flask, React, and OAuth 2.0
+- Python 3.11 (for the backend)
+- Node.js 18+ and npm (for the frontend)
+- Basic knowledge of Flask and React
 
 ## Setup
-
-### Okta Configuration
-
-1. **Create an Okta Account**:
-   - Sign up for a free Okta developer account at [developer.okta.com](https://developer.okta.com/).
-2. **Create an Application**:
-   - In the Okta Admin Console, go to **Applications > Create App Integration**.
-   - Choose **OIDC - OpenID Connect** as the sign-in method and **Single-Page Application** as the application type.
-   - Set the **Sign-in redirect URI** to `http://localhost:3000/login/callback` (or your frontend's URL).
-   - Note the **Client ID** and **Okta Domain** (e.g., `dev-xxxxxxxx.us.okta.com`).
-3. **Configure API Authorization**:
-   - Go to **Security > API > Authorization Servers** and select the `default` server.
-   - Under **Settings > Access Policies**, ensure the default policy allows access to your application.
-   - Note the **Issuer URI** (e.g., `https://dev-xxxxxxxx.us.okta.com/oauth2/default`).
-4. **Update Configuration**:
-   - In the Flask backend (`app.py`), update the following:
-     - `OKTA_DOMAIN`: Your Okta domain (e.g., `dev-w425j2q1a431gpdw.us.okta.com`).
-     - `API_AUDIENCE`: Your Okta application's Client ID.
-     - `OKTA_ISSUER`: Your authorization server's issuer URI.
-   - In the React frontend (`App.js`), update the `oktaAuth` configuration:
-     - `issuer`: Your Okta issuer URI.
-     - `clientId`: Your Okta application's Client ID.
-     - `redirectUri`: Your frontend's callback URL (e.g., `http://localhost:3000/login/callback`).
 
 ### Backend Setup (Flask)
 
@@ -84,19 +70,19 @@ Okta handles user authentication and issues JWTs, which are validated by the Fla
 
     ```bash
     python -m venv venv
-    source venv/bin/activate  # On Windows: venv\Scripts\activate
+    source venv/Scripts/Activate.ps1
 
 3. Install Dependencies:
 
     ```bash
-    pip install flask flask-cors pyjwt requests python-jose
+    pip install -r requirements.txt
 
 4. Run the Backend:
 
     ```bash
-    python app.py
+    python main.py
 
-5. The Flask server will run on http://localhost:5000.
+5. The Flask server runs on [http://localhost:5000] (or [http://192.168.1.79:5001] if the port was changed).
 
 ### Frontend Setup (React)
 
@@ -109,14 +95,13 @@ Okta handles user authentication and issues JWTs, which are validated by the Fla
 
     ```bash
     npm install
-    npm install @okta/okta-auth-js
 
 3. Run the Frontend:
 
     ```bash
     npm start
 
-4. The React app will run on http://localhost:3000.
+4. The React app will run on [http://localhost:3000].
 
 ### Running the Application
 
@@ -124,7 +109,7 @@ Okta handles user authentication and issues JWTs, which are validated by the Fla
 
 2. Start the React frontend (npm start).
 
-3. Open your browser to http://localhost:3000.
+3. Open your browser to [http://localhost:3000].
 
 ### Use the interface to
 
@@ -138,76 +123,73 @@ Okta handles user authentication and issues JWTs, which are validated by the Fla
 
 ### Backend (Flask)
 
-The Flask app exposes a single endpoint: GET /api/secure-data.
+Exposes the following endpoints:
 
-The @token_required decorator validates incoming JWTs:
-It extracts the Authorization: Bearer <token> header.
+- **POST /api/login**: Authenticates users and returns a simulated JWT.
+- **GET /api/secure-data**: Returns protected data, requiring a JWT.
+- **POST /api/query**: Executes simulated queries with RLS based on roles.
+- **POST /api/generate-shares/<dataset_id>**: Generates tripartite key shares.
+- **POST /api/access-dataset/<dataset_id>**: Accesses datasets using key shares.
+- **GET /api/dashboard-url/<dataset_id>**: Returns simulated dashboard URLs.
+- **GET /api/cost**: Returns simulated cost data.
 
-Fetches Okta's public keys from the JWKS endpoint (/v1/keys).
+Features:
 
-Verifies the token's signature, audience, issuer, and expiration.
-
-Returns a 401 error for invalid or missing tokens.
-
-If the token is valid, the endpoint returns a JSON response with protected data.
+- Authentication: Uses local JWTs with mock users.
+- Queries: Filters in-memory data with RLS based on roles.
+- Tripartite Keys: Uses a custom Shamir’s Secret Sharing implementation for secure dataset access.
+- Dashboards: Simulates QuickSight URLs.
+- Costs: Generates mock cost data.
+- Logging: Logs activities to the console.
 
 ### Frontend (React)
 
-The React app uses the @okta/okta-auth-js library to handle Okta authentication.
+Provides a minimalist interface for:
 
-Login:
-Opens a popup for Okta authentication.
+- Login: Authentication with mock users (`user1@example.com`, `admin@example.com`) using a clean login form.
+- Queries: Form to submit queries and view results, styled with clear typography.
+- Dataset Access: Generates and enters tripartite key shares in a streamlined form.
+- Dashboards: Displays simulated URLs and a placeholder image in a simple layout.
+- Logout: Clears authentication state via a subtle navigation button.
 
-Retrieves an access token and ID token, storing them in the Okta token manager.
-
-Fetches user profile information (e.g., name, email).
-
-Call Backend:
-Sends a GET request to http://localhost:5000/api/secure-data with the access token in the Authorization header.
-
-Displays the API response.
-
-Logout:
-Clears tokens and resets the app state.
+The frontend uses a neutral color palette (white, grays, soft blue), the Inter font, and ample whitespace for a minimalist aesthetic.
 
 ## Usage
 
-- Login: Click the "Login" button to authenticate via Okta. You'll see a popup for entering credentials.
-
-- View Profile: After logging in, your name (from Okta's user profile) is displayed.
-
-- Call API: Click "Llamar API Segura" to fetch data from the protected endpoint. The response is shown in JSON format.
-
-- Logout: Click "Logout" to sign out and clear the session.
+- Log In:
+  - Use test credentials:
+    - Email: `user1@example.com`, Password: password1 (Role: User)
+    - Email: `admin@example.com`, Password: adminpass (Role: Admin)
+- Query Data:
+  - Enter a query (e.g., "SELECT *") and view results filtered by RLS.
+- Access Dataset:
+  - Generate shares for a dataset (e.g., dataset1) with a secret.
+  - Enter two shares to unlock the dataset.
+- View Dashboard:
+  - Enter a dataset ID to get a simulated URL and mock image.
+- Monitor Costs:
+  - Access /api/cost from the backend (you can add a button in the frontend).
+- Log Out:
+  - Click "Log Out" to exit.
 
 ## Troubleshooting
 
-- CORS Errors: Ensure the Flask backend allows CORS for http://localhost:3000. The CORS(app) line in app.py should handle this.
+- CORS Errors:
+  - Verify that Flask-CORS allows `http://localhost:3000` in main.py.
+- Token Errors:
+  - Ensure test credentials are valid.
+  - Check that JWT_SECRET is consistent (default: super-secret-key).
+- Query Failure:
+  - Queries are simulated; any text is valid, but results depend on the role.
+- Tripartite Key Errors:
+  - Ensure shares are generated for the same dataset ID.
+  - Copy shares exactly as generated (format: x:yyyy...).
+- Dependencies:
+  - Recreate the virtual environment if you encounter issues with Flask dependencies.
 
-- Invalid Token Errors:
-Verify that the API_AUDIENCE in app.py matches the Client ID.
-
-Ensure the issuer in both frontend and backend matches Okta's issuer URI.
-
-Check that the token hasn't expired (Okta tokens typically last 1 hour).
-
-- Okta Login Fails:
-Confirm the clientId and redirectUri in App.js match your Okta application settings.
-
-Ensure your Okta application is configured for SPA and allows the required scopes (openid, profile, email).
-
-- Backend Not Running: Ensure the Flask server is running on http://localhost:5000 before making API calls.
-
-## License
-
-This project is licensed under the MIT License. See the LICENSE file for details.
-
-### Instructions
-
-1. Create a file named `README.md` in your project's root directory.
-2. Copy and paste the content above into the file.
-3. Replace `<repository-url>` and `<repository-directory>` with your actual repository URL and directory name.
-4. If your project structure differs (e.g., backend and frontend are not in separate `backend/` and `frontend/` folders), update the paths in the setup instructions accordingly.
-5. For security, ensure sensitive values like `OKTA_DOMAIN` and `API_AUDIENCE` are not hardcoded in production. Consider using environment variables and mention this in the README if applicable.
-
-Let me know if you need help with additional sections, such as deployment instructions, or if
+  ``` powershell
+  Remove-Item -Recurse -Force venv
+  python -m venv venv
+  source venv/Scripts/Activate.ps1
+  pip install -r requirements.txt
+  ```

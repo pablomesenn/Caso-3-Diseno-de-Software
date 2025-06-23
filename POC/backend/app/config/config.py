@@ -1,9 +1,12 @@
-OKTA_DOMAIN = 'dev-w425j2q1a431gpdw.us.okta.com'
-OKTA_ISSUER = f'https://{OKTA_DOMAIN}/oauth2/default'
-API_AUDIENCE = 'AzrNIzpdapSkqzh4q1zUJRYZUX3KsXlD'
-ALGORITHMS = ['RS256']
-S3_BUCKET = 'data-pura-vida-bucket'
-SNOWFLAKE_ACCOUNT = 'your_account'
-SNOWFLAKE_USER = 'your_user'
-SNOWFLAKE_PASSWORD = 'your_password'
-SNOWFLAKE_WAREHOUSE = 'DATA_PURA_VIDA'
+import os
+
+JWT_SECRET = os.getenv('JWT_SECRET', 'super-secret-key')  # Use environment variable in production
+ALGORITHMS = ['HS256']
+MOCK_USERS = {
+    'user1@example.com': {'password': 'password1', 'roles': ['User'], 'name': 'User One'},
+    'admin@example.com': {'password': 'adminpass', 'roles': ['Admin'], 'name': 'Admin User'}
+}
+MOCK_DATASETS = {
+    'dataset1': {'name': 'Dataset 1', 'accessible_to': ['Admin', 'User']},
+    'dataset2': {'name': 'Dataset 2', 'accessible_to': ['Admin']}
+}

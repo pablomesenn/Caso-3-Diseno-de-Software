@@ -1,10 +1,5 @@
 flask==2.0.1
 flask-cors==3.0.10
-flask-limiter==1.1.0
 pyjwt==2.4.0
-requests==2.26.0
-boto3==1.18.0
-snowflake-connector-python==2.7.9
 python-json-logger==2.0.2
-secretsharing==0.2.6
-aws-sdk==0.1.8 
+werkzeug==2.0.3

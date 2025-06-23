@@ -1,29 +1,23 @@
 from flask import Blueprint, jsonify, request
-from app.security.auth import SecurityService
-from app.security.tripartite import TripartiteKeyService
+from app.services.auth_service import AuthService
 from app.services.data_service import DataService
-from app.services.cost_service import CostService
-from app.services.quicksight_service import QuickSightService
-from main import log_request, token_required
+from app.services.tripartite_service import TripartiteService
+from app.utils.logging import log_request
+from app.handlers.secure_data import token_required  # Added import
 
 data_bp = Blueprint('data', __name__)
-security_service = SecurityService()
-tripartite_service = TripartiteKeyService()
+auth_service = AuthService()
 data_service = DataService()
-cost_service = CostService()
-quicksight_service = QuickSightService()
+tripartite_service = TripartiteService()
 
-@data_bp.route('/access-dataset/<dataset_id>', methods=['POST'])
-@token_required
-def access_dataset(dataset_id):
-    shares = request.json.get('shares', [])
-    try:
-        secret = tripartite_service.reconstruct_secret(shares)
-        log_request(f'/api/access-dataset/{dataset_id}', request.user.get('sub'), 'success')
-        return jsonify({"message": f"Access granted to dataset {dataset_id}"})
-    except ValueError as e:
-        log_request(f'/api/access-dataset/{dataset_id}', request.user.get('sub'), 'failed')
-        return jsonify({"message": str(e)}), 403
+@data_bp.route('/login', methods=['POST'])
+def login():
+    data = request.json
+    email = data.get('email')
+    password = data.get('password')
+    response, status = auth_service.login(email, password)
+    log_request('/api/login', email or 'anonymous', 'success' if status == 200 else 'failed')
+    return response, status
 
 @data_bp.route('/query', methods=['POST'])
 @token_required
@@ -36,28 +30,55 @@ def run_query():
         return jsonify({"results": results})
     except Exception as e:
         log_request('/api/query', request.user.get('sub'), 'failed')
-        return jsonify({"message": f"Query failed: {str(e)}"}), 500
+        return jsonify({"message": f"Consulta fallida: {str(e)}"}), 500
+
+@data_bp.route('/access-dataset/<dataset_id>', methods=['POST'])
+@token_required
+def access_dataset(dataset_id):
+    shares = request.json.get('shares', [])
+    try:
+        secret = tripartite_service.reconstruct_secret(shares, dataset_id)
+        log_request(f'/api/access-dataset/{dataset_id}', request.user.get('sub'), 'success')
+        return jsonify({"message": f"Acceso concedido al dataset {dataset_id}", "secret": secret})
+    except ValueError as e:
+        log_request(f'/api/access-dataset/{dataset_id}', request.user.get('sub'), 'failed')
+        return jsonify({"message": str(e)}), 403
+
+@data_bp.route('/generate-shares/<dataset_id>', methods=['POST'])
+@token_required
+def generate_shares(dataset_id):
+    secret = request.json.get('secret', 'default-secret')
+    try:
+        shares = tripartite_service.generate_key_shares(secret, dataset_id)
+        log_request(f'/api/generate-shares/{dataset_id}', request.user.get('sub'), 'success')
+        return jsonify({"shares": shares})
+    except ValueError as e:
+        log_request(f'/api/generate-shares/{dataset_id}', request.user.get('sub'), 'failed')
+        return jsonify({"message": str(e)}), 500
+
+@data_bp.route('/dashboard-url/<dataset_id>', methods=['GET'])
+@token_required
+def get_dashboard_url(dataset_id):
+    try:
+        # Simulate QuickSight dashboard URL
+        embed_url = f"https://mock-quicksight.com/dashboards/{dataset_id}"
+        log_request(f'/api/dashboard-url/{dataset_id}', request.user.get('sub'), 'success')
+        return jsonify({"embedUrl": embed_url})
+    except Exception as e:
+        log_request(f'/api/dashboard-url/{dataset_id}', request.user.get('sub'), 'failed')
+        return jsonify({"message": f"Error generando URL: {str(e)}"}), 500
 
 @data_bp.route('/cost', methods=['GET'])
 @token_required
 def get_cost():
     try:
-        costs = cost_service.get_cost()
+        # Simulate AWS cost data
+        costs = [
+            {"date": "2025-06-20", "cost": 100.50},
+            {"date": "2025-06-21", "cost": 120.75}
+        ]
         log_request('/api/cost', request.user.get('sub'), 'success')
         return jsonify({"costs": costs})
     except Exception as e:
         log_request('/api/cost', request.user.get('sub'), 'failed')
-        return jsonify({"message": f"Cost query failed: {str(e)}"}), 500
-
-@data_bp.route('/dashboard-url/<dashboard_id>', methods=['GET'])
-@token_required
-def get_dashboard_url(dashboard_id):
-    user_sub = request.user.get('sub')
-    user_arn = f"arn:aws:iam::your_aws_account_id:user/{user_sub}"  # Replace with actual ARN logic
-    try:
-        embed_url = quicksight_service.generate_embed_url(user_arn, dashboard_id)
-        log_request(f'/api/dashboard-url/{dashboard_id}', user_sub, 'success')
-        return jsonify({"embedUrl": embed_url})
-    except ValueError as e:
-        log_request(f'/api/dashboard-url/{dashboard_id}', user_sub, 'failed')
-        return jsonify({"message": str(e)}), 500
+        return jsonify({"message": f"Error consultando costos: {str(e)}"}), 500
