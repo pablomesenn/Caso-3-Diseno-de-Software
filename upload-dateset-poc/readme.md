@@ -105,3 +105,46 @@ aws glue start-job-run --job-name data-pura-vida-load
 ```
 
 Note: S3 buckets are configured with `auto_delete_objects=True` for easy cleanup in this demo environment.
+
+
+
+## Results
+
+```bash
+npm install -g aws-cdk
+cdk bootstrap aws://ACCOUNT-NUMBER/REGION
+
+
+cdk deploy --app "app.py"
+```
+
+![Screenshot 2025-06-24 165449](https://github.com/user-attachments/assets/b978bae8-15c9-4365-8bc9-668a7d907a30)
+
+```bash
+aws s3 cp glue_etl_script.py s3://[PROCESSED-BUCKET-NAME]/scripts/glue_script.py
+```
+![Screenshot 2025-06-24 165820](https://github.com/user-attachments/assets/5a088e8a-d9f6-44bd-a0ae-c1aff444be08)
+
+```bash
+aws s3 cp sample_data.json s3://[RAW-BUCKET-NAME]/raw_data/sample_data.json
+```
+![Screenshot 2025-06-24 165920](https://github.com/user-attachments/assets/9f4d46a1-50e8-47a9-be12-7c3dddf5c8fb)
+![Screenshot 2025-06-24 165934](https://github.com/user-attachments/assets/cfe8c486-932b-49ba-bd1f-063af0b7b74f)
+
+```bash
+aws glue start-job-run --job-name data-pura-vida-load
+```
+![Screenshot 2025-06-24 170014](https://github.com/user-attachments/assets/4f4febff-6796-4124-8551-657c413effac)
+![Screenshot 2025-06-24 170032](https://github.com/user-attachments/assets/7283882e-1f22-4941-934d-f64342b79c8f)
+
+```
+# Check if Lambda was triggered
+aws logs describe-log-groups --log-group-name-prefix "/aws/lambda/DataLakeAIAgentStack-AIAgentFunction"
+```
+![Screenshot 2025-06-24 170117](https://github.com/user-attachments/assets/2a2dbce4-65b7-467d-8447-2a0e616be0cd)
+
+```
+# Confirm job success
+aws glue get-job-run --job-name data-pura-vida-load --run-id jr_a129a8dc3a0df6c83e7db11972e4e60aa18585915ef542b53f5bde023217a9b5
+```
+![Screenshot 2025-06-24 170135](https://github.com/user-attachments/assets/8df6bf6a-6328-4662-88b3-f38ae188d2d9)
