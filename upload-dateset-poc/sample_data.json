@@ -1,0 +1,41 @@
+[
+  {
+    "id": 1,
+    "name": "Alonso Duran",
+    "email": "alduran@estudiantec.cr",
+    "age": 25,
+    "city": "San José",
+    "country": "Costa Rica",
+    "unnecessary_field1": "remove_this",
+    "unnecessary_field2": "also_remove",
+    "year": "2024",
+    "month": "06",
+    "day": "23"
+  },
+  {
+    "id": 2,
+    "name": "Jane Smith",
+    "email": "jane@example.com",
+    "age": 25,
+    "city": "Cartago",
+    "country": "Costa Rica",
+    "unnecessary_field1": "remove_this",
+    "unnecessary_field2": "also_remove",
+    "year": "2024",
+    "month": "06",
+    "day": "23"
+  },
+  {
+    "id": 3,
+    "name": "Carlos Rodriguez",
+    "email": "carlos@example.com",
+    "age": 35,
+    "city": "Alajuela",
+    "country": "Costa Rica",
+    "unnecessary_field1": "remove_this",
+    "unnecessary_field2": "also_remove",
+    "year": "2024",
+    "month": "06",
+    "day": "23"
+  }
+]
