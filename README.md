@@ -1319,7 +1319,7 @@ See the CloudWatch Logs to Quicksight Data Flow diagram:
 
 **Lambda Exampple (Export to S3)**
 
-```
+```python
 import boto3
 import json
 import os
