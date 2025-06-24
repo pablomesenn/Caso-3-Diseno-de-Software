@@ -21,7 +21,7 @@ Members: Pablo Mesén, Alonso Durán Muñoz, Ana Hernández Muñoz, Jesus Valver
    	- [SECURITY LAYER DESIGN](#Security-Layer-Design)
    	- [AUDIT & LOGGING](#Audit-&-Logging)
    	- [THIRDPARTY SERVICES](#THIRDPARTY-SERVICES)
-   	- [KEY WORKFLOWs](#Key-Workflows)
+   	- [KEY WORKFLOWS](#Key-Workflows)
    	- [DATA LAYER DESIGN](#Data-Layer-Design)
 
 
@@ -631,7 +631,7 @@ The monolithic architecture chosen for this project contains layers designed to 
 | **Middleware Layer**       | - Applies cross-cutting concerns to the request/response pipeline.<br>- Middleware executes in a chain before/after handlers for shared functionality.<br><br>**Key Components:**<br>- `SecurityContextMiddleware`: Builds security context<br>- `GeoRestrictionMiddleware`: Enforces Costa Rica IP restrictions<br>- `AuthenticationMiddleware`: Validates JWTs and sessions<br>- `UsageLimitMiddleware`: Enforces subscription and query limits<br>- `AuditMiddleware`: Logs all operations for compliance |
 | **Service Layer**          | - Contains core business logic and application rules.<br>- Coordinates validations and database/external system interactions.<br>- Acts as intermediary between Handler and Repository layers.<br><br>**Key Responsibilities:**<br>- Business rule enforcement<br>- Multi-repository coordination<br>- External service integration<br>- Transaction management<br>- Domain-specific validations |
 | **Security Layer**         | - Manages authentication and authorization.<br>- Controls access to system features, data, logs, and user management.<br>- Handles token logic (e.g., JWT). |
-| **Repository Layer**       | - Encapsulates all database access.<br>- Provides clean interfaces for CRUD operations.<br><br>**Key Components:**<br>- `SFRepository`: Snowflake operations<br>- `S3Repository`: Dataset and artifact storage<br>- `AWSVaultRepository`: Secret and identity management |
+| **Repository Layer**       | - Encapsulates all database access.<br>- Provides clean interfaces for CRUD operations.<br><br>**Key Components:**<br>- `SFRepository`: Snowflake operations<br>- `S3Repository`: Dataset and artifact storage<br>- `SecretsManagerRepository`: Secret and identity management |
 | **AI Data Transformation Layer** | - Hosts AI-driven logic for data processing.<br>- Detects patterns in data and metadata.<br>- Makes autonomous or human-assisted decisions to modify or enrich data.<br>- Integrates with AI/ML agents. |
 
 ### Serverless Architecture
@@ -828,7 +828,7 @@ Central security coordinator for all operations.
 #### **TripartiteKeyManager**
 Manages three-party key splitting and reconstruction.
 - **Key Methods**: `generateEntityKeys()`, `reconstructKeyForOperation()`
-- **Dependencies**: AWSVaultRepository
+- **Dependencies**: `SecretsManagerRepository`
 - **Responsibilities**: Shamir's Secret Sharing, key lifecycle, secure reconstruction
 
 ### Repository Abstractions
@@ -975,9 +975,9 @@ Validates usage limits before allowing requests to proceed, applied to requests 
 - Tracks usage patterns for billing
 
 ### Related Repositories
-1. `VaultRepository`
-- Manages **custodian** information storage and retrieval through `CustodianManager` using existing vault infrastructure. Stores custodian configurations in AWS Vault, Manages approval requests and responses, Tracks custodian assignment history, Provides custodian lookup functionality. 
-- TripartiteKey: This repo manages tripartite key storage using existing vault infrastructure.
+1. `SecretsManagerRepository`
+- Manages **custodian** information storage and retrieval through `CustodianManager` using existing infrastructure. Stores custodian configurations in AWS Secrets, Manages approval requests and responses, Tracks custodian assignment history, Provides custodian lookup functionality. 
+- TripartiteKey: This repo manages tripartite key storage using existing Secrets Manager infrastructure.
 
 
 ## Audit & Logging
@@ -1162,58 +1162,107 @@ audit-logs-bucket/
 
 ## Third Party Services
 
-### AWS services used to complement the design
+### AWS Services Portfolio
 
-#### **Security Services**
+### Infrastructure as Code with AWS CDK
+The **AWS Cloud Development Kit (CDK)** serves as the cornerstone of our infrastructure provisioning and management strategy, providing significant advantages over traditional infrastructure approaches.
 
-Critical AWS Services (Must Have):
+#### CDK Strategic Value
 
-(Explicar AWS SDK)
+| Capability | Benefit | Implementation Impact |
+|------------|---------|----------------------|
+| **Type-Safe Infrastructure** | Compile-time validation prevents deployment errors | Reduces infrastructure bugs |
+| **Reusable Constructs** | Modular, composable infrastructure components | Accelerates deployment cycles |
+| **Automated Best Practices** | Built-in security and compliance patterns | Ensures consistent security posture |
+| **Multi-Environment Support** | Programmatic environment promotion | Enables reliable staging-to-production workflows |
+| **Native AWS Integration** | Direct access to all AWS services and features | Eliminates vendor lock-in concerns |
 
-Core Security:
+#### CDK Development Workflow
+1. **Infrastructure Definition**: Define resources using TypeScript/Python constructs
+2. **Synthesis**: CDK generates CloudFormation templates with dependency resolution
+3. **Validation**: Built-in linting and security checks via `cdk synth`
+4. **Deployment**: Automated deployment via CI/CD pipelines using `cdk deploy`
+5. **Monitoring**: CloudWatch integration provides real-time infrastructure insights
 
-- AWS Cognito - User authentication & MFA
-- AWS Secrets Manager - Tripartite key storage
-- AWS CloudHSM - Hardware key generation
-- AWS KMS - Dataset encryption
-- AWS IAM: Fine-grained access control, role-based permissions, and service-to-service authentication for all security components, service authentication, role management
-	- Creates entity-specific roles for users and organizations
-	- Manages dataset access policies with fine-grained permissions
-	- Handles role assumption for secure operations
-	- Sets up service roles for Lambda, Fargate, and Snowflake
- 	-  Creates organization groups and admin policies
-	- Delegates access within organizations with custodian approval
-	- Manages multi-organization permissions for single users
-	- Creates custodian-specific roles with limited permissions
-	- Enforces approval-only access (custodians can approve but not access data)
-	- Manages custodian role assumption for approval workflows
- 	- `SecurityManager`: Enhanced with IAM role validation, `AccessControlService`: Creates IAM policies for dataset access, `DatasetHandler`: Uses role assumption for operations, `CustodianManager`: Validates IAM permissions for approvals
+<br><br><br>
 
-Network Security:
+### Core AWS Services
+#### Compute and Application Services
 
-- AWS WAF - Costa Rica IP filtering
-- AWS VPC - Network isolation
-- AWS Certificate Manager - SSL/TLS
 
-Monitoring & Compliance:
+| **Service**                     | **Purpose**                                                                | **Key Details**                                                                                                                |
+| ------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **AWS Fargate** | Serverless container orchestration for Flask API and React Native frontend | - Auto-scaling policies<br>- Health checks<br>- Blue-green deployment<br>- Integrates with ALB<br>- No server management       |
+| **AWS Lambda**                  | Event-driven processing for ETL, logs, AI inference                        | - S3 triggers<br>- Step Functions coordination<br>- Snowflake access via VPC<br>- Concurrent execution & memory tuning         |
+| **AWS Step Functions**          | Workflow orchestration with error handling                                 | - Coordinates ETL, AI transformations, compensating transactions<br>- Visual workflows<br>- Retry logic<br>- State persistence |
 
-- AWS CloudTrail - Complete audit logging
-- AWS CloudWatch - Real-time monitoring
-- AWS Config - Compliance validation
+<br>
 
-#### **CloudWatch + Quicksight integration**
+#### Storage and Data Services
+| **Service**   | **Purpose**                                 | **Key Details**                                                                                                                                   |
+| ------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Amazon S3** | Data lake for raw, staged, and curated data | - Versioning for lineage<br>- KMS encryption<br>- Lifecycle policies<br>- Cross-region replication<br>- Integrates with Snowpipe, Glue            |
+| **AWS Glue**  | Serverless ETL & data catalog               | - **Crawlers** for schema discovery<br>- **Jobs** with PySpark<br>- **Data Catalog** for metadata<br>- Supports schema evolution & quality checks |
 
-##### End-to-End Monitoring and Analytics Design
+<br>
+
+#### Security and Identity Services
+| **Service**             | **Purpose**                             | **Key Details**                                                                                               |
+| ----------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| **Amazon Cognito**      | Authentication & identity management    | - MFA<br>- Social login<br>- JWT tokens<br>- User pools<br>- API Gateway & Snowflake auth                     |
+| **AWS Secrets Manager** | Secure storage of sensitive credentials | - Stores Snowflake creds, API keys, tripartite keys<br>- Automatic rotation                                   |
+| **AWS KMS**             | Centralized key management              | - Customer-managed keys<br>- Cross-service encryption<br>- Rotation policies<br>- Multi-region replication    |
+| **AWS IAM**             | Access control and policy enforcement   | - Role-based access<br>- Service-to-service auth<br>- Cross-account policies<br>- Least privilege enforcement |
+
+<br>
+
+#### Monitoring and Analytics Services
+| **Service**           | **Purpose**                          | **Key Details**                                                                                                      |
+| --------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| **Amazon CloudWatch** | Logging, metrics, and alerting       | - **Logs** for aggregation<br>- **Metrics** for KPIs<br>- **Alarms** via SNS<br>- **Dashboards** for real-time views |
+| **Amazon QuickSight** | Business intelligence and dashboards | - Real-time dashboards<br>- RLS for multi-tenant access<br>- SPICE engine<br>- Connects to Snowflake and S3          |
+| **AWS CloudTrail**    | API auditing and compliance logging  | - Logs all API calls<br>- Stored in encrypted S3<br>- GDPR & Law 8968 support                                        |
+
+<br>
+
+#### Network and Security Services
+| **Service**                 | **Purpose**                             | **Key Details**                                                                                      |
+| --------------------------- | --------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| **AWS WAF**                 | Web traffic filtering & DDoS protection | - Geo-based rules (e.g., Costa Rica IPs)<br>- Rate limiting<br>- Bot, SQLi, XSS protection           |
+| **Amazon VPC**              | Network isolation and secure access     | - Multi-AZ deployment<br>- Private subnets<br>- NAT Gateways<br>- VPC Endpoints for internal traffic |
+| **AWS Certificate Manager** | SSL/TLS certificate automation          | - Automatic renewal<br>- Wildcard support<br>- ALB integration                                       |
+
+<br>
+
+#### Artificial Intelligence and Machine Learning
+| **Service**          | **Purpose**                                | **Key Details**                                                                                                                                                 |
+| -------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Amazon SageMaker** | Model development, training, and inference | - Data transformation & normalization<br>- NL-to-SQL translation<br>- Anomaly detection<br>- Snowflake Cortex fallback<br>- Integrated with Step Functions & S3 |
+
+
+### Critical Service Dependencies
+| Service            | Dependencies                          | Purpose                      |
+|--------------------|----------------------------------------|-------------------------------|
+| **Fargate API**     | Cognito, KMS, S3, Snowflake            | Core application runtime     |
+| **Snowflake**       | S3, KMS, IAM                           | Data warehouse operations    |
+| **Lambda Functions**| S3, Step Functions, Secrets Manager   | Event processing             |
+| **S3 Data Lake**    | KMS, IAM                               | Primary data storage         |
+
+<br><br><br>
+
+### **CloudWatch + Quicksight integration**
+
+#### End-to-End Monitoring and Analytics Design
 
 A robust design for end-to-end monitoring and analytics is essential to meet several of the project’s most critical requirements. The architecture centralizes system observability using Amazon CloudWatch, which serves as the unified layer for collecting metrics, logs, and traces across all components. Log analytics and data visualization are handled through Amazon QuickSight, providing stakeholders with real-time insights and dashboards.
 
 This design is a core pillar of the overall system architecture, enabling full visibility, operational awareness, and regulatory compliance. It also underpins key functionalities of the backoffice portal, ensuring that system health, performance trends, and audit trails are accessible and actionable for administrative users.
 
-##### System-Wide Monitoring Strategy
+#### System-Wide Monitoring Strategy
 
 **Centralized Logging with CloudWatch**
 
-- All AWS services in the architecture (Lambda, Fargate, Step Functions, Cognito, Vault, KMS, etc.) are natively integrated with Amazon CloudWatch.
+- All AWS services in the architecture (Lambda, Fargate, Step Functions, Cognito, Secrets, KMS, etc.) are natively integrated with Amazon CloudWatch.
 
 - CloudWatch Logs are configured to automatically receive logs and metrics from each of these components.
 
@@ -1230,7 +1279,7 @@ This design is a core pillar of the overall system architecture, enabling full v
   - Query execution times
   - Query errors and timeouts
 
-##### Observability Visualization with QuickSight
+#### Observability Visualization with QuickSight
 
 QuickSight provides dynamic dashboards and reporting capabilities over processed log data. Key functionalities that are indispensable for the adminitrators intended to acces the Backoffice portal. Some of the designed use cases that QuickSight + Cloudwatch integration will allow are: 
 
@@ -1261,7 +1310,7 @@ See the CloudWatch Logs to Quicksight Data Flow diagram:
 
 7. QuickSight uses Glue Catalog to query and visualize the logs.
 
-##### Implementation Guide
+#### Implementation Guide
 
 **IAM and Logging Prerequisites**
 
@@ -1425,7 +1474,7 @@ job.commit()
   - Access anomalies
   - Usage per IAM role
 
-##### Benefits
+#### Benefits
 
 | Feature                    | Benefit                                                                 |
 | -------------------------- | ----------------------------------------------------------------------- |
@@ -1434,15 +1483,15 @@ job.commit()
 | Automated Schema Inference | Reduces manual overhead for developers                                  |
 | Compliance Visibility      | Track sensitive actions and access across services                      |
 
-#### AWS Lambda + Step Functions Integration for Data Processing Workflows
+### AWS Lambda + Step Functions Integration for Data Processing Workflows
 
-##### Orchestation of task
+#### Orchestation of task
 
 The integration and implementation strategy for AWS Lambda and AWS Step Functions to orchestrate data-related tasks, enforce transactional safety, and enable AI-assisted processing in the architecture. This subsystem supports scalable, fault-tolerant, and observable data workflows as part of the ETL, data governance, and AI transformation processes.
 
-##### Specific Integration Architecture Overview
+#### Specific Integration Architecture Overview
 
-###### **Components**
+##### **Components**
 
 **AWS Lambda**
 
@@ -1464,7 +1513,7 @@ The integration and implementation strategy for AWS Lambda and AWS Step Function
 
 - Final destination for validated and transformed data
 
-###### **Workflow patterns**
+##### **Workflow patterns**
 
 
 **Claim-Check Pattern**
@@ -1479,7 +1528,7 @@ The integration and implementation strategy for AWS Lambda and AWS Step Function
 
 - Lambda functions use AI models (via SageMaker as the main agent) to validate or transform data based on schema rules, stimuli and historical patterns.
 
-##### Core Workflow (Data Ingestion and Transformation)
+#### Core Workflow (Data Ingestion and Transformation)
 
 **Step Functions Workflow (High-level)**
 
@@ -1497,11 +1546,11 @@ The integration and implementation strategy for AWS Lambda and AWS Step Function
 
 7. Notify Success or Rollback (Compensation Chain)
 
-##### Communication Diagram of the workflow
+#### Communication Diagram of the workflow
 
 ![alt text](image-3.png)
 
-##### General Step Functions Suggested Implementation
+#### General Step Functions Suggested Implementation
 
 | **Function Name**          | **Responsibility**                                                                  |
 | -------------------------- | ----------------------------------------------------------------------------------- |
@@ -1512,7 +1561,7 @@ The integration and implementation strategy for AWS Lambda and AWS Step Function
 | `SnowflakeLoaderLambda`    | Inserts transformed data into curated schema in Snowflake                           |
 | `RollbackHandlerLambda`    | Handles deletion of temporary objects or reverses operations on failure             |
 
-##### Integration Details
+#### Integration Details
 
 **Step Function Definition** 
 
@@ -1564,14 +1613,14 @@ This AWS Step Functions state machine orchestrates a data ingestion and processi
 
 ```
 
-##### IAM Role Requirements 
+#### IAM Role Requirements 
 
  | **Role**                    | **Permission**                                                              |
 | --------------------------- | --------------------------------------------------------------------------- |
 | `LambdaExecutionRole`       | S3 Read/Write, CloudWatch Logs, Secrets Manager, Glue, Snowflake API access |
 | `StepFunctionExecutionRole` | StartExecution, PassRole, Lambda invoke                                     |
 
-##### Benefits
+#### Benefits
 
 | **Feature**            | **Description**                                                           |
 | ---------------------- | ------------------------------------------------------------------------- |
@@ -1583,6 +1632,7 @@ This AWS Step Functions state machine orchestrates a data ingestion and processi
 
 #### Cortex
 
+## KEY WORKFLOWS
 ## **1. Dataset Upload**
 ![image](https://github.com/user-attachments/assets/d5839f90-2cfd-4438-82fb-278102f37f5d)
 
@@ -2171,11 +2221,11 @@ The workflow begins with a requester initiating a dataset access request, which 
   - Action: The System sends approval requests to Custodian1 and Custodian2 via AWS SNS (encrypted notifications).
   - AWS Involvement:
     - SNS: Sends notifications to custodians with a unique `request_id`.
-    - Secrets Manager: Retrieves custodian details (email, roles) from `VaultRepository`.
+    - Secrets Manager: Retrieves custodian details (email, roles) from `SecretsManagerRepository`.
     - KMS: Encrypts notification content.
   - Location: Service Layer (AWS Fargate) and AWS SNS
   - Components Involved:
-    - CustodianManager: Assigns custodians based on dataset ownership and retrieves their details from `VaultRepository` (AWS Secrets Manager).
+    - CustodianManager: Assigns custodians based on dataset ownership and retrieves their details from `SecretsManagerRepository` (AWS Secrets Manager).
     - Notification Service: Delivers requests with a unique `request_id`.
   - Security: Notifications are encrypted, and custodian identities are validated with AWS IAM roles.
   - Design Patterns: Publish-Subscribe Pattern (SNS notifies custodians).
@@ -2185,7 +2235,7 @@ The workflow begins with a requester initiating a dataset access request, which 
   - Action: Each custodian reviews and approves the request via `POST /sharing/approve/{request_id}`, submitting their key share.
   - AWS Involvement:
     - Cognito: Validates custodian identities.
-    - Secrets Manager: Retrieves custodian key shares from `VaultRepository`.
+    - Secrets Manager: Retrieves custodian key shares from `SecretsManagerRepository`.
     - IAM: Validates custodian permissions for approval.
   - Location: Handler Layer (AWS Fargate) and AWS Services.
   - Components Involved:
@@ -2199,7 +2249,7 @@ The workflow begins with a requester initiating a dataset access request, which 
   - Action: The System reconstructs the dataset’s access keys using the tripartite shares via `TripartiteKeyManager`.
   - AWS Involvement:
     - KMS: Decrypts the key shares.
-    - Secrets Manager: Retrieves the tripartite key shares from `VaultRepository`.
+    - Secrets Manager: Retrieves the tripartite key shares from `SecretsManagerRepository`.
   - Location: Service Layer (AWS Fargate).
   - Process: Shamir’s Secret Sharing is applied to reconstruct the AES-256 key in secure memory.
   - Security: The key is temporary, used only for permission updates, and immediately purged post-operation (highlighted in the diagram).
@@ -2496,7 +2546,7 @@ This document defines the architecture, configuration, and access patterns for t
 | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **IP Whitelisting for Snowflake**         | Snowflake network policies are configured to allow traffic only from approved static IP ranges (e.g., Fargate task IPs, VPC NAT Gateway).            |
 | **MFA Enforcement (Snowflake UI Access)** | All users accessing Snowflake through the web interface must authenticate using Multi-Factor Authentication (MFA).                                   |
-| **Token-based Programmatic Access**       | Services authenticate to Snowflake via tokenized credentials retrieved securely from AWS Secrets Manager or Vault.                                   |
+| **Token-based Programmatic Access**       | Services authenticate to Snowflake via tokenized credentials retrieved securely from AWS Secrets Manager.                                   |
 | **Per-Entity Role Mapping**               | Each tenant/user role is dynamically mapped to a Snowflake role, enabling strict data-level permissions via RBAC and RLS enforcement.                |
 | **S3 Encryption at Rest and In Transit**  | All objects in S3 buckets are encrypted using AWS KMS-managed keys. HTTPS is enforced for data transfer, ensuring full encryption in transit.        |
 | **Snowflake Role-Based Access Control**   | Access to Snowflake objects (schemas, tables, views) is governed via roles. Each user/service is assigned the minimum necessary privileges.          |
@@ -2504,7 +2554,7 @@ This document defines the architecture, configuration, and access patterns for t
 | **Fine-Grained IAM Roles (AWS)**          | Each AWS Lambda function and ECS microservice uses scoped IAM roles that limit access only to necessary resources (S3, Glue, Secrets Manager, etc.). |
 | **Access Audits and Alerts (CloudWatch)** | All access attempts, API calls, and data interactions are logged. Security anomalies (e.g., failed logins, privilege escalations) trigger alerts.    |
 
-5. **Expected Benefits:**
+1. **Expected Benefits:**
 
   - Centralized and enforceable access control
 
@@ -2774,7 +2824,7 @@ This infrastructe needs to be developed promoting loose coupling and supporting 
 | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
 | **Version-Pinned Dependencies**      | All drivers and SDKs are explicitly versioned in `requirements.txt`, `pyproject.toml`, or `package.json`.         |
 | **Retry Logic for Transient Errors** | Repositories implement retries (with exponential backoff) for known transient errors like timeouts or throttling. |
-| **Secure Credential Handling**       | Credentials are never hardcoded; they are pulled from **AWS Secrets Manager** or **Vault**.                       |
+| **Secure Credential Handling**       | Credentials are never hardcoded; they are pulled from **AWS Secrets Manager**.                       |
 | **Connection Lifecycle Management**  | Sessions are opened and closed per transaction or request to avoid stale connections.                             |
 
 ##### Expected Benefits
