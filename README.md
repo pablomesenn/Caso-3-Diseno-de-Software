@@ -1437,7 +1437,7 @@ This Lambda enables automated log extraction into S3, facilitating schema discov
 
 **Glue ETL Job (PySpark)**
 
-```
+```python
 import sys
 from pyspark.context import SparkContext
 from awsglue.context import GlueContext
