@@ -221,7 +221,7 @@ Deployment must include steps for:
 
 ## Deployment and Operations Strategy
 
-The deployment strategy for Data Pura Vida utilizes Blue-Green Deployment to ensure zero-downtime updates, meeting the 99.9% SLA and supporting scalability for millions of records and thousands of concurrent users. New versions are deployed to a "Green" environment, mirroring the production "Blue" environment, using AWS Fargate for the monolithic Node.js/Express backend and React Native frontend. GitHub Actions and Terraform automate CI/CD, provisioning infrastructure like Snowflake, AWS S3, and VPC endpoints. Comprehensive tests (unit, integration, security via OWASP ZAP, and load) validate performance (<200ms query latency, <0.1% errors) in Green. AWS WAF restricts access to Costa Rica-based IPs, and a Node.js service with AWS KMS manages tripartite keys (one part with Data Pura Vida, two with custodians). Traffic shifts to Green via AWS Application Load Balancer after validation, with Blue retained for 24 hours for rollback, ensuring <2-hour recovery. This approach supports future microservices migration and complies with Law 8968, GDPR, and ISO 27001.
+The deployment strategy for Data Pura Vida utilizes Blue-Green Deployment to ensure zero-downtime updates, meeting the 99.9% SLA and supporting scalability for millions of records and thousands of concurrent users. New versions are deployed to a "Green" environment, mirroring the production "Blue" environment, using AWS Fargate for the monolithic Python3/Flask backend and React Native frontend. GitHub Actions and Terraform automate CI/CD, provisioning infrastructure like Snowflake, AWS S3, and VPC endpoints. Comprehensive tests (unit, integration, security via OWASP ZAP, and load) validate performance (<200ms query latency, <0.1% errors) in Green. AWS WAF restricts access to Costa Rica-based IPs, and a Python 3 service with AWS KMS manages tripartite keys (one part with Data Pura Vida, two with custodians). Traffic shifts to Green via AWS Application Load Balancer after validation, with Blue retained for 24 hours for rollback, ensuring <2-hour recovery. This approach supports future microservices migration and complies with Law 8968, GDPR, and ISO 27001.
 
 ## Monitoring and Operations
 
@@ -500,9 +500,9 @@ Frontend:
 
 Backend:
 
-    Python: Handles all incoming REST requests. Connects to the PostgreSQL database. Implements general business logic (authentication, user management, file uploads, task creation) implementing external services such as AWS services.
+    Python 3: Handles all incoming REST requests. Connects to the PostgreSQL database. Implements general business logic (authentication, user management, file uploads, task creation) implementing external services such as AWS services.
 
-    Flask: Web framework for Node.js, used to handle REST, manage middleware, routing, and request/response lifecycle.
+    Flask: Web framework for Python, used to handle REST, manage middleware, routing, and request/response lifecycle.
 
     REST: For structured, not state-dependant operation and service-oriented operations. Authentication and registration, use of AWS services, etc... 
 
@@ -2085,7 +2085,6 @@ Ensures data transformations and model changes follow an "all or nothing" princi
 - `AWS Glue Jobs` → Triggers pipeline after data validation
 - `Snowflake` → Applies schema changes in staging environment
 - `AWS Step Functions` → Orchestrates the pipeline
-- `DynamoDB` → Stores durable compensation log
 - `SNS` → Alerts data architects on failure
 
 
