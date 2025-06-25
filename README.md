@@ -592,7 +592,6 @@ The backend can map these to your platform’s internal permissions. This mappin
 
 ![Agile Product Roadmap](https://github.com/user-attachments/assets/0a7dd9a8-ae89-4567-83ee-db3428ee22ad)
 
-### POC MFA
 
 
 
