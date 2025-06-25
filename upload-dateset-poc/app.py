@@ -110,7 +110,7 @@ class DataLakeAIAgentStack(Stack):
         # Grant permissions to Lambda function
         processed_data_bucket.grant_read_write(lambda_agent)
         
-        # EventBridge Rule to trigger Lambda function (fixed typo)
+        # EventBridge Rule to trigger Lambda function 
         rule = events.Rule(
             self, "GlueJobCompletionRule",
             event_pattern=events.EventPattern(
