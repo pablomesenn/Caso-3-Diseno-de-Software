@@ -13,7 +13,6 @@ Members: Pablo Mesén, Alonso Durán Muñoz, Ana Hernández Muñoz, Jesus Valver
 - [STACK](#STACK)
 - [FRONTEND](#FRONTEND)
 	- [AUTHENTICATION PLATFORM](#Authentication-platform)
-	- [POC MFA](#POC-MFA)
 - [BACKEND](#BACKEND)
 	- [API ENDPOINTS](#API-Endpoints)
    	- [IMPORTANT CLASSES & COMPONENTS](#Important-Classes-&-Components)
@@ -727,7 +726,6 @@ The backend can map these to your platform’s internal permissions. This mappin
 
 ![Agile Product Roadmap](https://github.com/user-attachments/assets/0a7dd9a8-ae89-4567-83ee-db3428ee22ad)
 
-### POC MFA
 ## Clean Architecture
 Clean Architecture is a software design pattern that organizes code into clear, separated layers based on how abstract or concrete the code is. Is especially effective in large-scale, long-living, and mission-critical systems, like this platform.
 The main advantages are:
@@ -1503,26 +1501,14 @@ The **AWS Cloud Development Kit (CDK)** serves as the cornerstone of our infrast
 | **Amazon VPC**              | Network isolation and secure access     | - Multi-AZ deployment<br>- Private subnets<br>- NAT Gateways<br>- VPC Endpoints for internal traffic |
 | ** AWS Certificate Manager** | SSL/-TLS certificate automation          | - Automatic renewal<br>- Wildcard support<br>- ALB integration                                       |
 
-<b- r>
+<br>
 
-##- ## Artificial Intelligence and Machine Learning
+#### Artificial Intelligence and Machine Learning
 | **Service**          | **Purpose**                                | **Key Details**                                                                                                                                                 |
-| - -------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| -------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Amazon SageMaker** | Model development, training, and inference | - Data transformation & normalization<br>- NL-to-SQL translation<br>- Anomaly detection<br>- Snowflake Cortex fallback<br>- Integrated with Step Functions & S3 |
-## Monitoring and Observability
 
-AWS CloudWatch:
-
-Metrics for Lambdas, API Gateway, and S3 events.
-
-Logs with real-time alerts for errors, latencies, and anomalies.
-
-Prometheus + Grafana (optional):
-
-Dashboards for resource utilization, response times, user activity.
-
-Alerting for thresholds and error rates.
-
+<br>
 
 ### Critical Service Dependencies
 | Service            | Dependencies                          | Purpose                      |
@@ -2019,32 +2005,18 @@ Enforces security policies during upload
 
 **1. Authentication & Authorization**
 - JWT validation via AWS Cognito
-- Role-based access c**ontrol (RBAC)
-**-** Organization-level permission**s
+- Role-based access control (RBAC)
+- Organization-level permissions
 
 **2. Encryption**
 - **At Rest**: AES-256-GCM in S3 and Snowflake
- - **In Transit**: -TLS 1.3 for all communications
-- **Key Management**: AWS KMS with tripartite syste- m
+- **In Transit**: TLS 1.3 for all communications
+- **Key Management**: AWS KMS with tripartite system
 
-**3. Access Control- **
+**3. Access Control**
 - IP whitelisting (Costa Rica only + approved institutions)
-- Row-level securit- y (RLS) in Snowflake
-- Audit logging of all operation
-## Monitoring and Observability
-
-AWS CloudWatch:
-
-Metrics for Lambdas, API Gateway, and S3 events.
-
-Logs with real-time alerts for errors, latencies, and anomalies.
-
-Prometheus + Grafana (optional):
-
-Dashboards for resource utilization, response times, user activity.
-
-Alerting for thresholds and error rates.
-
+- Row-level security (RLS) in Snowflake
+- Audit logging of all operations
 
 **4. Data Protection**
 - Sensitive field encryption before storage
@@ -3246,8 +3218,6 @@ Data flow is controlled across the raw → staged → curated layers, with delta
 **Clarification**
 
 The term **"staging schema"** within Snowflake refers to a logical subdivision of the production database where data is loaded and validated before being merged into final curated tables. Snowflake is the production database and AWS S3 still maintains the purposes of being the **staging** database.
-
-### Datalake
 
 
 ## QUALITY AND TESTING
