@@ -842,19 +842,19 @@ Services used across layers, implemented cleanly and decoupled:
 ## External Services
 ![Agile Product Roadmap (1)](https://github.com/user-attachments/assets/3461702c-5792-45b7-b18a-a7f3584fc6a9)
 
-**Redux:** Maneja el estado de la aplicación frontend de forma centralizada. Actúa como la "capa de lógica" (ViewModel) dentro del patrón MVVM, desacoplando UI y lógica de negocio.
+**Redux:** Manages the frontend application state centrally. Acts as the "logic layer" (ViewModel) within the MVVM pattern, decoupling the UI from business logic.
 
-**Tailwind CSS:** Framework de estilos utility-first. Permite aplicar clases predefinidas directamente en los elementos HTML/JSX para diseñar interfaces responsivas y accesibles.
+**Tailwind CSS:** A utility-first styling framework. Allows applying predefined classes directly on HTML/JSX elements to design responsive and accessible interfaces.
 
-**Okta SDK:** Kit de desarrollo que facilita la integración con Okta para manejar autenticación de usuarios. Administra login, logout, sesiones y tokens.
+**Okta SDK:**  A development kit that facilitates integration with Okta to handle user authentication. Manages login, logout, sessions, and tokens.
 
-**OIDC (OpenID Connect):** Protocolo de autenticación basado en OAuth 2.0. Usado por Okta para autorizar y autenticar usuarios de manera segura.
+**OIDC (OpenID Connect):** An authentication protocol based on OAuth 2.0. Used by Okta to securely authorize and authenticate users.
 
-**WebAuthn:** Estándar para autenticación biométrica o basada en dispositivos (como huella o reconocimiento facial). Se combina con Okta SDK para habilitar MFA (autenticación multifactor).
+**WebAuthn:** A standard for biometric or device-based authentication (such as fingerprint or facial recognition). Combined with Okta SDK to enable MFA (multi-factor authentication).
 
-**Storybook:** Herramienta de desarrollo para construir y probar componentes UI de forma aislada. Permite documentar, visualizar y testear componentes sin necesidad de levantar toda la aplicación.
+**Storybook:** A development tool to build and test UI components in isolation. Allows documenting, visualizing, and testing components without running the entire application.
 
-**Stripe:** Plataforma de pagos que maneja procesamiento de tarjetas, validación y suscripciones. Se conecta desde el frontend (Stripe.js) y también desde el backend (API de Flask) para completar y verificar transacciones de forma segura.
+**Stripe:** A payment platform that handles card processing, validation, and subscriptions. Connected from the frontend (Stripe.js) and also from the backend (Flask API) to securely complete and verify transactions.
 
 ## Structure
 ![image](https://github.com/user-attachments/assets/e9f7c548-9dc3-4aa8-859f-8cb1dd497e3a)
