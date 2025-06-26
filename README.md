@@ -605,6 +605,8 @@ DataPuraVida is not simply a technological infrastructure, but a platform for th
 
 - **Storybook ^7.x:** Develop and document UI components in isolation. Useful for design systems and visual testing.
 
+- **Prettier ^3.x:** Automatic code formatter to maintain a consistent coding style.
+
 ## Backend 
 
 - **Python 3.x:** Business logic implementation and integration layer.
