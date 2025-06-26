@@ -1,0 +1,162 @@
+/* Reset default styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #F7F7F7;
+  color: #333333;
+  line-height: 1.6;
+  font-size: 16px;
+}
+
+/* Container for centered content */
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+/* Headings */
+h1 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #333333;
+}
+
+h2 {
+  font-size: 1.4rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  color: #333333;
+}
+
+/* Forms */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #555555;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #DDDDDD;
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: #FFFFFF;
+  transition: border-color 0.2s;
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  border-color: #4A90E2;
+}
+
+/* Buttons */
+.button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.button-primary {
+  background-color: #4A90E2;
+  color: #FFFFFF;
+}
+
+.button-primary:hover {
+  background-color: #357ABD;
+}
+
+.button-secondary {
+  background-color: #FFFFFF;
+  color: #4A90E2;
+  border: 1px solid #4A90E2;
+}
+
+.button-secondary:hover {
+  background-color: #F7F7F7;
+}
+
+/* Navigation */
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #FFFFFF;
+  border-bottom: 1px solid #EEEEEE;
+}
+
+.nav-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333333;
+}
+
+.nav-button {
+  background: none;
+  border: none;
+  color: #4A90E2;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.nav-button:hover {
+  text-decoration: underline;
+}
+
+/* Results and Messages */
+.results {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: #FFFFFF;
+  border: 1px solid #EEEEEE;
+  border-radius: 4px;
+}
+
+.message {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #333333;
+}
+
+.error {
+  color: #D9534F;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .container {
+    padding: 1rem;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  h2 {
+    font-size: 1.2rem;
+  }
+
+  .button {
+    width: 100%;
+    text-align: center;
+  }
+}

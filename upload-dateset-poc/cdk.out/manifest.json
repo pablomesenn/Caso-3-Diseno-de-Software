@@ -1,0 +1,204 @@
+{
+  "version": "44.0.0",
+  "artifacts": {
+    "DataLakeAIAgentStack.assets": {
+      "type": "cdk:asset-manifest",
+      "properties": {
+        "file": "DataLakeAIAgentStack.assets.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+      }
+    },
+    "DataLakeAIAgentStack": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://unknown-account/unknown-region",
+      "properties": {
+        "templateFile": "DataLakeAIAgentStack.template.json",
+        "terminationProtection": false,
+        "validateOnSynth": false,
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/d71ecd4bc1ba67f024f00275ee47bd9676f1d18801bd0369a3ea133e268ac651.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
+        "additionalDependencies": [
+          "DataLakeAIAgentStack.assets"
+        ],
+        "lookupRole": {
+          "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-${AWS::Region}",
+          "requiresBootstrapStackVersion": 8,
+          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+        }
+      },
+      "dependencies": [
+        "DataLakeAIAgentStack.assets"
+      ],
+      "metadata": {
+        "/DataLakeAIAgentStack/RawDataBucket/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "RawDataBucket57F26C03"
+          }
+        ],
+        "/DataLakeAIAgentStack/RawDataBucket/Policy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "RawDataBucketPolicyAAD9269B"
+          }
+        ],
+        "/DataLakeAIAgentStack/RawDataBucket/AutoDeleteObjectsCustomResource/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "RawDataBucketAutoDeleteObjectsCustomResource1C0E67FF"
+          }
+        ],
+        "/DataLakeAIAgentStack/LatestNodeRuntimeMap": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "LatestNodeRuntimeMap"
+          }
+        ],
+        "/DataLakeAIAgentStack/Custom::S3AutoDeleteObjectsCustomResourceProvider": [
+          {
+            "type": "aws:cdk:is-custom-resource-handler-customResourceProvider",
+            "data": true
+          }
+        ],
+        "/DataLakeAIAgentStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092"
+          }
+        ],
+        "/DataLakeAIAgentStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F"
+          }
+        ],
+        "/DataLakeAIAgentStack/ProcessedDataBucket/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ProcessedDataBucket4E25D3B7"
+          }
+        ],
+        "/DataLakeAIAgentStack/ProcessedDataBucket/Policy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ProcessedDataBucketPolicy23DA9593"
+          }
+        ],
+        "/DataLakeAIAgentStack/ProcessedDataBucket/AutoDeleteObjectsCustomResource/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ProcessedDataBucketAutoDeleteObjectsCustomResourceFDA6DDAA"
+          }
+        ],
+        "/DataLakeAIAgentStack/GlueDatabase": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "GlueDatabase"
+          }
+        ],
+        "/DataLakeAIAgentStack/GlueCrawlerRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "GlueCrawlerRole4AA4B387"
+          }
+        ],
+        "/DataLakeAIAgentStack/GlueCrawlerRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "GlueCrawlerRoleDefaultPolicy44958AC9"
+          }
+        ],
+        "/DataLakeAIAgentStack/GlueCrawler": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "GlueCrawler"
+          }
+        ],
+        "/DataLakeAIAgentStack/GlueJobRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "GlueJobRoleF1B69418"
+          }
+        ],
+        "/DataLakeAIAgentStack/GlueJobRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "GlueJobRoleDefaultPolicy94EFA0CF"
+          }
+        ],
+        "/DataLakeAIAgentStack/DataPuraVidaLoad": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DataPuraVidaLoad"
+          }
+        ],
+        "/DataLakeAIAgentStack/AIAgentFunction/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AIAgentFunctionServiceRoleA4135E6F"
+          }
+        ],
+        "/DataLakeAIAgentStack/AIAgentFunction/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AIAgentFunctionServiceRoleDefaultPolicyB3CCCB93"
+          }
+        ],
+        "/DataLakeAIAgentStack/AIAgentFunction/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AIAgentFunction739AD057"
+          }
+        ],
+        "/DataLakeAIAgentStack/GlueJobCompletionRule/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "GlueJobCompletionRule20DB8F3C"
+          }
+        ],
+        "/DataLakeAIAgentStack/GlueJobCompletionRule/AllowEventRuleDataLakeAIAgentStackAIAgentFunction55BB5904": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "GlueJobCompletionRuleAllowEventRuleDataLakeAIAgentStackAIAgentFunction55BB59046186F595"
+          }
+        ],
+        "/DataLakeAIAgentStack/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/DataLakeAIAgentStack/CDKMetadata/Condition": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadataAvailable"
+          }
+        ],
+        "/DataLakeAIAgentStack/BootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BootstrapVersion"
+          }
+        ],
+        "/DataLakeAIAgentStack/CheckBootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheckBootstrapVersion"
+          }
+        ]
+      },
+      "displayName": "DataLakeAIAgentStack"
+    },
+    "Tree": {
+      "type": "cdk:tree",
+      "properties": {
+        "file": "tree.json"
+      }
+    }
+  },
+  "minimumCliVersion": "2.1019.1"
+}
