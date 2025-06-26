@@ -3492,7 +3492,13 @@ The DevOps and deployment strategy for Data Pura Vida leverages modern cloud-nat
 - Reliability:
   - Blue-Green deployment ensures zero-downtime updates.
   - Automated backups and recovery playbooks achieve <2-hour recovery time.
-
+- Clear componentization with React:
+  - Component-based architecture improves scalability and maintainability.	
+- Isolated UI development with Storybook:
+  - Enables designing, visualizing, and testing components without running the full application.
+- Rapid, accessible design with Tailwind CSS:
+  - Utility-first framework enables clean, responsive, and accessible interfaces right from the design phase.
+  
 #### Known Limitations
 
 - Monolithic Architecture:
@@ -3508,6 +3514,8 @@ The DevOps and deployment strategy for Data Pura Vida leverages modern cloud-nat
   - IP whitelisting via AWS WAF may complicate access for legitimate users outside Costa Rica like remote workers.
 - Onboarding Complexity:
   - Tripartite key system and custodian approvals may slow down dataset sharing for new users.
+- Dependency on multiple external SDKs (Okta, Stripe):
+  - Performance and reliability depend on third-party services (latency, rate limits, outages).
 
 #### Proposals for Future Improvements  
 
@@ -3523,6 +3531,8 @@ The DevOps and deployment strategy for Data Pura Vida leverages modern cloud-nat
 - Global Access with Compliance:
   - Explore secure VPN solutions or proxy services for non-Costa Rica users while maintaining geographic compliance.
   - Implement dynamic IP registration for trusted institutions.
+- Implement lazy loading and code splitting:
+  - Improves performance and reduces initial load time in large apps.
 
 #### Evolution Roadmap
 
