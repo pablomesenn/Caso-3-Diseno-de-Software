@@ -95,7 +95,7 @@ With the implementation of this ecosystem, Costa Rica could take a leap toward a
 ## Code, CI/CD, and Cloud Deployment Practices
 The team must use Git as the version control system, with repositories hosted on GitHub.
 The following branching model must be implemented based on Git Flow:
-### 1.1 Git Flow Branching Strategy
+### Git Flow Branching Strategy
 
 | Branch        | Purpose                                 | Merges into           | Created from         |
 |---------------|------------------------------------------|------------------------|-----------------------|
@@ -105,13 +105,13 @@ The following branching model must be implemented based on Git Flow:
 | `release/*`   | Prepares code for production release     | `main` and `develop`   | `develop`             |
 | `hotfix/*`    | Urgent fixes applied to production       | `main` and `develop`   | `main`      
 
-### 1.2 Commit Message Convention
+### Commit Message Convention
 
 All commit messages must follow a standardized structure for clarity and traceability:
 
 <type>(component): short description in present tense
 
-# Examples:
+#### Examples:
 feat(api): add validation to donation endpoint
 fix(auth): resolve login timeout issue
 chore(ci): update deployment script for staging
@@ -128,11 +128,11 @@ The development team must use the following commit types for consistency and cla
 | `test`    | Adding or updating tests              |
 | `chore`   | Maintenance tasks, tooling, CI/CD     |
 
-## 2. Coding Standards
+## Coding Standards
 
 All code must follow predefined standards to ensure readability, consistency, and quality.
 
-### 2.1 Frontend (React)
+### Frontend (React)
 
 - Use Prettier for automatic formatting
 - Use React Testing Library for testing
@@ -140,16 +140,14 @@ All code must follow predefined standards to ensure readability, consistency, an
 - Variables/Functions: camelCase
 - Avoid inline styles; use TailwindCSS or component-scoped styles
 
-### 2.2 Backend (Python)
+### Backend (Python)
 
 - Use Black for formatting
 - Linting: Pylint 
 - Testing: pytest
 - Validate APIs using OpenAPI specifications
 
-### 2.3 Database
-
-### 2.3 Database (Snowflake and Amazon S3)
+### Database (Snowflake and Amazon S3)
 
 - Snowflake models and tables must include data quality tests such as uniqueness, not_null constraints, and referential integrity validations, implemented via Snowflake tasks.
 - Use clear naming conventions and prefixes for Snowflake objects:
@@ -160,7 +158,7 @@ All code must follow predefined standards to ensure readability, consistency, an
 - Data stored in Amazon S3 must follow a clear folder and file naming structure aligned with project requirements, including environment and date partitions (`s3://bucket-name/project/env/date=YYYY-MM-DD/`).
 - When ingesting data from S3 into Snowflake, ensure data formats are consistent, with schemas enforced via Snowflake external tables or COPY commands with file format definitions.
 
-## 3. Pull Requests and Code Review
+## Pull Requests and Code Review
 
 Every change must be reviewed through a pull request (PR):
 
@@ -171,7 +169,7 @@ Every change must be reviewed through a pull request (PR):
 - Screenshots or test output must be included for UI or API changes
 - Large PRs must be split into smaller, manageable commits
 
-## 4. Continuous Integration (CI)
+## Continuous Integration (CI)
 
 GitHub Actions must be configured for CI on every pull request to `develop` or `main`.
 
@@ -182,7 +180,7 @@ GitHub Actions must be configured for CI on every pull request to `develop` or `
 - Run linters
 - Execute unit and integration tests
 
-## 5. Continuous Deployment (CD)
+## Continuous Deployment (CD)
 
 Automatic deployments must be configured for both staging and production environments using GitHub Actions.
 
@@ -351,7 +349,11 @@ High Availability: Snowflake’s multi-cluster architecture and Fargate auto-sca
 
 - All data in transit and at rest must be enceypted using AES-256. All APIs must enforce TLS 1.3 for secure communications.
 
-- PENDIENTE HABLAR SOBRE auth y verification
+- All components must comply with OWASP Top 10 security principles.
+
+- Implementation of Role-Based Access Control (RBAC) and Row-Level Security (RLS).
+
+- The platform shall implement a three-party key management system in which cryptographic keys are generated using a threshold-based mechanism, distributed securely across independent custodians, and allow for revocation or delegation in compliance with national security standards.
 
 ### Usability
 
@@ -370,7 +372,7 @@ High Availability: Snowflake’s multi-cluster architecture and Fargate auto-sca
 
 ### Maintainability
 
-- All system components must emit structured logs to a centralized logging system. Metrics must be exposed via Prometheus, with real time dashboards in Amazon Quicksight.
+- All system components must emit structured logs to a centralized logging system. Metrics must be exposed via Amazon CloudWatch and Amazaon S3, with real time dashboards in Amazon Quicksight.
 
 - Source code must be managed using Github with GitFlow branching. All deployments are automated via CI/CD pipelines with infrastructure defined via Terraform.
 
