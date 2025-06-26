@@ -864,6 +864,9 @@ Services used across layers, implemented cleanly and decoupled:
 ## FE Architecture Diagram
 ![Agile Product Roadmap (1)](https://github.com/user-attachments/assets/3dd9e559-9df4-4479-9344-5e6259ee2a51)
 
+## React Prototype
+https://lovable.dev/projects/9b215e61-2b1d-4274-84ff-b1d3d98c5656
+
 # BACKEND
 
 Complete Diagram: https://lucid.app/lucidchart/6b3cff80-ec40-4584-99eb-46dad1afd5ec/edit?invitationId=inv_c137e4e0-9a2d-446c-8f9d-16471948de2a&page=HWEp-vi-RSFO#
