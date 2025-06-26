@@ -645,7 +645,7 @@ Services used across layers, implemented cleanly and decoupled:
 ![Agile Product Roadmap](https://github.com/user-attachments/assets/9fcca3b8-85bc-4dbc-aa11-803ed2079a4c)
 
 ## External Services
-![Agile Product Roadmap](https://github.com/user-attachments/assets/274eebf8-197a-4bf0-9fe1-388daecf4c5f)
+![Agile Product Roadmap (1)](https://github.com/user-attachments/assets/3461702c-5792-45b7-b18a-a7f3584fc6a9)
 
 **Redux:** Maneja el estado de la aplicación frontend de forma centralizada. Actúa como la "capa de lógica" (ViewModel) dentro del patrón MVVM, desacoplando UI y lógica de negocio.
 
