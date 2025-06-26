@@ -582,7 +582,7 @@ The design will consist of four layers:
 
 **Technologies**
 - TypeScript domain models (frontend)
-- Python dataclasses / Pydantic models (backend)
+- Python
   
 **Class and Components**
 `User`, `Organization`, `Representative`, `RegistrationRequest`, `Document`, `CryptographicKey`, `Dataset`, `AccessPermission`, `Dashboard`, `TransactionRecord`, `SubscriptionPlan`, `IPAddressWhitelist`, `AIValidationResult`, `PaymentMethod`, `SecurityToken`
