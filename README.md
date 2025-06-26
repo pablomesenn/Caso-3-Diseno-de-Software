@@ -645,7 +645,21 @@ Services used across layers, implemented cleanly and decoupled:
 ![Agile Product Roadmap](https://github.com/user-attachments/assets/9fcca3b8-85bc-4dbc-aa11-803ed2079a4c)
 
 ## External Services
-![Agile Product Roadmap](https://github.com/user-attachments/assets/ea024bac-fc24-4b04-bf00-7305cdbb86b5)
+![Agile Product Roadmap](https://github.com/user-attachments/assets/274eebf8-197a-4bf0-9fe1-388daecf4c5f)
+
+**Redux:** Maneja el estado de la aplicación frontend de forma centralizada. Actúa como la "capa de lógica" (ViewModel) dentro del patrón MVVM, desacoplando UI y lógica de negocio.
+
+**Tailwind CSS:** Framework de estilos utility-first. Permite aplicar clases predefinidas directamente en los elementos HTML/JSX para diseñar interfaces responsivas y accesibles.
+
+**Okta SDK:** Kit de desarrollo que facilita la integración con Okta para manejar autenticación de usuarios. Administra login, logout, sesiones y tokens.
+
+**OIDC (OpenID Connect):** Protocolo de autenticación basado en OAuth 2.0. Usado por Okta para autorizar y autenticar usuarios de manera segura.
+
+**WebAuthn:** Estándar para autenticación biométrica o basada en dispositivos (como huella o reconocimiento facial). Se combina con Okta SDK para habilitar MFA (autenticación multifactor).
+
+**Storybook:** Herramienta de desarrollo para construir y probar componentes UI de forma aislada. Permite documentar, visualizar y testear componentes sin necesidad de levantar toda la aplicación.
+
+**Stripe:** Plataforma de pagos que maneja procesamiento de tarjetas, validación y suscripciones. Se conecta desde el frontend (Stripe.js) y también desde el backend (API de Flask) para completar y verificar transacciones de forma segura.
 
 ## Structure
 
