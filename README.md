@@ -868,7 +868,7 @@ Services used across layers, implemented cleanly and decoupled:
 ![image](https://github.com/user-attachments/assets/e9f7c548-9dc3-4aa8-859f-8cb1dd497e3a)
 
 ## FE Architecture Diagram
-![Agile Product Roadmap (1)](https://github.com/user-attachments/assets/3dd9e559-9df4-4479-9344-5e6259ee2a51)
+![Agile Product Roadmap](https://github.com/user-attachments/assets/5ce0623a-429f-4271-9fa9-d330c0704a6e)
 
 ## React Prototype
 https://lovable.dev/projects/9b215e61-2b1d-4274-84ff-b1d3d98c5656
