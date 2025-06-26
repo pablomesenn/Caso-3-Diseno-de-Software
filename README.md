@@ -619,6 +619,10 @@ DataPuraVida is not simply a technological infrastructure, but a platform for th
 
 - **Integration with AWS and Snowflake:** Snowflake for analytics and security policies; AWS for storage, processing, orchestration.
 
+- Snowflake SDK v3.15.0
+
+- Boto3 1.38.45
+
 ## DevOps & CI/CD
 
 **GitHub Actions:**
