@@ -640,12 +640,15 @@ Services used across layers, implemented cleanly and decoupled:
 | Interface Segregation   | Domain Layer           | Focused interfaces                                |
 | Loose Coupling          | Infrastructure Layer   | Decouple external dependencies                    |
 
+## Object Design Patterns
+![Object Design](https://github.com/user-attachments/assets/c8e70fd9-d154-4224-9f1b-82ad5fcc6f41)
 
 ## External Services
 
 ## Structure
 
 ## FE Architecture Diagram
+![Agile Product Roadmap](https://github.com/user-attachments/assets/38562424-8bb3-4d26-9fd9-d650423cfd26)
 
 # BACKEND
 
