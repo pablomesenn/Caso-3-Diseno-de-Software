@@ -602,7 +602,7 @@ The design will consist of four layers:
 - Frontend: Okta 
 
 **Class and Components**
-`OktaAuthService`, `ApiService`, `SnowflakeQueryAdapter`, `TaskRepositoryImpl`,`S3UploadService`, `LambdaTriggerService`
+`OktaAuthService`, `ApiService`, `SnowflakeQueryAdapter`, `TaskRepositoryImpl`, `DocumentRepositoryImpl`, `S3UploadService`, `LambdaTriggerService`
 
 **Design Patterns**
 - Adapter: Wrap external dependencies to conform to domain interfaces  
