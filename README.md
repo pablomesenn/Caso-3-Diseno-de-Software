@@ -2417,7 +2417,7 @@ This document defines the architecture, configuration, and access patterns for t
 
 2. **Object-Oriented Design Patterns:**
 
-  Facade 
+    - Facade pattern utilize to simplify the access to different repositories. 
 
 3. **Class Layers for Data Access:**
 
@@ -2535,11 +2535,11 @@ This document defines the architecture, configuration, and access patterns for t
 
 2. **Object-Oriented Design Patterns:**
 
-  Dependency injection
+  - Dependency Injection is used to decouple class responsibilities and externalize the management of sensitive or variable components like credentials, policies, and access control modules.
 
 3. **Class Layers for Data Access:**
 
-  Security layer en general
+  - Security layer in its entirety is used for granting access to data and manage RBAC with Snowflake and other data related policies. Some classes involved are `SecurityManager`, `SecurityContext`, `TripartiteKeyManager`.
 
 4. **Configuration Policies/Rules:**
 
