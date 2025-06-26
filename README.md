@@ -662,6 +662,7 @@ Services used across layers, implemented cleanly and decoupled:
 **Stripe:** Plataforma de pagos que maneja procesamiento de tarjetas, validación y suscripciones. Se conecta desde el frontend (Stripe.js) y también desde el backend (API de Flask) para completar y verificar transacciones de forma segura.
 
 ## Structure
+![image](https://github.com/user-attachments/assets/e9f7c548-9dc3-4aa8-859f-8cb1dd497e3a)
 
 ## FE Architecture Diagram
 ![Agile Product Roadmap (1)](https://github.com/user-attachments/assets/3dd9e559-9df4-4479-9344-5e6259ee2a51)
