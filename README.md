@@ -3522,64 +3522,36 @@ The DevOps and deployment strategy for Data Pura Vida leverages modern cloud-nat
 
 ### Architecture Compliance Matrix
 
-| Requirement | Compliance Status | Evidence | Notes |**
+| Requirement | Compliance Status | Evidence | Notes |
 |-------------|-------------------|----------|-------|
-| 99.9**% System Availability | Compliant | Blue-Green deployment, Fargate auto-scaling, Snowflake multi-cluster | Quarterly DR tests validate SLA |
-| <200ms Query Latency | Compliant | Snowflake Query Profiling, CloudWatch metrics | Validated **in performance tests |
-| **Support 200 Concurrent Users (Year 5) | Compliant | Fargate auto-scaling, Snowflake MPP architecture | Load tests simulate peak usage |
-| AES-256 Encryption | Compliant | AWS KMS for data at rest, - TLS 1.3 for transit | Security audits confirm compliance |
+| 99.9% System Availability | Compliant | Blue-Green deployment, Fargate auto-scaling, Snowflake multi-cluster | Quarterly DR tests validate SLA |
+| <200ms Query Latency | Compliant | Snowflake Query Profiling, CloudWatch metrics | Validated in performance tests |
+| Support 200 Concurrent Users (Year 5) | Compliant | Fargate auto-scaling, Snowflake MPP architecture | Load tests simulate peak usage |
+| AES-256 Encryption | Compliant | AWS KMS for data at rest, TLS 1.3 for transit | Security audits confirm compliance |
 | GDPR Compliance | Compliant | Data minimization, user consent, right to erasure | DPO assigned for oversight |
-| ISO 27001 Compliance | Compliant | Security policies, acces- s controls, audit logs | Regular audits scheduled |
+| ISO 27001 Compliance | Compliant | Security policies, access controls, audit logs | Regular audits scheduled |
 | AI-Powered Data Normalization | Compliant | Snowflake Cortex, MLModel for ETDL | Validated in integration tests |
-| Tripartite Key System | Compliant | Shamir’s Secret Sharing- , custodian approvals | Security tests confirm robustness |
-| Geographic Restriction | Compliant | GeoRestrictionMiddleware, AWS WAF | Penetration tests validate enforcement - |
+| Tripartite Key System | Compliant | Shamir’s Secret Sharing, custodian approvals | Security tests confirm robustness |
+| Geographic Restriction | Compliant | GeoRestrictionMiddleware, AWS WAF | Penetration tests validate enforcement |
 
 ### Analysis of Advantages/Disadvantages
 
-#
-## Monitoring and Observability
+#### Design Strengths
 
-AWS CloudWatch:
-
-Metrics for Lambdas, API Gateway, and S3 events.
-
-Logs with real-time alerts for errors, latencies, and anomalies.
-
-Prometheus + Grafana (optional):
-
-Dashboards for resource utilization, response times, user activity.
-
-Alerting for thresholds and error rates.
-## Design Strengths
-
-- Scalability**:
-  - AWS Fargate** and Snowflake auto-scaling support millions of records and thousands of concurrent users.
-  - S3 and Snowflake handle 10TB/year data growth without **manual intervention.
-- Secur**ity:
-  - AES-256 e ncryption, -TLS 1.3, and tripartite key system ensure data protection.
+- Scalability:
+  - AWS Fargate and Snowflake auto-scaling support millions of records and thousands of concurrent users.
+  - S3 and Snowflake handle 10TB/year data growth without manual intervention.
+- Security:
+  - AES-256 encryption, TLS 1.3, and tripartite key system ensure data protection.
   - RBAC, RLS, and geographic restrictions align with GDPR.
-- Complianc- e:
+- Compliance:
   - Comprehensive audit logging ensures traceability.
-  - Privacy-  by design and data subject rights support regulatory requirements.
+  - Privacy by design and data subject rights support regulatory requirements.
 - Flexibility:
-  - Monolit- hic architecture with modular design supports future migration to microservices.
+  - Monolithic architecture with modular design supports future migration to microservices.
   - AI-driven ETDL and NL query processing enhance usability and innovation.
 - Reliability:
-  - Bl
-  ## Monitoring and Observability
-
-  AWS CloudWatch:
-
-Metrics for Lambdas, API Gateway, and S3 events.
-
-Logs with real-time alerts for errors, latencies, and anomalies.
-
-Prometheus + Grafana (optional):
-
-Dashboards for resource utilization, response times, user activity.
-
-Alerting for thresholds and error rates.
-  e-Green deployment ensures zero-downtime updates.
+  - Blue-Green deployment ensures zero-downtime updates.
   - Automated backups and recovery playbooks achieve <2-hour recovery time.
 
 #### Known Limitations
@@ -3620,3 +3592,4 @@ Alerting for thresholds and error rates.
 | Short-Term (0-6 months) | Q3-Q4 2025 | Implement cost monitoring dashboards, optimize Snowflake query performance |
 | Mid-Term (6-18 months) | Q1 2026 - Q2 2027 | Transition to microservices for high-traffic services |
 | Long-Term (18+ months) | Q3 2027 + | Integrate advanced AI models (SageMaker), support global access with VPN |
+
