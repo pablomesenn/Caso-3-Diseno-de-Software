@@ -343,33 +343,19 @@ High Availability: Snowflake’s multi-cluster architecture and Fargate auto-sca
 	- Be communicated to stakeholders at least 72 hours in advance.
 	- Include health verification steps and after the execution to ensure service continuity.
 
-- The system must include Snowflake’s automatic multi-cluster archi**tecture to ensure high** availability and fault isolation for queries and pipelines and real time monitoring and alerting to trigger failover **workflows.
+- The system must include Snowflake’s automatic multi-cluster architecture to ensure high availability and fault isolation for queries and pipelines and real time monitoring and alerting to trigger failover workflows.
 
-### Secur**ity 
+### Security 
 
-- All data in transit and at rest must be enceypted using AES-256.  All APIs must enforce -TLS 1.3 for secure communications.
+- All data in transit and at rest must be enceypted using AES-256. All APIs must enforce TLS 1.3 for secure communications.
 
-- All components must comply with OWASP Top 10 security principle- s.
+- All components must comply with OWASP Top 10 security principles.
 
-- Implementation of Role-Based Access Control (RBAC) and Row-Leve- l Security (RLS).
+- Implementation of Role-Based Access Control (RBAC) and Row-Level Security (RLS).
 
-- The platform shall implement a three-party key management syste- m in which cryptographic keys are generated using a threshold-based mechanism, distributed securely across independent custodians, and allow for revocation or delegation in compliance with national security standards.
+- The platform shall implement a three-party key management system in which cryptographic keys are generated using a threshold-based mechanism, distributed securely across independent custodians, and allow for revocation or delegation in compliance with national security standards.
 
-### Usab
-## Monitoring and Observability
-
-AWS CloudWatch:
-
-Metrics for Lambdas, API Gateway, and S3 events.
-
-Logs with real-time alerts for errors, latencies, and anomalies.
-
-Prometheus + Grafana (optional):
-
-Dashboards for resource utilization, response times, user activity.
-
-Alerting for thresholds and error rates.
-lity
+### Usability
 
 - Screen reader support, keyboard navigation, and contrast options must be available to ensure compliance with inclusive design principles.
 
@@ -424,30 +410,17 @@ lity
 
 - OECD Recommendation on Data Governance for the Public Sector. Data Pura Vida must reflect principles of:
 	- Openness and reusability of public data.
-	- Trust, tr**ansparency, and accountability** in data use.
-	- Clear roles **and responsibilities for data stewardsh**ip.
+	- Trust, transparency, and accountability in data use.
+	- Clear roles and responsibilities for data stewardship.
 
 - Related to security industry standards to follow:
-	- Use of - TLS 1.3 for encrypted communications.
+	- Use of TLS 1.3 for encrypted communications.
 	- End-to-end encryption of sensitive data using AES-256.
-	- Impleme- ntation of Role-Based Access Control (RBAC) and Row-Level Security (RLS).
+	- Implementation of Role-Based Access Control (RBAC) and Row-Level Security (RLS).
 
-### Extensi- bility
+### Extensibility
 
-- The platf- orm must allow modular addition of new AI models, data connectors, and dashboard templates without affecting existing operations. APIs and services must be designed to support future migration to microservices.
-## Monitoring and Observability
-
-AWS CloudWatch:
-
-Metrics for Lambdas, API Gateway, and S3 events.
-
-Logs with real-time alerts for errors, latencies, and anomalies.
-
-Prometheus + Grafana (optional):
-
-Dashboards for resource utilization, response times, user activity.
-
-Alerting for thresholds and error rates.
+- The platform must allow modular addition of new AI models, data connectors, and dashboard templates without affecting existing operations. APIs and services must be designed to support future migration to microservices.
 
 ### Documentation
 
