@@ -434,17 +434,8 @@ High Availability: Snowflake’s multi-cluster architecture and Fargate auto-sca
 
 # SYSTEM ANALYSIS
 ## DETAILED DECOMPOSITION BY COMPONENTS DIAGRAM
-![image](https://github.com/user-attachments/assets/4d110e56-2af7-4c70-84a4-d333e6deef8b)
+![mermaid-diagram-2025-06-26-140409](https://github.com/user-attachments/assets/7697ee27-d1be-4417-9928-0e1186a4cfab)
 
-![image](https://github.com/user-attachments/assets/f457b93b-36ca-47d0-949e-e59e92d764bc)
-
-![image](https://github.com/user-attachments/assets/5e1f18f2-1958-49a5-8eaf-d5fd45738a1d)
-
-![image](https://github.com/user-attachments/assets/59cfe50f-b0c6-4582-a39f-92ece42860ad)
-
-![image](https://github.com/user-attachments/assets/8f7f0329-ee79-4e83-b003-d654225768eb)
-
-![image](https://github.com/user-attachments/assets/aac2c9a3-ca7a-4b80-afff-23feff63fa7a)
 
 # LEGAL AND REGULATORY FRAMEWORK
 
