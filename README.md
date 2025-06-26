@@ -66,7 +66,7 @@ With the implementation of this ecosystem, Costa Rica could take a leap toward a
 | UI/UX Designer            | 1            | Portal and backoffice interface design                                     |
 | Legal & Compliance Advisor| 1            | Legal analysis, data protection, IP/data ownership                         |
 ## UX Journeys
-![UX Journey 1](https://github.com/user-attachments/assets/51a549f9-286c-4e5f-b118-af91c3e0b110)
+![UX Journey 1](https://github.com/user-attachments/assets/7bd13f7c-c579-42d9-895e-ede92b5874e7)
 ![UX Journey 2](https://github.com/user-attachments/assets/09dd118f-dcd9-4822-b251-ae6915d54a82)
 ![UX Journey 3](https://github.com/user-attachments/assets/b1a67421-d2fb-4313-828a-e91145229388)
 ##  Risks Assesment 
@@ -582,6 +582,9 @@ DataPuraVida is not simply a technological infrastructure, but a platform for th
 
 ## Quality Assurance
 
+React Native 18.2.x – Provides high performance and scalability for web.
+    Okta - MFA and Biometrics, needs license
+  
 - **pytest:** Unit and integration tests for Python codebase.
 
 - **React Testing Library + Jest:** Component and UI behavior testing.
@@ -673,8 +676,142 @@ The backend can map these to your platform’s internal permissions. This mappin
 
 ![Agile Product Roadmap](https://github.com/user-attachments/assets/0a7dd9a8-ae89-4567-83ee-db3428ee22ad)
 
+### POC MFA
+## Clean Architecture
+Clean Architecture is a software design pattern that organizes code into clear, separated layers based on how abstract or concrete the code is. Is especially effective in large-scale, long-living, and mission-critical systems, like this platform.
+The main advantages are:
+- Isolate business rules from frameworks, UI, and external services.
+- Makes the application easier to test, extend, and maintain.
+- Allows replacing pieces (frameworks, APIs, databases) without changing core logic.
+The design will consist of four layers:
+### Presentation Layer (UI Layer): Displays UI and captures user input. Delegates all logic.
 
+**Technologies**
+- React
+- Tailwind CSS (Utility-first styling)
+- Okta SDK (OIDC + WebAuthn Biometric login)
+- Redux Toolkit (ViewModel logic)
+- Storybook for component testing
+- Stripe.js SDK
+  
+**Class and Components**
+`LoginPage`, `BiometricPrompt`, `DashboardLayout`, `TaskCard`, `TaskGuideOverlay`, `NavigationBar`, `SubscriptionForm`, `PaymentPage`,`PaymentSuccessPage`
 
+**Design Patterns**
+- MVVM (React View + Redux ViewModel)
+- Component-Based Architecture – UI split into reusable functional components
+  
+**Principles**
+- Separation of Concerns: UI handles only rendering and user interactions  
+- DRY: Extract reusable hooks and atomic components  
+- Accessibility: Use Tailwind + ARIA standards  
+- Responsive Design: Tailwind responsive utilities + Flexbox/Grid
+
+### Application Layer (Use Cases): Coordinates tasks across domain + infrastructure. No UI or framework code.
+
+**Technologies**
+- TypeScript modules (frontend)
+- Python services (Flask backend)
+
+**Class and Components**
+`RegisterBiometricDeviceUseCase`, `ValidateUserSessionUseCase`, `RegisterOrganizationUseCase`, `GenerateDashboardReportUseCase`, `SubscribeToPlanUseCase`, `ReportBuilder`, `HandlePaymentResultUseCase`, `SubmitStripeTokenUseCase`, `ProcessStripePaymentUseCase`.
+
+**Design Patterns**
+- Facade: `AccessManagerFacade` simplifies access and subscription orchestration by interacting with multiple domain services.
+- Strategy: `PricingStrategy` supports various pricing logics (flat rate, usage-based, freemium).
+  
+**Principles**
+- SRP: Each use case is focused on a single business capability.
+- Open/Closed Principle: New use cases or workflows can be added by injecting new strategies.
+- Dependency Inversion: Use cases depend on interfaces from the Domain Layer — never on infrastructure or UI layers.
+
+### Domain Layer (Entities): Models and rules of your system. No dependencies on any framework.
+
+**Technologies**
+- TypeScript domain models (frontend)
+- Python
+  
+**Class and Components**
+`User`, `Organization`, `Representative`, `RegistrationRequest`, `Document`, `CryptographicKey`, `Dataset`, `AccessPermission`, `Dashboard`, `TransactionRecord`, `SubscriptionPlan`, `IPAddressWhitelist`, `AIValidationResult`, `PaymentMethod`, `SecurityToken`
+
+**Design Patterns**,
+- None strictly required beyond clean modeling principles
+
+**Principles**
+- Liskov Substitution Principle: Entities should be replaceable by their subtypes without affecting correctness  
+- Interface Segregation Principle: Define focused interfaces for domain operations  
+- Pure Logic: No dependencies on UI, framework, or databases
+
+### Infraestructure Layer (Adapters): External world. APIs, DBs, Storage, Frameworks.
+
+**Technologies**
+- Backend: Flask, Snowflake, AWS S3/Lambda, Okta JWT
+- Frontend: Okta 
+
+**Class and Components**
+`OktaAuthService`, `ApiService`, `SnowflakeQueryAdapter`, `TaskRepositoryImpl`, `DocumentRepositoryImpl`, `PaymentRepositoryImpl`, `S3UploadService`, `LambdaTriggerService`
+
+**Design Patterns**
+- Adapter: Wrap external dependencies to conform to domain interfaces  
+- Repository: Abstracts data access and storage details
+  
+**Principles**
+- Dependency Inversion: Infrastructure depends on domain abstractions, not vice versa  
+- SRP: Each service manages one aspect of external integration  
+- Loose Coupling: Keep infrastructure isolated from core business logic
+  
+**Cross-Cutting Services**
+Services used across layers, implemented cleanly and decoupled:
+- AI Guidance: `AIModelService`, `KeywordExtractor`, `PromptBuilder`, `IntentResolver`
+- Plans & Billing: `SubscriptionService`, `CompanyBillingService`, `OktaGroupMapper`
+
+## Summary of Essential Design Patterns & Principles
+
+| Pattern                | Where its Used             | Purpose                                          |
+|------------------------|-----------------------|-------------------------------------------------|
+| MVVM                   | Presentation Layer    | Separate UI (View) from logic (ViewModel)       |
+| Component-Based        | Presentation Layer    | Build reusable UI pieces                          |
+| Facade                 | Application Layer     | Simplify complex workflows                        |
+| Strategy               | Application Layer     | Enable flexible business rule implementations    |
+| Adapter                | Infrastructure Layer  | Bridge external APIs/databases with domain code |
+| Repository             | Infrastructure Layer  | Abstract data persistence                         |
+
+| Principle              | Where its Relevant         | Purpose                                          |
+|------------------------|-----------------------|-------------------------------------------------|
+| Single Responsibility   | All layers             | One class, one reason to change                  |
+| Open/Closed             | Application Layer      | Extend without modifying existing code           |
+| Dependency Inversion    | Application/Infra      | Depend on abstractions, not concrete classes     |
+| Separation of Concerns  | Presentation Layer     | UI vs logic separation                            |
+| DRY                    | Presentation Layer     | Avoid code duplication                            |
+| Liskov Substitution     | Domain Layer           | Replace entities with subtypes safely            |
+| Interface Segregation   | Domain Layer           | Focused interfaces                                |
+| Loose Coupling          | Infrastructure Layer   | Decouple external dependencies                    |
+
+## Object Design Patterns
+![Agile Product Roadmap](https://github.com/user-attachments/assets/9fcca3b8-85bc-4dbc-aa11-803ed2079a4c)
+
+## External Services
+![Agile Product Roadmap (1)](https://github.com/user-attachments/assets/3461702c-5792-45b7-b18a-a7f3584fc6a9)
+
+**Redux:** Maneja el estado de la aplicación frontend de forma centralizada. Actúa como la "capa de lógica" (ViewModel) dentro del patrón MVVM, desacoplando UI y lógica de negocio.
+
+**Tailwind CSS:** Framework de estilos utility-first. Permite aplicar clases predefinidas directamente en los elementos HTML/JSX para diseñar interfaces responsivas y accesibles.
+
+**Okta SDK:** Kit de desarrollo que facilita la integración con Okta para manejar autenticación de usuarios. Administra login, logout, sesiones y tokens.
+
+**OIDC (OpenID Connect):** Protocolo de autenticación basado en OAuth 2.0. Usado por Okta para autorizar y autenticar usuarios de manera segura.
+
+**WebAuthn:** Estándar para autenticación biométrica o basada en dispositivos (como huella o reconocimiento facial). Se combina con Okta SDK para habilitar MFA (autenticación multifactor).
+
+**Storybook:** Herramienta de desarrollo para construir y probar componentes UI de forma aislada. Permite documentar, visualizar y testear componentes sin necesidad de levantar toda la aplicación.
+
+**Stripe:** Plataforma de pagos que maneja procesamiento de tarjetas, validación y suscripciones. Se conecta desde el frontend (Stripe.js) y también desde el backend (API de Flask) para completar y verificar transacciones de forma segura.
+
+## Structure
+![image](https://github.com/user-attachments/assets/e9f7c548-9dc3-4aa8-859f-8cb1dd497e3a)
+
+## FE Architecture Diagram
+![Agile Product Roadmap (1)](https://github.com/user-attachments/assets/3dd9e559-9df4-4479-9344-5e6259ee2a51)
 
 # BACKEND
 
