@@ -614,6 +614,8 @@ DataPuraVida is not simply a technological infrastructure, but a platform for th
 - **Flask 3.1.x:** RESTful web framework for API routing, middleware, and request handling.
 
 - **RESTful APIs:** Stateless communication for core services (authentication, file upload, metadata validation, dataset publishing, etc.).
+  
+- AWS using CDK (v2)
 
 - **Integration with AWS and Snowflake:** Snowflake for analytics and security policies; AWS for storage, processing, orchestration.
 
