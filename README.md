@@ -343,19 +343,33 @@ High Availability: Snowflake’s multi-cluster architecture and Fargate auto-sca
 	- Be communicated to stakeholders at least 72 hours in advance.
 	- Include health verification steps and after the execution to ensure service continuity.
 
-- The system must include Snowflake’s automatic multi-cluster architecture to ensure high availability and fault isolation for queries and pipelines and real time monitoring and alerting to trigger failover workflows.
+- The system must include Snowflake’s automatic multi-cluster archi**tecture to ensure high** availability and fault isolation for queries and pipelines and real time monitoring and alerting to trigger failover **workflows.
 
-### Security 
+### Secur**ity 
 
-- All data in transit and at rest must be enceypted using AES-256. All APIs must enforce TLS 1.3 for secure communications.
+- All data in transit and at rest must be enceypted using AES-256.  All APIs must enforce -TLS 1.3 for secure communications.
 
-- All components must comply with OWASP Top 10 security principles.
+- All components must comply with OWASP Top 10 security principle- s.
 
-- Implementation of Role-Based Access Control (RBAC) and Row-Level Security (RLS).
+- Implementation of Role-Based Access Control (RBAC) and Row-Leve- l Security (RLS).
 
-- The platform shall implement a three-party key management system in which cryptographic keys are generated using a threshold-based mechanism, distributed securely across independent custodians, and allow for revocation or delegation in compliance with national security standards.
+- The platform shall implement a three-party key management syste- m in which cryptographic keys are generated using a threshold-based mechanism, distributed securely across independent custodians, and allow for revocation or delegation in compliance with national security standards.
 
-### Usability
+### Usab
+## Monitoring and Observability
+
+AWS CloudWatch:
+
+Metrics for Lambdas, API Gateway, and S3 events.
+
+Logs with real-time alerts for errors, latencies, and anomalies.
+
+Prometheus + Grafana (optional):
+
+Dashboards for resource utilization, response times, user activity.
+
+Alerting for thresholds and error rates.
+lity
 
 - Screen reader support, keyboard navigation, and contrast options must be available to ensure compliance with inclusive design principles.
 
@@ -410,17 +424,30 @@ High Availability: Snowflake’s multi-cluster architecture and Fargate auto-sca
 
 - OECD Recommendation on Data Governance for the Public Sector. Data Pura Vida must reflect principles of:
 	- Openness and reusability of public data.
-	- Trust, transparency, and accountability in data use.
-	- Clear roles and responsibilities for data stewardship.
+	- Trust, tr**ansparency, and accountability** in data use.
+	- Clear roles **and responsibilities for data stewardsh**ip.
 
 - Related to security industry standards to follow:
-	- Use of TLS 1.3 for encrypted communications.
+	- Use of - TLS 1.3 for encrypted communications.
 	- End-to-end encryption of sensitive data using AES-256.
-	- Implementation of Role-Based Access Control (RBAC) and Row-Level Security (RLS).
+	- Impleme- ntation of Role-Based Access Control (RBAC) and Row-Level Security (RLS).
 
-### Extensibility
+### Extensi- bility
 
-- The platform must allow modular addition of new AI models, data connectors, and dashboard templates without affecting existing operations. APIs and services must be designed to support future migration to microservices.
+- The platf- orm must allow modular addition of new AI models, data connectors, and dashboard templates without affecting existing operations. APIs and services must be designed to support future migration to microservices.
+## Monitoring and Observability
+
+AWS CloudWatch:
+
+Metrics for Lambdas, API Gateway, and S3 events.
+
+Logs with real-time alerts for errors, latencies, and anomalies.
+
+Prometheus + Grafana (optional):
+
+Dashboards for resource utilization, response times, user activity.
+
+Alerting for thresholds and error rates.
 
 ### Documentation
 
@@ -483,46 +510,108 @@ DataPuraVida is not simply a technological infrastructure, but a platform for th
 
 # STACK
 
-- Amazon Web Service as the designated Cloud Service
+## Cloud and Hosting
 
-- Snowflake for data analytics and data processing, also for for MFA, IP whitelist and token validation (session validation)
+**Amazon Web Services (AWS):** Primary cloud provider for hosting, and service orchestration.
 
-Frontend:
+## Data layer and Analytics
 
-    React Native 18.2.x – Provides high performance and scalability for web and mobile interactions.
+**Snowflake:** Core data warehouse and analytics engine.
 
-Backend:
+- Multi-Factor Authentication (MFA)
 
-    Python 3: Handles all incoming REST requests. Connects to the PostgreSQL database. Implements general business logic (authentication, user management, file uploads, task creation) implementing external services such as AWS services.
+- IP Whitelisting & Token Validation (Session management)
 
-    Flask: Web framework for Python, used to handle REST, manage middleware, routing, and request/response lifecycle.
+- RBAC (Role-Based Access Control)
 
-    REST: For structured, not state-dependant operation and service-oriented operations. Authentication and registration, use of AWS services, etc... 
+- Row-Level Security (RLS) policies
 
-Database:
+- Support for time travel, data sharing, delta versioning
 
-    Snowflake --> Definir más 
+- Integration with Python, REST, and ML tools 
 
-AI & Machine Learning:
+## AI and Machine Learning
 
-    Snowflake can be integrated with LLM's, in relation with the choosen model of the LLM a training for ETDL flow management is required. This AI will be used as well for documents revision.
-    Reference Link: https://www.youtube.com/watch?app=desktop&v=9FejjGVZrPg&t=0s
+**Amazon SageMakerL:**
 
-    **AI Processing with SageMaker**
-    	1. **S3-Native Processing**: SageMaker can directly read from and write to S3 without data movement
-	2. **Scalable Infrastructure**: Automatically provisions ML instances (from ml.t3.medium to ml.p3.16xlarge)
-	3. **Cost Efficiency**: Spot instances for training, serverless inference for sporadic workloads
-	4. **Integration**: Native Step Functions integration for orchestration
+- S3-Native Processing: Avoids unnecessary data movement.
 
-Cloud & Hosting:   
- 
-    Amazon Web Services: Ensures good communication and compatbility with Snowflake and multiple useful services. 
+- Auto-scaling ML infrastructure: Supports from ml.t3.medium to ml.p3.16xlarge.
 
-DevOps & CI/CD:
+- Spot instances for training and serverless inference for cost-efficient workloads.
 
-    GitHub Actions: Automates integration and deployment workflows.
+- Integration with Step Functions for orchestration of training, validation, and inference.
 
-Quality Assurance:
+**LLM Integration with Snowflake:**
+
+- AI models for ETDL flow management, document validation, metadata enrichment.
+
+- Reference: https://youtu.be/9FejjGVZrPg?si=sM3ZBD1CiSRKONVI 
+
+## Frontend
+
+**React Native 18.2.x:** 
+  
+- Provides high performance and scalability for web and mobile interactions.
+
+- Integration with analytics dashboards
+
+## Backend 
+
+- **Python 3.x:** Business logic implementation and integration layer.
+
+- **Flask 3.1.x:** RESTful web framework for API routing, middleware, and request handling.
+
+- **RESTful APIs:** Stateless communication for core services (authentication, file upload, metadata validation, dataset publishing, etc.).
+
+- **Integration with AWS and Snowflake:** Snowflake for analytics and security policies; AWS for storage, processing, orchestration.
+
+## DevOps & CI/CD
+
+**GitHub Actions:**
+
+- Automated testing, build, and deployment pipelines.
+
+- Predefined workflows for PR validation, documentation generation, and Terraform apply.
+
+- Triggered deployments for staging and production environments.
+
+**Terraform:**
+
+- Infrastructure as Code (IaC) for provisioning AWS resources.
+
+
+## Quality Assurance
+
+- **pytest:** Unit and integration tests for Python codebase.
+
+- **React Testing Library + Jest:** Component and UI behavior testing.
+
+- **Pre-commit Hooks & Linting:** Code validation on push/merge.
+
+- **Test Coverage Tools:** Integration with Codecov or Coverage.py.
+
+## Security
+
+- **Snowflake-native security:** MFA, IP whitelist, RBAC, RLS, and token-based validation.
+
+- **OWASP Top 10 Compliance:** Backend follows secure coding practices.
+
+- TLS 1.3 for all communications
+
+- Data encryption at rest and in transit using AES-256
+
+- Logging and Auditing via CloudWatch and Snowflake activity logs.
+
+- Three-party key management for sensitive dataset access control.
+
+## Monitoring and Observability
+
+**AWS CloudWatch:**
+
+- Metrics for Lambdas, API Gateway, and S3 events.
+
+- Logs with real-time alerts for errors, latencies, and anomalies.
 
 # FRONTEND
 ## Authentication platform
@@ -1218,18 +1307,31 @@ The **AWS Cloud Development Kit (CDK)** serves as the cornerstone of our infrast
 <br>
 
 #### Network and Security Services
-| **Service**                 | **Purpose**                             | **Key Details**                                                                                      |
+| ****Service**                 | ****Purpose**                             | **Key Details**                                                                                      |
 | --------------------------- | --------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| **AWS WAF**                 | Web traffic filtering & DDoS protection | - Geo-based rules (e.g., Costa Rica IPs)<br>- Rate limiting<br>- Bot, SQLi, XSS protection           |
+| ****AWS WAF**                 | **Web traffic filtering & DDoS protection | - Geo-based rules (e.g., Costa Rica IPs)<br>- Rate limiting<br>- Bot, SQLi, XSS protection           |
 | **Amazon VPC**              | Network isolation and secure access     | - Multi-AZ deployment<br>- Private subnets<br>- NAT Gateways<br>- VPC Endpoints for internal traffic |
-| **AWS Certificate Manager** | SSL/TLS certificate automation          | - Automatic renewal<br>- Wildcard support<br>- ALB integration                                       |
+| ** AWS Certificate Manager** | SSL/-TLS certificate automation          | - Automatic renewal<br>- Wildcard support<br>- ALB integration                                       |
 
-<br>
+<b- r>
 
-#### Artificial Intelligence and Machine Learning
+##- ## Artificial Intelligence and Machine Learning
 | **Service**          | **Purpose**                                | **Key Details**                                                                                                                                                 |
-| -------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| - -------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Amazon SageMaker** | Model development, training, and inference | - Data transformation & normalization<br>- NL-to-SQL translation<br>- Anomaly detection<br>- Snowflake Cortex fallback<br>- Integrated with Step Functions & S3 |
+## Monitoring and Observability
+
+AWS CloudWatch:
+
+Metrics for Lambdas, API Gateway, and S3 events.
+
+Logs with real-time alerts for errors, latencies, and anomalies.
+
+Prometheus + Grafana (optional):
+
+Dashboards for resource utilization, response times, user activity.
+
+Alerting for thresholds and error rates.
 
 
 ### Critical Service Dependencies
@@ -1727,18 +1829,32 @@ Enforces security policies during upload
 
 **1. Authentication & Authorization**
 - JWT validation via AWS Cognito
-- Role-based access control (RBAC)
-- Organization-level permissions
+- Role-based access c**ontrol (RBAC)
+**-** Organization-level permission**s
 
 **2. Encryption**
 - **At Rest**: AES-256-GCM in S3 and Snowflake
-- **In Transit**: TLS 1.3 for all communications
-- **Key Management**: AWS KMS with tripartite system
+ - **In Transit**: -TLS 1.3 for all communications
+- **Key Management**: AWS KMS with tripartite syste- m
 
-**3. Access Control**
+**3. Access Control- **
 - IP whitelisting (Costa Rica only + approved institutions)
-- Row-level security (RLS) in Snowflake
-- Audit logging of all operations
+- Row-level securit- y (RLS) in Snowflake
+- Audit logging of all operation
+## Monitoring and Observability
+
+AWS CloudWatch:
+
+Metrics for Lambdas, API Gateway, and S3 events.
+
+Logs with real-time alerts for errors, latencies, and anomalies.
+
+Prometheus + Grafana (optional):
+
+Dashboards for resource utilization, response times, user activity.
+
+Alerting for thresholds and error rates.
+
 
 **4. Data Protection**
 - Sensitive field encryption before storage
@@ -2291,18 +2407,32 @@ The workflow begins with a requester initiating a dataset access request, which 
 3. CustodianManager: Assigns custodians and handles approval workflows.
 4. AccessControlService: Enforces RBAC and RLS for access control.
 5. AuditService: Logs all steps (validation, approvals, access) for compliance.
-6. GeoAccessValidator: Ensures geographic compliance.
-7. AWS Services: Cognito (authentication), KMS (encryption), SNS (notifications), CloudWatch (logging), Secrets Manager (key storage), Snowflake (data management).
+6. GeoAccessVali**dator: Ensures geographic** compliance.
+7. AWS Services: Cognito (authentication), KMS (encryption), SNS (notifications), CloudWatch (logging), Secrets Manager (key storage**), Snowflake (data managemen**t).
 
 #### Security and Compliance
 
-1. Encryption: Data in transit uses TLS 1.3, and at rest uses AES-256 via AWS KMS. Access keys are reconstructed and purged per operation.
+1. Encryption: Data in transit uses - TLS 1.3, and at rest uses AES-256 via AWS KMS. Access keys are reconstructed and purged per operation.
 2. Auditability: All actions are logged with trace_id in CloudWatch, with a 7-year retention for security logs, meeting Law 8968 and GDPR requirements.
-3. Regulatory Compliance: Ensures informed consent, data subject rights, and purpose limitation. Custodian approvals provide accountability.
-4. Geographic Restriction: Enforced via AWS WAF and GeoAccessValidator, limiting access to Costa Rica or approved IPs.
+3. Regulatory Compliance: Ensures in- formed consent, data subject rights, and purpose limitation. Custodian approvals provide accountability.
+4. Geographic Restriction: Enforced via AWS WAF and GeoAccessValidator, limiting access to Costa Rica or approved IPs- .
 
-Image Reference:
-![image](https://github.com/user-attachments/assets/da4b0a49-1cdc-4904-bb44-a6315e683853)
+Image Referenc- e:
+![image](https://github.com/user-attachments/assets/da4b0a49-1cdc-4904-bb44-a6315e683853
+## Monitoring and Observability
+
+AWS CloudWatch:
+
+Metrics for Lambdas, API Gateway, and S3 events.
+
+Logs with real-time alerts for errors, latencies, and anomalies.
+
+Prometheus + Grafana (optional):
+
+Dashboards for resource utilization, response times, user activity.
+
+Alerting for thresholds and error rates.
+
 
 ### 3. AI-Powered Query Translation
 
@@ -2351,20 +2481,34 @@ The system translates natural language queries into SQL, validates both the quer
   - Component: SFRepository, QueryExecutionService
   - Execution: Runs in a Snowflake virtual warehouse with auto-scaling.
   - Tracking:
-    - GET /queries/{id}/status
-    - GET /queries/{id}/results
+    - GET /queries/{id}/status**
+    - GET /queries/{**id}/results
   - Security:
-    - Row-Level Security (RLS)
-    - Encrypted in transit (TLS 1.3)
+**    - Row-Level **Security (RLS)
+    - Encrypted in transit (- TLS 1.3)
 - Result Formatting
-  - Component: AIChatService + DataProcessor
+  - Component: AIChatService-  + DataProcessor
   - Output: Returned in user-specified format (e.g., JSON, table)
-  - Optional Visualization: Integration with Amazon QuickSight
+  - Optional Visualization: - Integration with Amazon QuickSight
   - Security: DataProtectionService enforces:
-    - Non-downloadable formats
+    - Non-downloadable forma- ts
     - Sensitive field masking
     - Output conversions (e.g., SVG, PDF)
-- Response to User
+- Response to Use
+## Monitoring and Observability
+
+AWS CloudWatch:
+
+Metrics for Lambdas, API Gateway, and S3 events.
+
+Logs with real-time alerts for errors, latencies, and anomalies.
+
+Prometheus + Grafana (optional):
+
+Dashboards for resource utilization, response times, user activity.
+
+Alerting for thresholds and error rates.
+
   - Delivery: Results returned via API or embedded dashboards.
   - Sharing: Internal dashboards require custodian approval (POST /sharing/dashboards)
   - Audit: Execution and access events logged by AuditService (/datapuravida/queries)
@@ -2378,19 +2522,33 @@ The system translates natural language queries into SQL, validates both the quer
 5. DataProtectionService: Secures output formats, blocks unauthorized exports
 6. SecurityManager: Coordinates auth, geo-restrictions, and classification compliance
 7. AuditService: Logs all query activity and result access for regulatory audit
-8. AWS Services: Cognito (auth), QuickSight (viz), KMS (encryption), WAF
+8. AWS Servic**es: Cognito (auth**), QuickSight (viz), KMS (encryption), WAF
+**
+#### Security and Compli**ance
 
-#### Security and Compliance
-
-- Encryption: TLS 1.3 (transit), AES-256 (at rest via AWS KMS)
+- Encryption:  -TLS 1.3 (transit), AES-256 (at rest via AWS KMS)
 - Audit Logging: Logs retained for 3 years; includes query, SQL, metadata
-- Compliance:
+- Complianc- e:
   - Law 8968 (Costa Rica): Subject rights, limited processing
-  - GDPR: Minimization, transparency
+  - GDPR: M- inimization, transparency
 - Geo Restrictions: Requests must originate from approved IPs (CR-only)
-- Performance SLA: 95% of queries return in <200ms (CloudWatch monitored)
+- Performan- ce SLA: 95% of queries return in <200ms (CloudWatch monitored)
 
-![image](https://github.com/user-attachments/assets/9440c17d-f9d8-438f-87ea-667b7f0cac30)
+![image](https://github
+## Monitoring and Observability
+
+AWS CloudWatch:
+
+Metrics for Lambdas, API Gateway, and S3 events.
+
+Logs with real-time alerts for errors, latencies, and anomalies.
+
+Prometheus + Grafana (optional):
+
+Dashboards for resource utilization, response times, user activity.
+
+Alerting for thresholds and error rates.
+com/user-attachments/assets/9440c17d-f9d8-438f-87ea-667b7f0cac30)
 
 ## Data Layer Design
 
@@ -3177,36 +3335,64 @@ The DevOps and deployment strategy for Data Pura Vida leverages modern cloud-nat
 
 ### Architecture Compliance Matrix
 
-| Requirement | Compliance Status | Evidence | Notes |
+| Requirement | Compliance Status | Evidence | Notes |**
 |-------------|-------------------|----------|-------|
-| 99.9% System Availability | Compliant | Blue-Green deployment, Fargate auto-scaling, Snowflake multi-cluster | Quarterly DR tests validate SLA |
-| <200ms Query Latency | Compliant | Snowflake Query Profiling, CloudWatch metrics | Validated in performance tests |
-| Support 200 Concurrent Users (Year 5) | Compliant | Fargate auto-scaling, Snowflake MPP architecture | Load tests simulate peak usage |
-| AES-256 Encryption | Compliant | AWS KMS for data at rest, TLS 1.3 for transit | Security audits confirm compliance |
+| 99.9**% System Availability | Compliant | Blue-Green deployment, Fargate auto-scaling, Snowflake multi-cluster | Quarterly DR tests validate SLA |
+| <200ms Query Latency | Compliant | Snowflake Query Profiling, CloudWatch metrics | Validated **in performance tests |
+| **Support 200 Concurrent Users (Year 5) | Compliant | Fargate auto-scaling, Snowflake MPP architecture | Load tests simulate peak usage |
+| AES-256 Encryption | Compliant | AWS KMS for data at rest, - TLS 1.3 for transit | Security audits confirm compliance |
 | GDPR Compliance | Compliant | Data minimization, user consent, right to erasure | DPO assigned for oversight |
-| ISO 27001 Compliance | Compliant | Security policies, access controls, audit logs | Regular audits scheduled |
+| ISO 27001 Compliance | Compliant | Security policies, acces- s controls, audit logs | Regular audits scheduled |
 | AI-Powered Data Normalization | Compliant | Snowflake Cortex, MLModel for ETDL | Validated in integration tests |
-| Tripartite Key System | Compliant | Shamir’s Secret Sharing, custodian approvals | Security tests confirm robustness |
-| Geographic Restriction | Compliant | GeoRestrictionMiddleware, AWS WAF | Penetration tests validate enforcement |
+| Tripartite Key System | Compliant | Shamir’s Secret Sharing- , custodian approvals | Security tests confirm robustness |
+| Geographic Restriction | Compliant | GeoRestrictionMiddleware, AWS WAF | Penetration tests validate enforcement - |
 
 ### Analysis of Advantages/Disadvantages
 
-#### Design Strengths
+#
+## Monitoring and Observability
 
-- Scalability:
-  - AWS Fargate and Snowflake auto-scaling support millions of records and thousands of concurrent users.
-  - S3 and Snowflake handle 10TB/year data growth without manual intervention.
-- Security:
-  - AES-256 encryption, TLS 1.3, and tripartite key system ensure data protection.
+AWS CloudWatch:
+
+Metrics for Lambdas, API Gateway, and S3 events.
+
+Logs with real-time alerts for errors, latencies, and anomalies.
+
+Prometheus + Grafana (optional):
+
+Dashboards for resource utilization, response times, user activity.
+
+Alerting for thresholds and error rates.
+## Design Strengths
+
+- Scalability**:
+  - AWS Fargate** and Snowflake auto-scaling support millions of records and thousands of concurrent users.
+  - S3 and Snowflake handle 10TB/year data growth without **manual intervention.
+- Secur**ity:
+  - AES-256 e ncryption, -TLS 1.3, and tripartite key system ensure data protection.
   - RBAC, RLS, and geographic restrictions align with GDPR.
-- Compliance:
+- Complianc- e:
   - Comprehensive audit logging ensures traceability.
-  - Privacy by design and data subject rights support regulatory requirements.
+  - Privacy-  by design and data subject rights support regulatory requirements.
 - Flexibility:
-  - Monolithic architecture with modular design supports future migration to microservices.
+  - Monolit- hic architecture with modular design supports future migration to microservices.
   - AI-driven ETDL and NL query processing enhance usability and innovation.
 - Reliability:
-  - Blue-Green deployment ensures zero-downtime updates.
+  - Bl
+  ## Monitoring and Observability
+
+  AWS CloudWatch:
+
+Metrics for Lambdas, API Gateway, and S3 events.
+
+Logs with real-time alerts for errors, latencies, and anomalies.
+
+Prometheus + Grafana (optional):
+
+Dashboards for resource utilization, response times, user activity.
+
+Alerting for thresholds and error rates.
+  e-Green deployment ensures zero-downtime updates.
   - Automated backups and recovery playbooks achieve <2-hour recovery time.
 
 #### Known Limitations
