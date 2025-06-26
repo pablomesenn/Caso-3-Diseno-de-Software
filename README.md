@@ -507,7 +507,6 @@ The OECD Guidelines on Data Governance provide a holistic view. For DataPuraVida
 
 DataPuraVida is not simply a technological infrastructure, but a platform for the political, institutional, and social transformation of the country. By enabling voluntary yet secure management of data exchange and complying with the most demanding national and international standards, the system can break decades of fragmentation and become the catalyst for an economy based on knowledge, innovation, and trust. Data governance is no longer an option, but a necessity for the sustainable, transparent, and equitable development of Costa Rica.
 
-
 # STACK
 
 ## Cloud and Hosting
@@ -609,7 +608,7 @@ DataPuraVida is not simply a technological infrastructure, but a platform for th
 
 **AWS CloudWatch:**
 
-- Metrics for Lambdas, API Gateway, and S3 events.
+- Metrics for Lambdas, API, and S3 events.
 
 - Logs with real-time alerts for errors, latencies, and anomalies.
 
