@@ -195,6 +195,76 @@ Deployment must include steps for:
 - Health checks post-deployment
 - Rollback mechanism in case of failure
 
+## Github Actions Template
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [develop, main, feature/*, release/*, hotfix/*]
+  pull_request:
+    branches: [develop, main]
+
+jobs:
+  build-and-test:
+    name: Build, Lint, Test, Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Lint frontend
+        run: |
+          cd frontend
+          npm run lint
+
+      - name: Test frontend
+        run: |
+          cd frontend
+          npm test -- --coverage
+
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Lint backend
+        run: |
+          cd backend
+          pylint src/
+
+      - name: Test backend
+        run: |
+          cd backend
+          pytest --cov
+
+      - name: Security Scan (Python)
+        run: |
+          cd backend
+          bandit -r src/
+
+      - name: Build Docker images
+        run: |
+          docker build -t backend-api ./backend
+          docker build -t frontend-ui ./frontend
+
+
 ## KPIs and Metrics
 
 | Category            | Metric                  | Data Source                          | Calculation Method                          | Visualization       |
