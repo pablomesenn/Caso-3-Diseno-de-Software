@@ -548,7 +548,7 @@ The design will consist of four layers:
 - Storybook for component testing
   
 **Class and Components**
-`LoginPage`, `BiometricPrompt`, `DashboardLayout`, `TaskCard`, `AssistantContainer`, `TaskGuideOverlay`, `NavigationBar`, 
+`LoginPage`, `BiometricPrompt`, `DashboardLayout`, `TaskCard`, `TaskGuideOverlay`, `NavigationBar`, 
 
 **Design Patterns**
 - MVVM (React View + Redux ViewModel)
@@ -567,7 +567,7 @@ The design will consist of four layers:
 - Python services (Flask backend)
 
 **Class and Components**
-`ProvideRealTimeGuidanceUseCase`, `RegisterBiometricDeviceUseCase`, `ValidateUserSessionUseCase`, `RegisterOrganizationUseCase`, `GenerateDashboardReportUseCase`, `SubscribeToPlanUseCase`, `ReportBuilder`
+`RegisterBiometricDeviceUseCase`, `ValidateUserSessionUseCase`, `RegisterOrganizationUseCase`, `GenerateDashboardReportUseCase`, `SubscribeToPlanUseCase`, `ReportBuilder`
 
 **Design Patterns**
 - Facade: `AccessManagerFacade` simplifies access and subscription orchestration by interacting with multiple domain services.
