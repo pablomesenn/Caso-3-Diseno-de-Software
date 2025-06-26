@@ -546,9 +546,10 @@ The design will consist of four layers:
 - Okta SDK (OIDC + WebAuthn Biometric login)
 - Redux Toolkit (ViewModel logic)
 - Storybook for component testing
+- Stripe.js SDK
   
 **Class and Components**
-`LoginPage`, `BiometricPrompt`, `DashboardLayout`, `TaskCard`, `TaskGuideOverlay`, `NavigationBar`, 
+`LoginPage`, `BiometricPrompt`, `DashboardLayout`, `TaskCard`, `TaskGuideOverlay`, `NavigationBar`, `SubscriptionForm`, `PaymentPage`,`PaymentSuccessPage`
 
 **Design Patterns**
 - MVVM (React View + Redux ViewModel)
@@ -567,7 +568,7 @@ The design will consist of four layers:
 - Python services (Flask backend)
 
 **Class and Components**
-`RegisterBiometricDeviceUseCase`, `ValidateUserSessionUseCase`, `RegisterOrganizationUseCase`, `GenerateDashboardReportUseCase`, `SubscribeToPlanUseCase`, `ReportBuilder`
+`RegisterBiometricDeviceUseCase`, `ValidateUserSessionUseCase`, `RegisterOrganizationUseCase`, `GenerateDashboardReportUseCase`, `SubscribeToPlanUseCase`, `ReportBuilder`, `HandlePaymentResultUseCase`, `SubmitStripeTokenUseCase`, `ProcessStripePaymentUseCase`.
 
 **Design Patterns**
 - Facade: `AccessManagerFacade` simplifies access and subscription orchestration by interacting with multiple domain services.
@@ -602,7 +603,7 @@ The design will consist of four layers:
 - Frontend: Okta 
 
 **Class and Components**
-`OktaAuthService`, `ApiService`, `SnowflakeQueryAdapter`, `TaskRepositoryImpl`, `DocumentRepositoryImpl`, `S3UploadService`, `LambdaTriggerService`
+`OktaAuthService`, `ApiService`, `SnowflakeQueryAdapter`, `TaskRepositoryImpl`, `DocumentRepositoryImpl`, `PaymentRepositoryImpl`, `S3UploadService`, `LambdaTriggerService`
 
 **Design Patterns**
 - Adapter: Wrap external dependencies to conform to domain interfaces  
@@ -641,14 +642,15 @@ Services used across layers, implemented cleanly and decoupled:
 | Loose Coupling          | Infrastructure Layer   | Decouple external dependencies                    |
 
 ## Object Design Patterns
-![Object Design](https://github.com/user-attachments/assets/c8e70fd9-d154-4224-9f1b-82ad5fcc6f41)
+![Agile Product Roadmap](https://github.com/user-attachments/assets/9fcca3b8-85bc-4dbc-aa11-803ed2079a4c)
 
 ## External Services
+![Agile Product Roadmap](https://github.com/user-attachments/assets/ea024bac-fc24-4b04-bf00-7305cdbb86b5)
 
 ## Structure
 
 ## FE Architecture Diagram
-![Agile Product Roadmap](https://github.com/user-attachments/assets/38562424-8bb3-4d26-9fd9-d650423cfd26)
+![Agile Product Roadmap (1)](https://github.com/user-attachments/assets/3dd9e559-9df4-4479-9344-5e6259ee2a51)
 
 # BACKEND
 
