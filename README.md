@@ -549,11 +549,19 @@ DataPuraVida is not simply a technological infrastructure, but a platform for th
 
 ## Frontend
 
-**React Native 18.2.x:** 
-  
-- Provides high performance and scalability for web and mobile interactions.
+- **React Native ^18.x:** Main library for building reactive, component-based user interfaces.
 
-- Integration with analytics dashboards
+- **Redux Toolkit ^1.9.x:** Manages application state in a structured and scalable way (ViewModel in MVVM).
+
+- **TypeScript ^5.x:** Statically typed JavaScript that improves maintainability and reduces development-time errors.
+
+- **Tailwind CSS ^3.x:** Utility-first CSS framework for building responsive, accessible, and customizable designs quickly.
+
+- **Okta Auth JS SDK ^7.x:** Handles authentication (OIDC) and WebAuthn biometric login from the frontend. Supports login, token exchange, and MFA.
+
+- **Stripe.js SDK ^3.x:** Secure, PCI-compliant card payment integration directly from the browser.
+
+- **Storybook ^7.x:** Develop and document UI components in isolation. Useful for design systems and visual testing.
 
 ## Backend 
 
