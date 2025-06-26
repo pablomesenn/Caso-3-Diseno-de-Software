@@ -2594,32 +2594,18 @@ The workflow begins with a requester initiating a dataset access request, which 
 3. CustodianManager: Assigns custodians and handles approval workflows.
 4. AccessControlService: Enforces RBAC and RLS for access control.
 5. AuditService: Logs all steps (validation, approvals, access) for compliance.
-6. GeoAccessVali**dator: Ensures geographic** compliance.
-7. AWS Services: Cognito (authentication), KMS (encryption), SNS (notifications), CloudWatch (logging), Secrets Manager (key storage**), Snowflake (data managemen**t).
+6. GeoAccessValidator: Ensures geographic compliance.
+7. AWS Services: Cognito (authentication), KMS (encryption), SNS (notifications), CloudWatch (logging), Secrets Manager (key storage), Snowflake (data management).
 
 #### Security and Compliance
 
-1. Encryption: Data in transit uses - TLS 1.3, and at rest uses AES-256 via AWS KMS. Access keys are reconstructed and purged per operation.
+1. Encryption: Data in transit uses TLS 1.3, and at rest uses AES-256 via AWS KMS. Access keys are reconstructed and purged per operation.
 2. Auditability: All actions are logged with trace_id in CloudWatch, with a 7-year retention for security logs, meeting Law 8968 and GDPR requirements.
-3. Regulatory Compliance: Ensures in- formed consent, data subject rights, and purpose limitation. Custodian approvals provide accountability.
-4. Geographic Restriction: Enforced via AWS WAF and GeoAccessValidator, limiting access to Costa Rica or approved IPs- .
+3. Regulatory Compliance: Ensures informed consent, data subject rights, and purpose limitation. Custodian approvals provide accountability.
+4. Geographic Restriction: Enforced via AWS WAF and GeoAccessValidator, limiting access to Costa Rica or approved IPs.
 
-Image Referenc- e:
-![image](https://github.com/user-attachments/assets/da4b0a49-1cdc-4904-bb44-a6315e683853
-## Monitoring and Observability
-
-AWS CloudWatch:
-
-Metrics for Lambdas, API Gateway, and S3 events.
-
-Logs with real-time alerts for errors, latencies, and anomalies.
-
-Prometheus + Grafana (optional):
-
-Dashboards for resource utilization, response times, user activity.
-
-Alerting for thresholds and error rates.
-
+Image Reference:
+![image](https://github.com/user-attachments/assets/da4b0a49-1cdc-4904-bb44-a6315e683853)
 
 ### 3. AI-Powered Query Translation
 
@@ -2668,34 +2654,20 @@ The system translates natural language queries into SQL, validates both the quer
   - Component: SFRepository, QueryExecutionService
   - Execution: Runs in a Snowflake virtual warehouse with auto-scaling.
   - Tracking:
-    - GET /queries/{id}/status**
-    - GET /queries/{**id}/results
+    - GET /queries/{id}/status
+    - GET /queries/{id}/results
   - Security:
-**    - Row-Level **Security (RLS)
-    - Encrypted in transit (- TLS 1.3)
+    - Row-Level Security (RLS)
+    - Encrypted in transit (TLS 1.3)
 - Result Formatting
-  - Component: AIChatService-  + DataProcessor
+  - Component: AIChatService + DataProcessor
   - Output: Returned in user-specified format (e.g., JSON, table)
-  - Optional Visualization: - Integration with Amazon QuickSight
+  - Optional Visualization: Integration with Amazon QuickSight
   - Security: DataProtectionService enforces:
-    - Non-downloadable forma- ts
+    - Non-downloadable formats
     - Sensitive field masking
     - Output conversions (e.g., SVG, PDF)
-- Response to Use
-## Monitoring and Observability
-
-AWS CloudWatch:
-
-Metrics for Lambdas, API Gateway, and S3 events.
-
-Logs with real-time alerts for errors, latencies, and anomalies.
-
-Prometheus + Grafana (optional):
-
-Dashboards for resource utilization, response times, user activity.
-
-Alerting for thresholds and error rates.
-
+- Response to User
   - Delivery: Results returned via API or embedded dashboards.
   - Sharing: Internal dashboards require custodian approval (POST /sharing/dashboards)
   - Audit: Execution and access events logged by AuditService (/datapuravida/queries)
@@ -2709,33 +2681,19 @@ Alerting for thresholds and error rates.
 5. DataProtectionService: Secures output formats, blocks unauthorized exports
 6. SecurityManager: Coordinates auth, geo-restrictions, and classification compliance
 7. AuditService: Logs all query activity and result access for regulatory audit
-8. AWS Servic**es: Cognito (auth**), QuickSight (viz), KMS (encryption), WAF
-**
-#### Security and Compli**ance
+8. AWS Services: Cognito (auth), QuickSight (viz), KMS (encryption), WAF
 
-- Encryption:  -TLS 1.3 (transit), AES-256 (at rest via AWS KMS)
+#### Security and Compliance
+
+- Encryption: TLS 1.3 (transit), AES-256 (at rest via AWS KMS)
 - Audit Logging: Logs retained for 3 years; includes query, SQL, metadata
-- Complianc- e:
+- Compliance:
   - Law 8968 (Costa Rica): Subject rights, limited processing
-  - GDPR: M- inimization, transparency
+  - GDPR: Minimization, transparency
 - Geo Restrictions: Requests must originate from approved IPs (CR-only)
-- Performan- ce SLA: 95% of queries return in <200ms (CloudWatch monitored)
+- Performance SLA: 95% of queries return in <200ms (CloudWatch monitored)
 
-![image](https://github
-## Monitoring and Observability
-
-AWS CloudWatch:
-
-Metrics for Lambdas, API Gateway, and S3 events.
-
-Logs with real-time alerts for errors, latencies, and anomalies.
-
-Prometheus + Grafana (optional):
-
-Dashboards for resource utilization, response times, user activity.
-
-Alerting for thresholds and error rates.
-com/user-attachments/assets/9440c17d-f9d8-438f-87ea-667b7f0cac30)
+![image](https://github.com/user-attachments/assets/9440c17d-f9d8-438f-87ea-667b7f0cac30)
 
 ## Data Layer Design
 
